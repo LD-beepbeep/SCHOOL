@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student OS 4.4</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons (General UI) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- FontAwesome (Brand/School Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Theme Variables - Dark (Default) */
+            --bg-color: #09090b;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --text-invert: #000000;
+            
+            --glass-panel: rgba(255, 255, 255, 0.05);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --glass-hover: rgba(255, 255, 255, 0.1);
+            --glass-input: rgba(0, 0, 0, 0.3);
+            
+            --accent: #3b82f6;
+            
+            /* Status Colors */
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        /* Light Mode Overrides */
+        [data-theme="light"] {
+            --bg-color: #f2f2f7;
+            --text-main: #1c1c1e;
+            --text-muted: rgba(60, 60, 67, 0.6);
+            --text-invert: #ffffff;
+            
+            --glass-panel: rgba(255, 255, 255, 0.75);
+            --glass-border: 1px solid rgba(0, 0, 0, 0.05);
+            --glass-hover: rgba(255, 255, 255, 0.9);
+            --glass-input: rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Dynamic Wallpaper */
+        .ambient-light {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0; left: 0;
+            background: var(--custom-bg, radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), transparent 50%), radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1), transparent 40%));
+            z-index: -1;
+            pointer-events: none;
+            transition: background 0.5s;
+        }
+
+        /* Minimal Card */
+        .min-card {
+            background: var(--glass-panel);
+            border: var(--glass-border);
+            border-radius: 20px;
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background 0.2s, border-color 0.2s;
+            overflow: hidden;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .min-card.hover-effect:hover {
+            background: var(--glass-hover);
+            transform: translateY(-2px);
+            border-color: var(--text-muted);
+        }
+
+        /* Sidebar Icon Button */
+        .nav-btn {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            position: relative;
+        }
+        .nav-btn:hover { color: var(--text-main); background: var(--glass-hover); }
+        .nav-btn.active { color: white; background: var(--accent); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        
+        /* Tooltip */
+        .nav-btn:hover::after {
+            content: attr(data-tooltip);
+            position: absolute; left: 56px;
+            background: var(--glass-panel);
+            backdrop-filter: blur(10px);
+            border: var(--glass-border);
+            padding: 4px 10px; border-radius: 6px;
+            font-size: 11px; color: var(--text-main);
+            white-space: nowrap; pointer-events: none;
+            opacity: 1; animation: fadeIn 0.2s; font-weight: 500;
+            z-index: 50;
+        }
+
+        /* Inputs */
+        .bare-input {
+            background: transparent; border: none; outline: none;
+            color: var(--text-main); border-bottom: 1px solid var(--text-muted);
+            transition: border-color 0.2s; padding: 8px 0;
+        }
+        .bare-input:focus { border-bottom-color: var(--accent); }
+        .bare-input::placeholder { color: var(--text-muted); opacity: 0.5; }
+        
+        select.bare-input option { background: var(--bg-color); color: var(--text-main); }
+        
+        /* Checkbox & Color */
+        input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+        input[type="color"] {
+            -webkit-appearance: none; border: none;
+            width: 32px; height: 32px; border-radius: 50%;
+            overflow: hidden; padding: 0; cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--glass-border); }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; opacity: 0.2; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        
+        /* Calendar Grid */
+        .cal-day {
+            display: flex; flex-direction: column;
+            padding: 6px; border-radius: 8px;
+            font-size: 0.9rem; color: var(--text-muted);
+            transition: background 0.2s; cursor: pointer; position: relative;
+            min-height: 50px; flex: 1;
+        }
+        .cal-day:hover { background: var(--glass-hover); color: var(--text-main); }
+        .cal-day.today { background: var(--accent); color: white; font-weight: 600; }
+        .event-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 4px; }
+        .cal-day.today .event-dot { background: white; }
+
+        /* Calculator Keys */
+        .calc-key {
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: background 0.1s; cursor: pointer;
+            background: var(--glass-hover); color: var(--text-main);
+        }
+        .calc-key:hover { background: var(--glass-border); }
+        .calc-key.accent { background: var(--glass-border); color: var(--accent); font-weight: 600; }
+        .calc-key.primary { background: var(--accent); color: white; }
+
+        /* Markdown Styles */
+        .md-preview h1 { font-size: 1.5em; font-weight: 700; margin-bottom: 0.5em; color: var(--text-main); }
+        .md-preview h2 { font-size: 1.25em; font-weight: 600; margin-bottom: 0.5em; color: var(--text-main); }
+        .md-preview strong { color: var(--text-main); font-weight: 700; }
+        .md-preview ul { list-style: disc; padding-left: 1.5em; margin-bottom: 1em; color: var(--text-muted); }
+        
+        /* Whiteboard */
+        canvas { touch-action: none; cursor: crosshair; }
+
+        /* Flashcard 3D Logic */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        /* Word Search */
+        .ws-grid { display: grid; gap: 4px; user-select: none; width: fit-content; margin: 0 auto; }
+        .ws-cell {
+            width: 2rem; height: 2rem;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--glass-panel); border-radius: 6px;
+            font-weight: 700; cursor: pointer; color: var(--text-muted);
+            transition: all 0.2s; font-size: 0.9rem;
+            border: 1px solid var(--glass-border);
+        }
+        .ws-cell:hover { background: var(--glass-hover); color: var(--text-main); transform: scale(1.1); z-index: 10; }
+        .ws-cell.selected { background: var(--accent); color: white; transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-color: transparent; }
+        .ws-cell.found { background: var(--success); color: white; opacity: 0.8; border-color: transparent; }
+
+        /* Utilities */
+        .text-accent { color: var(--accent); }
+        .bg-accent { background-color: var(--accent); }
+        .border-glass { border: var(--glass-border); }
+
+    </style>
+</head>
+<body class="flex h-screen w-screen selection:bg-blue-500 selection:text-white">
+
+    <div class="ambient-light" id="ambient-bg"></div>
+    <input type="file" id="import-deck-input" class="hidden" accept=".json" onchange="handleImportDeck(this)">
+
+    <!-- Sidebar -->
+    <nav class="w-20 h-full flex flex-col items-center py-6 border-r border-[var(--glass-border)] z-50 bg-[var(--bg-color)]/80 backdrop-blur-xl">
+        <div class="mb-8 w-10 h-10 bg-[var(--text-main)] rounded-xl flex items-center justify-center text-[var(--bg-color)] shadow-lg">
+            <i class="ph-bold ph-student text-xl"></i>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <button onclick="switchTab('dashboard')" class="nav-btn active" id="btn-dashboard" data-tooltip="Home"><i class="ph ph-squares-four text-xl"></i></button>
+            <button onclick="switchTab('tasks')" class="nav-btn" id="btn-tasks" data-tooltip="Tasks"><i class="ph ph-check-circle text-xl"></i></button>
+            <button onclick="switchTab('calendar')" class="nav-btn" id="btn-calendar" data-tooltip="Calendar"><i class="ph ph-calendar-blank text-xl"></i></button>
+            <button onclick="switchTab('notes')" class="nav-btn" id="btn-notes" data-tooltip="Notes"><i class="ph ph-notebook text-xl"></i></button>
+            <button onclick="switchTab('whiteboard')" class="nav-btn" id="btn-whiteboard" data-tooltip="Draw"><i class="ph ph-pencil-simple text-xl"></i></button>
+            <button onclick="switchTab('cards')" class="nav-btn" id="btn-cards" data-tooltip="Study"><i class="ph ph-cards text-xl"></i></button>
+            <button onclick="switchTab('grades')" class="nav-btn" id="btn-grades" data-tooltip="Grades"><i class="ph ph-chart-bar text-xl"></i></button>
+            <button onclick="switchTab('calc')" class="nav-btn" id="btn-calc" data-tooltip="Calc"><i class="ph ph-calculator text-xl"></i></button>
+            <button onclick="switchTab('focus')" class="nav-btn" id="btn-focus" data-tooltip="Focus"><i class="ph ph-timer text-xl"></i></button>
+        </div>
+
+        <div class="mt-auto flex flex-col gap-3">
+            <button onclick="openModal('modal-settings')" class="nav-btn" data-tooltip="Settings"><i class="ph ph-gear text-xl"></i></button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 relative overflow-y-auto overflow-x-hidden p-8 md:p-12 z-10 scroll-smooth">
+        
+        <!-- === DASHBOARD === -->
+        <div id="view-dashboard" class="fade-in max-w-6xl mx-auto space-y-8">
+            <header class="flex justify-between items-end">
+                <div>
+                    <h1 class="text-7xl font-light tracking-tighter text-[var(--text-main)]" id="clock-time">09:41</h1>
+                    <p class="text-[var(--text-muted)] text-lg mt-2 font-medium" id="date-display">Monday, October 24</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold">Current Status</div>
+                    <div class="text-sm font-medium text-[var(--accent)] mt-1" id="dash-status">Ready to learn</div>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-96">
+                <!-- Links -->
+                <div class="col-span-2 min-card p-8 flex flex-col justify-between group">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">Quick Links</h3>
+                        <button onclick="openModal('modal-add-link')" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"><i class="ph ph-plus text-xl"></i></button>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar" id="quick-links-container"></div>
+                </div>
+
+                <!-- Goals Widget -->
+                <div class="col-span-1 min-card p-6 flex flex-col hover-effect">
+                    <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Daily Goals</h3>
+                    <div class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar" id="goals-container">
+                        <!-- Goals -->
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <input type="text" id="goal-input" placeholder="Add goal..." class="bg-transparent text-sm w-full outline-none text-[var(--text-main)] border-b border-[var(--glass-border)] pb-1 focus:border-[var(--accent)] transition" onkeypress="if(event.key === 'Enter') addGoal()">
+                        <button onclick="addGoal()" class="text-[var(--accent)] hover:text-[var(--text-main)]"><i class="ph-bold ph-plus"></i></button>
+                    </div>
+                </div>
+
+                <!-- Next Priority Task -->
+                <div class="col-span-1 min-card p-6 flex flex-col justify-center relative overflow-hidden cursor-pointer hover:border-[var(--accent)] transition" onclick="switchTab('tasks')">
+                    <div class="absolute top-0 right-0 p-32 bg-[var(--accent)] rounded-full blur-3xl opacity-10 -mr-10 -mt-10"></div>
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">Up Next</h3>
+                    <div id="dash-top-task" class="text-xl font-medium text-[var(--text-main)] line-clamp-3">No tasks queued</div>
+                    <div id="dash-top-date" class="text-xs text-[var(--text-muted)] mt-2 font-medium">Clear schedule</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === FLASHCARDS 3.0 === -->
+        <div id="view-cards" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+            <!-- Deck Grid View -->
+            <div id="cards-deck-view" class="h-full flex flex-col">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-light text-[var(--text-main)]">Study Decks</h1>
+                    <div class="flex gap-2">
+                        <button onclick="triggerImportDeck()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-main)] rounded-full text-sm font-medium hover:bg-[var(--glass-hover)] transition flex items-center gap-2 border border-[var(--glass-border)]">
+                            <i class="ph-bold ph-download-simple"></i> Import Deck
+                        </button>
+                        <button onclick="openModal('modal-add-deck')" class="px-5 py-2 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                            <i class="ph-bold ph-plus"></i> New Deck
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" id="decks-container"></div>
+            </div>
+
+            <!-- Deck Edit View -->
+            <div id="cards-edit-view" class="hidden h-full flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-4">
+                        <button onclick="showDeckList()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition text-[var(--text-main)]"><i class="ph-bold ph-arrow-left"></i></button>
+                        <div>
+                            <h1 class="text-2xl font-medium text-[var(--text-main)]" id="edit-deck-title">Deck Name</h1>
+                            <p class="text-xs text-[var(--text-muted)]" id="edit-deck-stats">0 cards</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openAddCardModal(activeDeckId)" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-main)] rounded-lg text-sm hover:bg-[var(--glass-hover)]">+ Add Card</button>
+                        <button onclick="startStudy('all')" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90">Study All</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 flex-1 overflow-hidden">
+                    <div class="md:col-span-3 min-card flex flex-col">
+                        <div class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar" id="cards-list-container"></div>
+                    </div>
+                    <div class="md:col-span-1 space-y-4">
+                        <div class="min-card p-6">
+                            <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4">Actions</h3>
+                            <button onclick="startWordSearch()" class="w-full py-2.5 mb-2 bg-[var(--glass-hover)] text-[var(--text-main)] rounded-xl text-sm font-medium hover:bg-[var(--accent)] hover:text-white transition flex items-center justify-center gap-2"><i class="ph-bold ph-game-controller"></i> Play Word Search</button>
+                            <button onclick="exportDeck()" class="w-full py-2.5 bg-[var(--glass-hover)] text-[var(--text-main)] rounded-xl text-sm font-medium hover:bg-[var(--glass-hover)]/80 transition flex items-center justify-center gap-2"><i class="ph-bold ph-upload-simple"></i> Export JSON</button>
+                        </div>
+                        <div class="min-card p-6">
+                            <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4">Practice Mode</h3>
+                            <button onclick="startStudy('hard')" class="w-full py-3 mb-2 bg-red-500/10 text-red-500 rounded-xl text-sm font-bold hover:bg-red-500/20 transition">Study Hard Only</button>
+                            <button onclick="startStudy('starred')" class="w-full py-3 bg-yellow-500/10 text-yellow-500 rounded-xl text-sm font-bold hover:bg-yellow-500/20 transition">Study Starred Only</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Word Search Mode -->
+            <div id="cards-wordsearch-view" class="hidden h-full flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-4">
+                        <button onclick="showEditView()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition text-[var(--text-main)]"><i class="ph-bold ph-arrow-left"></i></button>
+                        <h1 class="text-2xl font-medium text-[var(--text-main)]">Word Search</h1>
+                    </div>
+                    <div class="text-[var(--text-muted)] text-sm">Click the first and last letter of a word</div>
+                </div>
+                <div class="flex-1 flex gap-8 overflow-hidden">
+                    <div class="flex-1 flex items-center justify-center overflow-auto">
+                        <div id="ws-grid-container" class="ws-grid"></div>
+                    </div>
+                    <div class="w-64 min-card p-6 overflow-y-auto">
+                        <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4 uppercase tracking-widest">Find Words</h3>
+                        <div id="ws-word-list" class="space-y-2 text-sm text-[var(--text-main)] font-mono"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Mode -->
+            <div id="cards-study-view" class="hidden h-full flex flex-col">
+                 <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <button onclick="showEditView()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition text-[var(--text-main)]"><i class="ph-bold ph-x"></i></button>
+                        <div>
+                            <h1 class="text-xl font-medium text-[var(--text-main)]">Studying</h1>
+                            <div class="text-[var(--text-muted)] text-xs" id="study-mode-label">All Cards</div>
+                        </div>
+                    </div>
+                    <span class="text-[var(--text-muted)] text-sm font-mono bg-[var(--glass-panel)] px-3 py-1 rounded-full" id="study-counter">1/10</span>
+                 </div>
+                 <div class="flex-1 flex flex-col items-center justify-center">
+                    <div class="w-full max-w-2xl aspect-[3/2] perspective-1000 cursor-pointer group" onclick="flipCard()">
+                        <div id="flashcard-inner" class="relative w-full h-full transform-style-3d transition-transform duration-500">
+                            <!-- Front -->
+                            <div class="absolute w-full h-full backface-hidden min-card p-12 flex flex-col items-center justify-center text-center bg-[var(--glass-panel)] border-[var(--glass-border)] shadow-2xl">
+                                <div class="text-xs text-[var(--accent)] font-bold uppercase tracking-widest mb-6">Question</div>
+                                <h2 class="text-3xl font-medium leading-snug text-[var(--text-main)]" id="card-front">?</h2>
+                                <div class="absolute bottom-6 text-[var(--text-muted)] text-xs">Tap or Space to flip</div>
+                            </div>
+                            <!-- Back -->
+                            <div class="absolute w-full h-full backface-hidden rotate-y-180 min-card p-12 flex flex-col items-center justify-center text-center bg-[var(--bg-color)] border-2 border-[var(--accent)]">
+                                <div class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mb-6">Answer</div>
+                                <h2 class="text-3xl font-medium text-[var(--accent)] leading-snug" id="card-back">!</h2>
+                                <div class="mt-12 flex gap-4 w-full max-w-xs" onclick="event.stopPropagation()">
+                                    <button onclick="rateCard('hard')" class="flex-1 py-3 rounded-xl bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition">Hard</button>
+                                    <button onclick="rateCard('easy')" class="flex-1 py-3 rounded-xl bg-green-500/10 text-green-500 text-xs font-bold hover:bg-green-500/20 transition">Easy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+        <!-- === GRADES === -->
+        <div id="view-grades" class="hidden fade-in max-w-5xl mx-auto h-full flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-light text-[var(--text-main)]">Grades</h1>
+                <button onclick="openModal('modal-add-subject')" class="px-5 py-2 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-lg">
+                    + Add Subject
+                </button>
+            </div>
+            <div class="min-card p-8 mb-8 flex items-center justify-between bg-gradient-to-r from-[var(--glass-panel)] to-[var(--glass-hover)]">
+                <div>
+                    <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-1">Total Average</div>
+                    <div class="text-sm text-[var(--text-muted)]">Across all non-practice subjects</div>
+                </div>
+                <div class="text-6xl font-light tracking-tighter text-[var(--text-main)]" id="global-average">--%</div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8" id="subjects-container"></div>
+        </div>
+
+        <!-- === TASKS === -->
+        <div id="view-tasks" class="hidden fade-in max-w-4xl mx-auto h-full flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-light text-[var(--text-main)]">Tasks</h1>
+                <button onclick="clearCompletedTasks()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-muted)] rounded-lg text-xs hover:text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition">Clear Done</button>
+            </div>
+            <div class="min-card flex-1 flex flex-col overflow-hidden p-6">
+                <div class="flex gap-4 mb-6">
+                    <input type="text" id="task-input" placeholder="New Task..." class="bare-input flex-1 text-lg">
+                    <select id="task-prio" class="bare-input w-32 text-sm bg-transparent">
+                        <option value="high">High</option>
+                        <option value="med">Medium</option>
+                        <option value="low" selected>Low</option>
+                    </select>
+                    <input type="date" id="task-date" class="bare-input w-32 text-sm text-[var(--text-muted)]">
+                    <button onclick="addTask()" class="bg-[var(--text-main)] text-[var(--bg-color)] w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90"><i class="ph-bold ph-plus"></i></button>
+                </div>
+                <div class="flex-1 overflow-y-auto space-y-1 pr-2 custom-scrollbar" id="full-task-list"></div>
+            </div>
+        </div>
+
+        <!-- === CALENDAR === -->
+        <div id="view-calendar" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-light text-[var(--text-main)]">Calendar</h1>
+                <button onclick="openModal('modal-import-cal')" class="px-4 py-2 text-xs font-medium bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] text-[var(--text-main)] rounded-lg transition">Sync URL</button>
+            </div>
+            <div class="flex-1 min-card p-6 flex flex-col relative overflow-hidden">
+                <div id="calendar-iframe-container" class="hidden w-full h-full rounded-xl overflow-hidden">
+                    <iframe id="cal-frame" src="" class="w-full h-full border-none"></iframe>
+                    <button onclick="clearCalendar()" class="absolute bottom-8 right-8 bg-red-500/80 text-white px-4 py-2 rounded-lg text-xs hover:bg-red-600 backdrop-blur">Remove Sync</button>
+                </div>
+                <div id="calendar-grid-view" class="w-full h-full flex flex-col">
+                    <div class="flex justify-between mb-4">
+                        <h2 class="text-xl font-medium text-[var(--text-main)]" id="cal-month-name">October 2023</h2>
+                        <div class="flex gap-2">
+                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full hover:bg-[var(--glass-hover)] text-[var(--text-main)] flex items-center justify-center"><i class="ph ph-caret-left"></i></button>
+                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full hover:bg-[var(--glass-hover)] text-[var(--text-main)] flex items-center justify-center"><i class="ph ph-caret-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 text-xs text-[var(--text-muted)] uppercase tracking-widest mb-2 font-bold text-center">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+                    <div class="flex-1 grid grid-cols-7 gap-1 overflow-y-auto custom-scrollbar" id="calendar-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === WHITEBOARD === -->
+        <div id="view-whiteboard" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-3xl font-light text-[var(--text-main)]">Whiteboard</h1>
+                <div class="flex gap-2 bg-[var(--glass-panel)] p-1 rounded-full border border-[var(--glass-border)] items-center">
+                    <button onclick="setPenColor('#ffffff')" class="w-6 h-6 rounded-full bg-white border border-[var(--glass-border)]" title="White"></button>
+                    <button onclick="setPenColor('#000000')" class="w-6 h-6 rounded-full bg-black border border-[var(--glass-border)]" title="Black"></button>
+                    <button onclick="setPenColor('#ff453a')" class="w-6 h-6 rounded-full bg-red-500 border border-[var(--glass-border)]" title="Red"></button>
+                    <button onclick="setPenColor('#30d158')" class="w-6 h-6 rounded-full bg-green-500 border border-[var(--glass-border)]" title="Green"></button>
+                    <button onclick="setPenColor('#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500 border border-[var(--glass-border)]" title="Blue"></button>
+                    
+                    <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
+                    <button onclick="activateTextTool()" id="wb-text-btn" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]" title="Text Tool"><i class="ph-bold ph-text-t"></i></button>
+                    
+                    <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
+                    <button onclick="downloadWhiteboard()" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]" title="Save Image"><i class="ph-bold ph-download-simple"></i></button>
+                    <button onclick="clearCanvas()" class="px-3 text-xs text-[var(--text-muted)] hover:text-red-400">Clear</button>
+                </div>
+            </div>
+            <div class="flex-1 min-card overflow-hidden relative bg-[var(--glass-panel)] border border-[var(--glass-border)]">
+                <canvas id="wb-canvas" class="w-full h-full cursor-crosshair"></canvas>
+            </div>
+        </div>
+
+        <!-- === NOTES === -->
+        <div id="view-notes" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+            <div class="grid grid-cols-12 gap-8 h-full">
+                <div class="col-span-3 flex flex-col gap-4">
+                    <button onclick="createNewNote()" class="w-full py-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition text-[var(--text-main)] border border-[var(--glass-border)]">+ New Note</button>
+                    <div id="notes-sidebar" class="space-y-2 overflow-y-auto flex-1 custom-scrollbar"></div>
+                </div>
+                <div class="col-span-9 min-card p-10 flex flex-col relative group">
+                    <div class="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="toggleMdPreview()" id="md-toggle-btn" class="text-xs border border-[var(--text-muted)] px-3 py-1 rounded-full hover:bg-[var(--glass-hover)] text-[var(--text-muted)]">Preview</button>
+                    </div>
+                    <input type="text" id="note-title" placeholder="Untitled" class="text-4xl font-light bg-transparent outline-none mb-6 text-[var(--text-main)] placeholder-[var(--text-muted)]">
+                    <textarea id="note-body" class="flex-1 bg-transparent resize-none outline-none text-lg text-[var(--text-main)] font-light leading-relaxed placeholder-[var(--text-muted)] font-mono opacity-80" placeholder="Use **bold**, # Header, - List..."></textarea>
+                    <div id="note-preview" class="hidden flex-1 overflow-y-auto md-preview text-lg text-[var(--text-main)] font-light leading-relaxed custom-scrollbar"></div>
+                    <div class="mt-2 text-right">
+                        <span id="note-stats" class="text-xs text-[var(--text-muted)] font-mono opacity-70">0 words, 0 chars</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === CALCULATOR === -->
+        <div id="view-calc" class="hidden fade-in max-w-sm mx-auto h-full flex flex-col justify-center">
+            <div class="min-card p-8 shadow-2xl bg-[var(--glass-panel)] border border-[var(--glass-border)]">
+                <div class="text-right mb-4 h-16 overflow-hidden flex flex-col justify-end">
+                    <div id="calc-history" class="text-sm text-[var(--text-muted)] mb-1"></div>
+                    <div id="calc-result" class="text-5xl font-light tracking-tight truncate text-[var(--text-main)]">0</div>
+                </div>
+                <div class="w-full h-[1px] bg-[var(--text-muted)] opacity-20 mb-6"></div>
+                <div class="grid grid-cols-4 gap-3">
+                    <button onclick="calcClear()" class="calc-key text-red-400 text-sm h-12">AC</button>
+                    <button onclick="calcBackspace()" class="calc-key text-sm h-12"><i class="ph-bold ph-backspace"></i></button>
+                    <button onclick="calcAppend('(')" class="calc-key text-sm h-12">( )</button>
+                    <button onclick="calcAppend('/')" class="calc-key accent h-12">÷</button>
+                    
+                    <button onclick="calcAppend('7')" class="calc-key h-12">7</button>
+                    <button onclick="calcAppend('8')" class="calc-key h-12">8</button>
+                    <button onclick="calcAppend('9')" class="calc-key h-12">9</button>
+                    <button onclick="calcAppend('*')" class="calc-key accent h-12">×</button>
+
+                    <button onclick="calcAppend('4')" class="calc-key h-12">4</button>
+                    <button onclick="calcAppend('5')" class="calc-key h-12">5</button>
+                    <button onclick="calcAppend('6')" class="calc-key h-12">6</button>
+                    <button onclick="calcAppend('-')" class="calc-key accent h-12">−</button>
+
+                    <button onclick="calcAppend('1')" class="calc-key h-12">1</button>
+                    <button onclick="calcAppend('2')" class="calc-key h-12">2</button>
+                    <button onclick="calcAppend('3')" class="calc-key h-12">3</button>
+                    <button onclick="calcAppend('+')" class="calc-key accent h-12">+</button>
+
+                    <button onclick="calcAppend('0')" class="calc-key col-span-2 h-12">0</button>
+                    <button onclick="calcAppend('.')" class="calc-key h-12">.</button>
+                    <button onclick="calcSolve()" class="calc-key primary h-12">=</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- === FOCUS === -->
+        <div id="view-focus" class="hidden fade-in max-w-xl mx-auto h-full flex flex-col justify-center items-center">
+            <div class="min-card p-12 w-full flex flex-col items-center shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-[var(--accent)]"></div>
+                
+                <div class="w-full mb-12">
+                     <select id="focus-task-select" class="w-full bg-transparent text-[var(--text-main)] border-b border-[var(--glass-border)] py-2 text-center outline-none text-lg appearance-none cursor-pointer hover:bg-[var(--glass-hover)] transition rounded-t-lg">
+                         <option value="">Select a Task to Focus On</option>
+                     </select>
+                </div>
+
+                <div class="text-center mb-12">
+                     <div class="text-xs text-[var(--text-muted)] uppercase tracking-[0.3em] mb-2 font-bold" id="timer-label">FOCUS SESSION</div>
+                     <div id="timer-display" class="text-9xl font-bold tracking-tighter text-[var(--text-main)] tabular-nums">25:00</div>
+                </div>
+                
+                <div class="flex gap-8 mb-12">
+                    <button onclick="toggleTimer()" id="btn-timer-toggle" class="w-20 h-20 rounded-full bg-[var(--text-main)] text-[var(--bg-color)] flex items-center justify-center text-3xl hover:scale-110 transition shadow-xl"><i class="ph-fill ph-play" id="icon-play"></i></button>
+                    <button onclick="resetTimer()" class="w-20 h-20 rounded-full border border-[var(--text-muted)] text-[var(--text-muted)] flex items-center justify-center text-3xl hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition"><i class="ph ph-arrow-counter-clockwise"></i></button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="setMode(25, 'FOCUS')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition border border-transparent hover:border-[var(--glass-border)]">Pomodoro</button>
+                    <button onclick="setMode(5, 'BREAK')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition border border-transparent hover:border-[var(--glass-border)]">Short</button>
+                    <button onclick="setMode(15, 'LONG')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition border border-transparent hover:border-[var(--glass-border)]">Long</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- === MODALS === -->
+    <div id="modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center fade-in">
+        
+        <div id="modal-alert" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]">
+            <h3 id="alert-title" class="text-lg font-bold mb-2 text-[var(--text-main)]">Alert</h3>
+            <p id="alert-msg" class="text-sm text-[var(--text-muted)] mb-6">Message.</p>
+            <button onclick="closeModals()" class="w-full py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">OK</button>
+        </div>
+
+        <div id="modal-confirm" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]">
+            <h3 id="confirm-title" class="text-lg font-bold mb-2 text-[var(--text-main)]">Confirm</h3>
+            <p id="confirm-msg" class="text-sm text-[var(--text-muted)] mb-6">Sure?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeModals()" class="px-4 py-2 border border-[var(--glass-border)] text-[var(--text-muted)] rounded-lg text-sm">Cancel</button>
+                <button id="confirm-btn-action" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Yes</button>
+            </div>
+        </div>
+
+        <div id="modal-timer-done" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]">
+             <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="ph-fill ph-check"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-[var(--text-main)]">Time's Up!</h3>
+            <p class="text-sm text-[var(--text-muted)] mb-6">Good job.</p>
+            <button onclick="closeModals()" class="w-full py-2 bg-[var(--text-main)] text-[var(--bg-color)] rounded-lg text-sm font-bold">Done</button>
+        </div>
+
+        <div id="modal-wb-text" class="hidden modal-panel min-card p-6 w-80 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-sm font-bold mb-3 text-[var(--text-main)]">Add Text</h3>
+            <input type="text" id="wb-text-input" class="bare-input w-full mb-4" placeholder="Type here...">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModals()" class="text-xs text-[var(--text-muted)]">Cancel</button>
+                <button onclick="confirmWbText()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded">Add</button>
+            </div>
+        </div>
+
+        <div id="modal-settings" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-xl font-medium mb-6 text-[var(--text-main)]">Settings</h3>
+            <div class="space-y-6">
+                <div class="flex justify-between items-center">
+                    <span class="text-[var(--text-main)]">Light Mode</span>
+                    <button onclick="toggleTheme()" id="theme-toggle" class="w-12 h-6 rounded-full bg-[var(--glass-hover)] relative transition border border-[var(--glass-border)]">
+                        <div id="theme-dot" class="w-4 h-4 bg-[var(--text-main)] rounded-full absolute top-1 left-1 transition-transform"></div>
+                    </button>
+                </div>
+                <div>
+                    <label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block">Accent</label>
+                    <div class="flex gap-3">
+                        <button onclick="setAccent('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 hover:scale-110 transition"></button>
+                        <button onclick="setAccent('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 hover:scale-110 transition"></button>
+                        <button onclick="setAccent('#10b981')" class="w-8 h-8 rounded-full bg-emerald-500 hover:scale-110 transition"></button>
+                        <button onclick="setAccent('#8b5cf6')" class="w-8 h-8 rounded-full bg-violet-500 hover:scale-110 transition"></button>
+                        <button onclick="setAccent('#f59e0b')" class="w-8 h-8 rounded-full bg-amber-500 hover:scale-110 transition"></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block">Background</label>
+                    <input type="color" onchange="setBg(this.value)" class="cursor-pointer" title="Pick Background Color">
+                </div>
+            </div>
+            <div class="flex justify-end gap-4 mt-8">
+                <button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">Done</button>
+            </div>
+        </div>
+
+        <!-- Add Link Modal (Updated with Icons) -->
+        <div id="modal-add-link" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">Add Link</h3>
+            <input type="text" id="link-name" placeholder="Name" class="bare-input w-full mb-4">
+            <input type="text" id="link-url" placeholder="https://" class="bare-input w-full mb-4">
+            <div class="mb-6">
+                <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Icon</label>
+                <select id="link-icon" class="bare-input w-full text-sm bg-transparent cursor-pointer">
+                    <option value="ph-fill ph-link">Default Link</option>
+                    <option value="fa-brands fa-google">Google</option>
+                    <option value="fa-brands fa-google-drive">Drive</option>
+                    <option value="fa-solid fa-chalkboard-user">Classroom/Canvas</option>
+                    <option value="fa-brands fa-wikipedia-w">Wikipedia</option>
+                    <option value="fa-solid fa-book">Book</option>
+                    <option value="fa-solid fa-school">School</option>
+                    <option value="fa-solid fa-calculator">Math/Calc</option>
+                    <option value="fa-solid fa-flask">Science</option>
+                    <option value="fa-solid fa-globe">Language/Geo</option>
+                </select>
+            </div>
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
+                <button onclick="saveQuickLink()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button>
+            </div>
+        </div>
+
+        <div id="modal-add-deck" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">New Deck</h3>
+            <input type="text" id="deck-name" placeholder="Deck Name" class="bare-input w-full mb-8">
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
+                <button onclick="saveDeck()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button>
+            </div>
+        </div>
+
+        <div id="modal-add-card" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">Add Card</h3>
+            <input type="text" id="card-q-input" placeholder="Question" class="bare-input w-full mb-4">
+            <input type="text" id="card-a-input" placeholder="Answer" class="bare-input w-full mb-8">
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
+                <button onclick="saveFlashcard()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button>
+            </div>
+        </div>
+
+        <div id="modal-add-subject" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">New Subject</h3>
+            <input type="text" id="subject-name" placeholder="Subject Name" class="bare-input w-full mb-8">
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
+                <button onclick="saveSubject()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Add</button>
+            </div>
+        </div>
+
+        <!-- Add Test Modal (Updated with Practice Checkbox) -->
+        <div id="modal-add-test" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-2 text-[var(--text-main)]">Add Result</h3>
+            <p class="text-xs text-[var(--text-muted)] mb-6">For <span id="add-test-subject-name" class="font-bold"></span></p>
+            <div class="flex gap-2 items-end mb-6">
+                <input type="number" id="test-score" placeholder="Score" class="bare-input w-20 text-center">
+                <span class="text-[var(--text-muted)] pb-2">/</span>
+                <input type="number" id="test-max" placeholder="Max" value="20" class="bare-input w-20 text-center">
+            </div>
+            <input type="text" id="test-name" placeholder="Test Name (Optional)" class="bare-input w-full mb-6 text-sm">
+            <div class="flex items-center gap-2 mb-8">
+                <input type="checkbox" id="test-practice" class="w-4 h-4 rounded border-[var(--glass-border)] bg-transparent">
+                <label for="test-practice" class="text-sm text-[var(--text-muted)]">Practice Test (Don't count)</label>
+            </div>
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
+                <button onclick="saveTest()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button>
+            </div>
+        </div>
+
+        <div id="modal-import-cal" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-2 text-[var(--text-main)]">Import Calendar</h3>
+            <p class="text-xs text-[var(--text-muted)] mb-6">Paste Google Calendar Embed URL.</p>
+            <input type="text" id="cal-url-input" placeholder="https://calendar.google.com/embed..." class="bare-input w-full mb-8 text-xs">
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
+                <button onclick="saveCalendarImport()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Import</button>
+            </div>
+        </div>
+
+         <div id="modal-add-event" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-1 text-[var(--text-main)]" id="event-modal-date">Add Event</h3>
+            <input type="text" id="event-input" placeholder="Event name" class="bare-input w-full mb-8">
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
+                <button onclick="saveCalEvent()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button>
+            </div>
+            <div class="mt-4 pt-4 border-t border-[var(--glass-border)]" id="event-list-day"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const DB = { get: (k, d) => JSON.parse(localStorage.getItem(k)) || d, set: (k, v) => localStorage.setItem(k, JSON.stringify(v)) };
+        function showAlert(t, m) { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; openModal('modal-alert'); }
+        function showConfirm(t, m, y) { document.getElementById('confirm-title').innerText=t; document.getElementById('confirm-msg').innerText=m; document.getElementById('confirm-btn-action').onclick=()=>{y();closeModals()}; openModal('modal-confirm'); }
+        let theme=DB.get('os_theme','dark'), accent=DB.get('os_accent','#3b82f6'), customBg=DB.get('os_custom_bg',null);
+        function applyTheme(){ document.documentElement.setAttribute('data-theme', theme); document.documentElement.style.setProperty('--accent', accent); document.getElementById('theme-dot').style.transform=theme==='light'?'translateX(24px)':'translateX(0)'; if(customBg)document.getElementById('ambient-bg').style.background=customBg; }
+        function toggleTheme(){ theme=theme==='dark'?'light':'dark'; DB.set('os_theme', theme); applyTheme(); }
+        function setAccent(c){ accent=c; DB.set('os_accent', accent); applyTheme(); }
+        function setBg(c){ customBg=c; DB.set('os_custom_bg', customBg); applyTheme(); }
+        applyTheme();
+        function switchTab(id) { document.querySelectorAll('div[id^="view-"]').forEach(el=>el.classList.add('hidden')); document.getElementById(`view-${id}`).classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); document.getElementById(`btn-${id}`)?.classList.add('active'); if(id==='whiteboard')resizeCanvas(); }
+        function openModal(id) { document.getElementById('modal-overlay').classList.remove('hidden'); document.querySelectorAll('.modal-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); const i=document.getElementById(id).querySelector('input'); if(i)setTimeout(()=>i.focus(),100); }
+        function closeModals(){ document.getElementById('modal-overlay').classList.add('hidden'); }
+        document.getElementById('modal-overlay').addEventListener('click', (e)=>{ if(e.target.id==='modal-overlay')closeModals(); });
+
+        let goals = DB.get('os_goals', []);
+        function renderGoals() { const c=document.getElementById('goals-container'); c.innerHTML=''; if(!goals.length)c.innerHTML='<div class="text-xs text-[var(--text-muted)] italic">No goals set.</div>'; goals.forEach((g,i)=>{ c.innerHTML+=`<div class="flex items-center gap-3 py-1 text-sm text-[var(--text-main)] group"><input type="checkbox" ${g.done?'checked':''} onchange="toggleGoal(${i})" class="accent-[var(--accent)] w-4 h-4 cursor-pointer"><span class="flex-1 ${g.done?'line-through opacity-50':''}">${g.text}</span><button onclick="deleteGoal(${i})" class="text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-x"></i></button></div>`; }); }
+        function addGoal(){ const i=document.getElementById('goal-input'); if(i.value){ goals.push({text:i.value, done:false}); DB.set('os_goals', goals); i.value=''; renderGoals(); } }
+        function toggleGoal(i){ goals[i].done=!goals[i].done; DB.set('os_goals', goals); renderGoals(); }
+        function deleteGoal(i){ goals.splice(i,1); DB.set('os_goals', goals); renderGoals(); }
+        renderGoals();
+
+        let decks = DB.get('os_decks', [{id:1, name:'History', cards:[]}]);
+        let activeDeckId=null, studyQueue=[], studyIndex=0, isFlipped=false;
+        function renderDecks() { const c=document.getElementById('decks-container'); c.innerHTML=''; decks.forEach(d=>{ c.innerHTML+=`<div class="min-card p-6 cursor-pointer hover:border-[var(--accent)] transition flex flex-col justify-between h-40 group relative" onclick="showEditView(${d.id})"><div><h3 class="text-xl font-medium text-[var(--text-main)] truncate">${d.name}</h3><p class="text-sm text-[var(--text-muted)]">${d.cards.length} cards</p></div><div class="flex justify-between items-end"><i class="ph-fill ph-cards text-3xl text-[var(--accent)] opacity-20 group-hover:opacity-100 transition"></i></div><button onclick="event.stopPropagation(); deleteDeck(${d.id})" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-trash"></i></button></div>`; }); }
+        function saveDeck(){ const n=document.getElementById('deck-name').value; if(n){ decks.push({id:Date.now(), name:n, cards:[]}); DB.set('os_decks', decks); document.getElementById('deck-name').value=''; closeModals(); renderDecks(); } }
+        function deleteDeck(id){ showConfirm("Delete Deck", "Delete this deck?", ()=>{ decks=decks.filter(d=>d.id!==id); DB.set('os_decks', decks); renderDecks(); }); }
+        function showEditView(id){ if(id)activeDeckId=id; const d=decks.find(x=>x.id===activeDeckId); if(!d)return; document.getElementById('cards-deck-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-edit-view').classList.remove('hidden'); document.getElementById('edit-deck-title').innerText=d.name; document.getElementById('edit-deck-stats').innerText=`${d.cards.length} Cards • ${d.cards.filter(c=>c.starred).length} Starred • ${d.cards.filter(c=>c.status==='hard').length} Hard`; renderCardList(d); }
+        function renderCardList(d){ const l=document.getElementById('cards-list-container'); l.innerHTML=''; if(!d.cards.length)l.innerHTML='<div class="text-center p-8 text-[var(--text-muted)] italic">No cards yet.</div>'; d.cards.forEach((c,i)=>{ l.innerHTML+=`<div class="flex items-center gap-4 p-3 bg-[var(--glass-hover)] rounded-xl border border-[var(--glass-border)]"><button onclick="toggleStarCard(${i})" class="${c.starred?'text-yellow-400':'text-[var(--text-muted)] hover:text-yellow-400'}"><i class="ph-fill ph-star"></i></button><div class="flex-1 min-w-0 grid grid-cols-2 gap-4"><div class="truncate text-sm font-medium text-[var(--text-main)]" title="${c.q}">${c.q}</div><div class="truncate text-sm text-[var(--text-muted)]" title="${c.a}">${c.a}</div></div><div class="flex gap-2"><span class="text-[10px] uppercase px-2 py-1 rounded-full ${c.status==='hard'?'bg-red-500/20 text-red-500':'bg-green-500/20 text-green-500'}">${c.status||'new'}</span><button onclick="deleteCard(${i})" class="text-[var(--text-muted)] hover:text-red-500"><i class="ph-bold ph-trash"></i></button></div></div>`; }); }
+        function showDeckList(){ document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-deck-view').classList.remove('hidden'); renderDecks(); }
+        function openAddCardModal(id){ const d=decks.find(x=>x.id===id); document.getElementById('add-card-deck-name').innerText=d.name; openModal('modal-add-card'); }
+        function saveFlashcard(){ const q=document.getElementById('card-q-input').value, a=document.getElementById('card-a-input').value; if(q&&activeDeckId){ const d=decks.find(x=>x.id===activeDeckId); d.cards.push({q,a,status:'new',starred:false}); DB.set('os_decks', decks); document.getElementById('card-q-input').value=''; document.getElementById('card-a-input').value=''; closeModals(); showEditView(); } }
+        function deleteCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards.splice(i,1); DB.set('os_decks', decks); showEditView(); }
+        function toggleStarCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards[i].starred=!d.cards[i].starred; DB.set('os_decks', decks); showEditView(); }
+        function startStudy(m){ const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert("Error","No cards.");return;} if(m==='all')studyQueue=[...d.cards]; else if(m==='hard')studyQueue=d.cards.filter(c=>c.status==='hard'); else if(m==='starred')studyQueue=d.cards.filter(c=>c.starred); if(!studyQueue.length){showAlert("Empty","No matching cards.");return;} studyQueue.sort(()=>Math.random()-0.5); studyIndex=0; document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.remove('hidden'); document.getElementById('study-mode-label').innerText={all:"All Cards",hard:"Hard Cards Only",starred:"Starred Cards Only"}[m]; updateStudyCard(); document.addEventListener('keydown', handleStudyKeys); }
+        function handleStudyKeys(e){ if(document.getElementById('cards-study-view').classList.contains('hidden'))return; if(e.code==='Space'){e.preventDefault();flipCard()} if(e.code==='ArrowRight')nextCard(); if(e.code==='ArrowLeft')prevCard(); }
+        function updateStudyCard(){ isFlipped=false; document.getElementById('flashcard-inner').style.transform='rotateY(0deg)'; const c=studyQueue[studyIndex]; document.getElementById('card-front').innerText=c.q; setTimeout(()=>document.getElementById('card-back').innerText=c.a,200); document.getElementById('study-counter').innerText=`${studyIndex+1}/${studyQueue.length}`; }
+        function flipCard(){ isFlipped=!isFlipped; document.getElementById('flashcard-inner').style.transform=isFlipped?'rotateY(180deg)':'rotateY(0deg)'; }
+        function nextCard(){ if(studyIndex<studyQueue.length-1){studyIndex++;updateStudyCard()}else{showConfirm("Finished","Go back?",showEditView)} }
+        function prevCard(){ if(studyIndex>0){studyIndex--;updateStudyCard()} }
+        function rateCard(r){ const cur=studyQueue[studyIndex], d=decks.find(x=>x.id===activeDeckId), real=d.cards.find(c=>c.q===cur.q&&c.a===cur.a); if(real){real.status=r;DB.set('os_decks', decks)} nextCard(); }
+        
+        function exportDeck() { const d=decks.find(x=>x.id===activeDeckId); const s="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(d)); const a=document.createElement('a'); a.href=s; a.download=d.name+".json"; a.click(); }
+        function triggerImportDeck() { document.getElementById('import-deck-input').click(); }
+        function handleImportDeck(inp) { const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{try{const d=JSON.parse(e.target.result); if(!d.name||!d.cards)throw new Error(); d.id=Date.now(); decks.push(d); DB.set('os_decks',decks); renderDecks(); showAlert("Success","Deck imported!");}catch(err){showAlert("Error","Invalid file.");}}; r.readAsText(f); inp.value=''; }
+
+        let wsWords=[], wsGrid=[], wsSelected=[];
+        function startWordSearch() {
+            const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert("Error","No cards.");return;}
+            document.getElementById('cards-edit-view').classList.add('hidden');
+            document.getElementById('cards-wordsearch-view').classList.remove('hidden');
+            
+            // Fix: Filter to only placeable words
+            let potential = d.cards.map(c=>c.a.toUpperCase().replace(/[^A-Z]/g,'')).filter(w=>w.length>2).slice(0,8);
+            if(potential.length===0){showAlert("Error","No suitable words found (need >2 letters)."); showEditView(); return;}
+            
+            initWSGrid(potential);
+        }
+        function initWSGrid(potential) {
+            const size=12; wsGrid=Array(size).fill(0).map(()=>Array(size).fill(''));
+            let placedList = [];
+            // Place words
+            potential.forEach(w => {
+                let placed=false;
+                for(let i=0;i<50;i++){
+                    const dir=Math.random()>0.5; // H or V
+                    const r=Math.floor(Math.random()*size), c=Math.floor(Math.random()*size);
+                    if(canPlace(w,r,c,dir,size)){ placeWord(w,r,c,dir); placed=true; break; }
+                }
+                if(placed) placedList.push(w);
+            });
+            wsWords = placedList; // Only track placed words
+            
+            // Fill random
+            for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!wsGrid[r][c]) wsGrid[r][c]=String.fromCharCode(65+Math.floor(Math.random()*26));
+            renderWS();
+        }
+        function canPlace(w,r,c,dir,size) {
+            if(dir){ if(c+w.length>size)return false; for(let i=0;i<w.length;i++) if(wsGrid[r][c+i]&&wsGrid[r][c+i]!==w[i]) return false; }
+            else{ if(r+w.length>size)return false; for(let i=0;i<w.length;i++) if(wsGrid[r+i][c]&&wsGrid[r+i][c]!==w[i]) return false; }
+            return true;
+        }
+        function placeWord(w,r,c,dir) {
+            if(dir) for(let i=0;i<w.length;i++) wsGrid[r][c+i]=w[i];
+            else for(let i=0;i<w.length;i++) wsGrid[r+i][c]=w[i];
+        }
+        function renderWS() {
+            const gc=document.getElementById('ws-grid-container'); gc.innerHTML=''; gc.style.gridTemplateColumns=`repeat(12, 1fr)`;
+            wsGrid.forEach((row,r) => row.forEach((l,c) => {
+                const div=document.createElement('div'); div.className='ws-cell'; div.innerText=l; div.dataset.r=r; div.dataset.c=c;
+                div.onclick=()=>handleWSCell(r,c,div); gc.appendChild(div);
+            }));
+            const wl=document.getElementById('ws-word-list'); wl.innerHTML='';
+            wsWords.forEach(w => wl.innerHTML+=`<div id="ws-word-${w}" class="py-1 px-2 rounded hover:bg-[var(--glass-hover)]">${w}</div>`);
+            wsSelected=[];
+        }
+        function handleWSCell(r,c,div) {
+            if(div.classList.contains('found')) return;
+            // Toggle selection logic: Start and End
+            if(wsSelected.length===0) {
+                wsSelected.push({r,c,div}); div.classList.add('selected');
+            } else if(wsSelected.length===1) {
+                wsSelected.push({r,c,div}); div.classList.add('selected');
+                checkWSSelection();
+            } else {
+                // Reset
+                wsSelected.forEach(s=>s.div.classList.remove('selected'));
+                wsSelected=[{r,c,div}]; div.classList.add('selected');
+            }
+        }
+        function checkWSSelection() {
+            const s=wsSelected[0], e=wsSelected[1];
+            // Check if straight line
+            if(s.r===e.r || s.c===e.c || Math.abs(s.r-e.r)===Math.abs(s.c-e.c)) {
+                // Get word from grid
+                let word = "";
+                const dr=Math.sign(e.r-s.r), dc=Math.sign(e.c-s.c);
+                let cr=s.r, cc=s.c;
+                while(true) {
+                    word += wsGrid[cr][cc];
+                    if(cr===e.r && cc===e.c) break;
+                    cr+=dr; cc+=dc;
+                }
+                const rev = word.split('').reverse().join('');
+                if(wsWords.includes(word) || wsWords.includes(rev)) {
+                    const found = wsWords.includes(word) ? word : rev;
+                    markWSFound(s, e, dr, dc);
+                    document.getElementById(`ws-word-${found}`).style.textDecoration='line-through';
+                    document.getElementById(`ws-word-${found}`).style.opacity='0.5';
+                }
+            }
+            setTimeout(()=>{ wsSelected.forEach(x=>x.div.classList.remove('selected')); wsSelected=[]; }, 500);
+        }
+        function markWSFound(s, e, dr, dc) {
+            let cr=s.r, cc=s.c;
+            while(true) {
+                const el = document.querySelector(`.ws-cell[data-r="${cr}"][data-c="${cc}"]`);
+                if(el) el.classList.add('found');
+                if(cr===e.r && cc===e.c) break;
+                cr+=dr; cc+=dc;
+            }
+        }
+
+        renderDecks();
+
+        let subjects = DB.get('os_subjects', []);
+        let activeSubjectId = null;
+        function renderGrades() {
+            const c = document.getElementById('subjects-container'); c.innerHTML=''; let ts=0, tm=0;
+            subjects.forEach(s => {
+                let ss=0, sm=0;
+                s.tests.forEach(t => { 
+                    if (!t.isPractice) {
+                        ss += parseFloat(t.score); sm += parseFloat(t.max); 
+                    }
+                });
+                ts += ss; tm += sm; const avg = sm > 0 ? Math.round((ss/sm)*100) : 0;
+                c.innerHTML += `<div class="min-card p-6"><div class="flex justify-between items-start mb-4"><h3 class="text-xl font-medium text-[var(--text-main)]">${s.name}</h3><div class="text-2xl font-light ${avg>=50?'text-green-500':'text-red-500'}">${avg}%</div></div><div class="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar">${s.tests.map(t=>`<div class="flex justify-between text-sm border-b border-[var(--glass-border)] pb-1 ${t.isPractice ? 'opacity-60 italic' : ''}"><span class="text-[var(--text-muted)]">${t.name||'Test'}${t.isPractice ? ' (Practice)' : ''}</span><span class="text-[var(--text-main)]">${t.score}/${t.max}</span></div>`).join('')}${!s.tests.length?'<div class="text-xs text-[var(--text-muted)]">No results</div>':''}</div><div class="flex justify-between"><button onclick="deleteSubject(${s.id})" class="text-xs text-[var(--text-muted)] hover:text-red-500">Delete</button><button onclick="openAddTestModal(${s.id})" class="text-xs bg-[var(--glass-hover)] px-3 py-1 rounded-full text-[var(--text-main)] hover:bg-[var(--accent)] hover:text-white transition">+ Add Result</button></div></div>`;
+            });
+            const ga = tm > 0 ? Math.round((ts/tm)*100) : 0;
+            document.getElementById('global-average').innerText = tm > 0 ? `${ga}%` : '--%';
+        }
+        function saveSubject(){ const n=document.getElementById('subject-name').value; if(n){ subjects.push({id:Date.now(), name:n, tests:[]}); DB.set('os_subjects', subjects); document.getElementById('subject-name').value=''; closeModals(); renderGrades(); } }
+        function deleteSubject(id){ showConfirm("Delete Subject", "Delete?", ()=>{ subjects=subjects.filter(s=>s.id!==id); DB.set('os_subjects', subjects); renderGrades(); }); }
+        function openAddTestModal(id){ activeSubjectId=id; document.getElementById('add-test-subject-name').innerText=subjects.find(s=>s.id===id).name; openModal('modal-add-test'); }
+        function saveTest(){ 
+            const s=document.getElementById('test-score').value, m=document.getElementById('test-max').value, n=document.getElementById('test-name').value, p=document.getElementById('test-practice').checked;
+            if(s&&m&&activeSubjectId){ 
+                subjects.find(x=>x.id===activeSubjectId).tests.push({score:s, max:m, name:n, isPractice:p}); 
+                DB.set('os_subjects', subjects); 
+                document.getElementById('test-score').value=''; document.getElementById('test-name').value=''; document.getElementById('test-practice').checked=false;
+                closeModals(); renderGrades(); 
+            } 
+        }
+        renderGrades();
+
+        let tasks = DB.get('os_tasks_v2', []);
+        function renderTasks() {
+            const l=document.getElementById('full-task-list'); l.innerHTML=''; 
+            const ord={high:0,med:1,low:2}; tasks.sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; if(ord[a.priority]!==ord[b.priority])return ord[a.priority]-ord[b.priority]; return new Date(a.date||'9999')-new Date(b.date||'9999'); });
+            const sel=document.getElementById('focus-task-select'); const v=sel.value; sel.innerHTML='<option value="">Select a Task to Focus On</option>'; tasks.filter(t=>!t.done).forEach(t=>{const o=document.createElement('option');o.value=t.id;o.innerText=t.text;sel.appendChild(o)}); sel.value=v;
+            const top=tasks.find(t=>!t.done); 
+            if(top){document.getElementById('dash-top-task').innerText=top.text; document.getElementById('dash-top-date').innerText=top.date?`Due ${top.date}`:'Do it now';}
+            else{document.getElementById('dash-top-task').innerText="All clear"; document.getElementById('dash-top-date').innerText="Relax";}
+            tasks.forEach(t=>{ const c=t.priority==='high'?'bg-red-500':t.priority==='med'?'bg-yellow-500':'bg-green-500'; l.innerHTML+=`<div class="flex items-center gap-4 p-4 border-b border-[var(--glass-border)] group ${t.done?'opacity-30':''}"><div onclick="toggleTask(${t.id})" class="w-5 h-5 rounded-full border border-[var(--text-muted)] cursor-pointer flex items-center justify-center ${t.done?'bg-[var(--text-main)] border-none':''}">${t.done?'<i class="ph-bold ph-check text-[var(--bg-color)] text-xs"></i>':''}</div><div class="flex-1 flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full ${c}"></div><span class="font-light text-lg text-[var(--text-main)] ${t.done?'line-through':''}">${t.text}</span></div><div class="text-xs text-[var(--text-muted)] font-mono">${t.date||''}</div><button onclick="deleteTask(${t.id})" class="text-[var(--text-muted)] hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i class="ph ph-trash"></i></button></div>`; });
+            DB.set('os_tasks_v2', tasks);
+        }
+        function addTask(){ const t=document.getElementById('task-input').value.trim(), p=document.getElementById('task-prio').value, d=document.getElementById('task-date').value; if(t){tasks.push({id:Date.now(), text:t, priority:p, date:d, done:false}); document.getElementById('task-input').value=''; renderTasks();} }
+        function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t)t.done=!t.done; renderTasks(); }
+        function deleteTask(id){ tasks=tasks.filter(x=>x.id!==id); renderTasks(); }
+        function clearCompletedTasks() { tasks = tasks.filter(t => !t.done); DB.set('os_tasks_v2', tasks); renderTasks(); }
+        renderTasks();
+        setInterval(()=>{const n=new Date();document.getElementById('clock-time').innerText=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('date-display').innerText=n.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})},1000);
+
+        let calEvents=DB.get('os_events',{}), curM=new Date().getMonth(), curY=new Date().getFullYear();
+        const cUrl=DB.get('os_cal_url',''); if(cUrl){document.getElementById('calendar-grid-view').classList.add('hidden');document.getElementById('calendar-iframe-container').classList.remove('hidden');document.getElementById('cal-frame').src=cUrl;}
+        function renderCalendar(){ const g=document.getElementById('calendar-grid'); g.innerHTML=''; const fd=new Date(curY,curM,1).getDay(), dim=new Date(curY,curM+1,0).getDate(), mn=["January","February","March","April","May","June","July","August","September","October","November","December"]; document.getElementById('cal-month-name').innerText=`${mn[curM]} ${curY}`; for(let i=0;i<fd;i++)g.appendChild(document.createElement('div')); const tod=new Date(); for(let i=1;i<=dim;i++){ const k=`${curY}-${String(curM+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`, has=calEvents[k]&&calEvents[k].length>0, el=document.createElement('div'); const isT=i===tod.getDate()&&curM===tod.getMonth()&&curY===tod.getFullYear(); el.className=`cal-day ${isT?'today':''}`; el.innerHTML=`<span>${i}</span>${has?'<div class="event-dot"></div>':''}`; el.onclick=()=>openEventModal(k); g.appendChild(el); } }
+        function changeMonth(d){ curM+=d; if(curM>11){curM=0;curY++} if(curM<0){curM=11;curY--} renderCalendar(); }
+        function openEventModal(k){ document.getElementById('event-modal-date').innerText=k; const l=document.getElementById('event-list-day'); l.innerHTML=''; (calEvents[k]||[]).forEach((e,i)=>{ l.innerHTML+=`<div class="flex justify-between py-2 border-b border-[var(--glass-border)] text-[var(--text-main)] text-sm"><span>${e}</span><button onclick="delEv('${k}',${i})"><i class="ph ph-trash"></i></button></div>`; }); openModal('modal-add-event'); document.getElementById('event-input').dataset.date=k; }
+        function saveCalEvent(){ const k=document.getElementById('event-input').dataset.date, v=document.getElementById('event-input').value; if(v){ if(!calEvents[k])calEvents[k]=[]; calEvents[k].push(v); DB.set('os_events', calEvents); document.getElementById('event-input').value=''; closeModals(); renderCalendar(); } }
+        function delEv(k,i){ calEvents[k].splice(i,1); DB.set('os_events', calEvents); openEventModal(k); renderCalendar(); }
+        function saveCalendarImport(){ const u=document.getElementById('cal-url-input').value; if(u){ DB.set('os_cal_url', u); document.getElementById('cal-frame').src=u; document.getElementById('calendar-grid-view').classList.add('hidden'); document.getElementById('calendar-iframe-container').classList.remove('hidden'); closeModals(); } }
+        function clearCalendar(){ DB.set('os_cal_url',''); document.getElementById('calendar-iframe-container').classList.add('hidden'); document.getElementById('calendar-grid-view').classList.remove('hidden'); }
+        renderCalendar();
+
+        const cvs=document.getElementById('wb-canvas'), ctx=cvs.getContext('2d'); let painting=false, wTxt=false, wCol='#ffffff';
+        function resizeCanvas(){ cvs.width=cvs.parentElement.clientWidth; cvs.height=cvs.parentElement.clientHeight; ctx.lineCap='round'; ctx.lineWidth=2; if(theme==='light'&&wCol==='#ffffff')setPenColor('#000000'); else if(theme==='dark'&&wCol==='#000000')setPenColor('#ffffff'); else ctx.strokeStyle=wCol; }
+        function getCoords(e){ const r=cvs.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+        function startPos(e){ if(wTxt){ const p=getCoords(e); document.getElementById('wb-text-input').dataset.x=p.x; document.getElementById('wb-text-input').dataset.y=p.y; openModal('modal-wb-text'); return; } painting=true; draw(e); }
+        function endPos(){ painting=false; ctx.beginPath(); }
+        function draw(e){ if(!painting)return; const p=getCoords(e); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+        cvs.addEventListener('mousedown', startPos); cvs.addEventListener('mouseup', endPos); cvs.addEventListener('mousemove', draw);
+        function setPenColor(c){ wTxt=false; ctx.strokeStyle=c; ctx.lineWidth=2; wCol=c; }
+        function activateTextTool(){ wTxt=true; }
+        function confirmWbText(){ const t=document.getElementById('wb-text-input').value, x=document.getElementById('wb-text-input').dataset.x, y=document.getElementById('wb-text-input').dataset.y; if(t){ ctx.fillStyle=wCol; ctx.font="16px Inter"; ctx.fillText(t,x,y); } document.getElementById('wb-text-input').value=''; closeModals(); wTxt=false; }
+        function clearCanvas(){ ctx.clearRect(0,0,cvs.width,cvs.height); }
+        function downloadWhiteboard(){ const l=document.createElement('a'); l.download='whiteboard.png'; l.href=cvs.toDataURL(); l.click(); }
+        window.addEventListener('resize', ()=>{ if(!document.getElementById('view-whiteboard').classList.contains('hidden')) resizeCanvas(); });
+
+        let cExp='', cHist='';
+        function calcAppend(v){ cExp+=v; document.getElementById('calc-result').innerText=cExp; }
+        function calcClear(){ cExp=''; cHist=''; document.getElementById('calc-result').innerText='0'; document.getElementById('calc-history').innerText=''; }
+        function calcBackspace(){ cExp=cExp.toString().slice(0,-1); document.getElementById('calc-result').innerText=cExp||'0'; }
+        function calcSolve(){ try{ cHist=cExp+' ='; document.getElementById('calc-history').innerText=cHist; cExp=String(eval(cExp)); document.getElementById('calc-result').innerText=cExp; }catch(e){document.getElementById('calc-result').innerText='Err';} }
+
+        let tTime=25*60, tLeft=tTime, tInt, tRun=false;
+        function updateTimer(){ const m=Math.floor(tLeft/60), s=tLeft%60; document.getElementById('timer-display').innerText=`${m}:${s<10?'0':''}${s}`; }
+        function toggleTimer(){ if(tRun){ clearInterval(tInt); document.getElementById('icon-play').classList.replace('ph-pause','ph-play'); } else { tInt=setInterval(()=>{ if(tLeft>0){tLeft--;updateTimer();}else{resetTimer();openModal('modal-timer-done');} },1000); document.getElementById('icon-play').classList.replace('ph-play','ph-pause'); } tRun=!tRun; }
+        function resetTimer(){ clearInterval(tInt); tRun=false; tLeft=tTime; document.getElementById('icon-play').classList.replace('ph-pause','ph-play'); updateTimer(); }
+        function setMode(m,l){ resetTimer(); tTime=m*60; tLeft=tTime; document.getElementById('timer-label').innerText=l; updateTimer(); }
+        updateTimer();
+
+        let notes=DB.get('os_notes',[{id:1, title:'Ideas', body:''}]); let activeNote=notes[0]?.id;
+        function renderNotes(){ const c=document.getElementById('notes-sidebar'); c.innerHTML=''; notes.forEach(n=>{ c.innerHTML+=`<button onclick="loadNote(${n.id})" class="w-full text-left p-3 rounded-lg text-sm mb-1 text-[var(--text-main)] hover:bg-[var(--glass-hover)] ${n.id===activeNote?'bg-[var(--glass-panel)] font-bold':''}">${n.title||'Untitled'}</button>`; }); }
+        function loadNote(id){ activeNote=id; const n=notes.find(x=>x.id===id); document.getElementById('note-title').value=n.title; document.getElementById('note-body').value=n.body; renderNotes(); updateNoteCount(); }
+        function saveNote(){ const n=notes.find(x=>x.id===activeNote); n.title=document.getElementById('note-title').value; n.body=document.getElementById('note-body').value; DB.set('os_notes', notes); renderNotes(); updateNoteCount(); }
+        function createNewNote(){ notes.unshift({id:Date.now(), title:'', body:''}); loadNote(notes[0].id); DB.set('os_notes', notes); }
+        function toggleMdPreview(){ const e=document.getElementById('note-body'), p=document.getElementById('note-preview'), b=document.getElementById('md-toggle-btn'); if(e.classList.contains('hidden')){e.classList.remove('hidden');p.classList.add('hidden');b.innerText='Preview';} else { let md=e.value.replace(/^# (.*$)/gim, '<h1>$1</h1>').replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>').replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>').replace(/\n/gim, '<br>'); p.innerHTML=md; e.classList.add('hidden'); p.classList.remove('hidden'); b.innerText='Edit'; } }
+        function updateNoteCount(){ const t=document.getElementById('note-body').value; const w=t.trim()?t.trim().split(/\s+/).length:0; document.getElementById('note-stats').innerText=`${w} words, ${t.length} chars`; }
+        document.getElementById('note-title').addEventListener('input', saveNote); document.getElementById('note-body').addEventListener('input', saveNote); renderNotes(); loadNote(notes[0].id);
+
+        let links = DB.get('os_links', [{name:'Canvas', url:'https://canvas.instructure.com', icon:'ph-fill ph-link'}]);
+        function renderLinks() {
+            const c = document.getElementById('quick-links-container');
+            c.innerHTML = '';
+            links.forEach(l => {
+                c.innerHTML += `<a href="${l.url}" target="_blank" class="min-w-[80px] h-24 bg-[var(--glass-panel)] rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-[var(--glass-hover)] transition group">
+                    <i class="${l.icon || 'ph-fill ph-link'} text-2xl text-[var(--accent)] group-hover:scale-110 transition"></i><span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">${l.name}</span>
+                </a>`;
+            });
+        }
+        function saveQuickLink() {
+            const name = document.getElementById('link-name').value;
+            let url = document.getElementById('link-url').value;
+            const icon = document.getElementById('link-icon').value;
+            if(name && url) {
+                if(!url.startsWith('http')) url = 'https://' + url;
+                links.push({name, url, icon});
+                DB.set('os_links', links);
+                renderLinks();
+                document.getElementById('link-name').value = '';
+                document.getElementById('link-url').value = '';
+                closeModals();
+            }
+        }
+        renderLinks();
+
+    </script>
+</body>
+</html>
