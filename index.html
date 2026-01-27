@@ -211,6 +211,18 @@
         .text-accent { color: var(--accent); }
         .bg-accent { background-color: var(--accent); }
         .border-glass { border: var(--glass-border); }
+        
+        .link-actions {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+}
+
+.link-item:hover .link-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 
     </style>
 </head>
@@ -884,10 +896,28 @@
                     <a href="${l.url}" target="_blank" class="w-full h-full bg-[var(--glass-panel)] rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-[var(--glass-hover)] transition">
                         <i class="${l.icon || 'ph-fill ph-link'} text-2xl text-[var(--accent)] group-hover:scale-110 transition"></i><span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)] truncate px-2">${l.name}</span>
                     </a>
-                    <div class="absolute top-1 right-1 flex gap-1 link-actions">
-                        <button onclick="editLink(${i})" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-[var(--accent)]"><i class="ph-bold ph-pencil"></i></button>
-                        <button onclick="deleteLink(${i})" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-red-500"><i class="ph-bold ph-trash"></i></button>
-                    </div>
+                    <div class="relative group">
+    <!-- Your existing content here (text, link, etc.) -->
+
+    <div
+        class="absolute top-1 right-1 flex gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150"
+    >
+        <button
+            onclick="editLink(${i})"
+            class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-[var(--accent)]"
+        >
+            <i class="ph-bold ph-pencil"></i>
+        </button>
+        <button
+            onclick="deleteLink(${i})"
+            class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-red-500"
+        >
+            <i class="ph-bold ph-trash"></i>
+        </button>
+    </div>
+</div>
+
+
                 </div>`;
             });
         }
