@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student OS</title>
+    <title>Student OS 5.0</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,13 +32,11 @@
             
             --accent: #3b82f6;
             
-            /* Status Colors */
             --danger: #ef4444;
             --success: #22c55e;
             --warning: #f59e0b;
         }
 
-        /* Light Mode Overrides */
         [data-theme="light"] {
             --bg-color: #f2f2f7;
             --text-main: #1c1c1e;
@@ -59,108 +57,64 @@
             transition: background-color 0.4s ease, color 0.4s ease;
         }
 
-        /* Dynamic Wallpaper */
         .ambient-light {
-            position: fixed;
-            width: 100vw;
-            height: 100vh;
-            top: 0; left: 0;
+            position: fixed; width: 100vw; height: 100vh; top: 0; left: 0;
             background: var(--custom-bg, radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), transparent 50%), radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1), transparent 40%));
-            z-index: -1;
-            pointer-events: none;
-            transition: background 0.5s;
+            z-index: -1; pointer-events: none; transition: background 0.5s;
         }
 
-        /* Minimal Card */
         .min-card {
-            background: var(--glass-panel);
-            border: var(--glass-border);
-            border-radius: 20px;
+            background: var(--glass-panel); border: var(--glass-border); border-radius: 20px;
             transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background 0.2s, border-color 0.2s;
-            overflow: hidden;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            overflow: hidden; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
-        .min-card.hover-effect:hover {
-            background: var(--glass-hover);
-            transform: translateY(-2px);
-            border-color: var(--text-muted);
-        }
+        .min-card.hover-effect:hover { background: var(--glass-hover); transform: translateY(-2px); border-color: var(--text-muted); }
 
-        /* Sidebar Icon Button */
         .nav-btn {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted);
-            transition: all 0.2s;
-            position: relative;
+            width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); transition: all 0.2s; position: relative;
         }
         .nav-btn:hover { color: var(--text-main); background: var(--glass-hover); }
         .nav-btn.active { color: white; background: var(--accent); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-        
-        /* Tooltip */
         .nav-btn:hover::after {
-            content: attr(data-tooltip);
-            position: absolute; left: 56px;
-            background: var(--glass-panel);
-            backdrop-filter: blur(10px);
-            border: var(--glass-border);
-            padding: 4px 10px; border-radius: 6px;
-            font-size: 11px; color: var(--text-main);
-            white-space: nowrap; pointer-events: none;
-            opacity: 1; animation: fadeIn 0.2s; font-weight: 500;
-            z-index: 50;
+            content: attr(data-tooltip); position: absolute; left: 56px;
+            background: var(--glass-panel); backdrop-filter: blur(10px); border: var(--glass-border);
+            padding: 4px 10px; border-radius: 6px; font-size: 11px; color: var(--text-main);
+            white-space: nowrap; pointer-events: none; opacity: 1; animation: fadeIn 0.2s; font-weight: 500; z-index: 50;
         }
 
-        /* Inputs */
         .bare-input {
-            background: transparent; border: none; outline: none;
-            color: var(--text-main); border-bottom: 1px solid var(--text-muted);
-            transition: border-color 0.2s; padding: 8px 0;
+            background: transparent; border: none; outline: none; color: var(--text-main);
+            border-bottom: 1px solid var(--text-muted); transition: border-color 0.2s; padding: 8px 0;
         }
         .bare-input:focus { border-bottom-color: var(--accent); }
         .bare-input::placeholder { color: var(--text-muted); opacity: 0.5; }
-        
         select.bare-input option { background: var(--bg-color); color: var(--text-main); }
         
-        /* Checkbox & Color */
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
-        input[type="color"] {
-            -webkit-appearance: none; border: none;
-            width: 32px; height: 32px; border-radius: 50%;
-            overflow: hidden; padding: 0; cursor: pointer;
-        }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; padding: 0; cursor: pointer; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--glass-border); }
 
-        /* Animations */
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; opacity: 0.2; }
         ::-webkit-scrollbar-track { background: transparent; }
         
-        /* Calendar Grid */
         .cal-day {
-            display: flex; flex-direction: column;
-            padding: 6px; border-radius: 8px;
-            font-size: 0.9rem; color: var(--text-muted);
-            transition: background 0.2s; cursor: pointer; position: relative;
-            min-height: 50px; flex: 1;
+            display: flex; flex-direction: column; padding: 6px; border-radius: 8px;
+            font-size: 0.9rem; color: var(--text-muted); transition: background 0.2s; cursor: pointer; position: relative; min-height: 50px; flex: 1;
         }
         .cal-day:hover { background: var(--glass-hover); color: var(--text-main); }
         .cal-day.today { background: var(--accent); color: white; font-weight: 600; }
         .event-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 4px; }
         .cal-day.today .event-dot { background: white; }
 
-        /* Calculator Keys */
         .calc-key {
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem; transition: background 0.1s; cursor: pointer;
             background: var(--glass-hover); color: var(--text-main);
         }
@@ -168,7 +122,6 @@
         .calc-key.accent { background: var(--glass-border); color: var(--accent); font-weight: 600; }
         .calc-key.primary { background: var(--accent); color: white; }
 
-        /* Rich Text Notes Styles */
         [contenteditable]:empty:before { content: attr(placeholder); color: var(--text-muted); opacity: 0.5; display: block; }
         #note-editor ul { list-style-type: disc; padding-left: 1.5rem; }
         #note-editor ol { list-style-type: decimal; padding-left: 1.5rem; }
@@ -176,33 +129,25 @@
         #note-editor i { font-style: italic; }
         #note-editor u { text-decoration: underline; }
         
-        /* Whiteboard */
         canvas { touch-action: none; cursor: crosshair; }
-
-        /* Flashcard 3D Logic */
         .perspective-1000 { perspective: 1000px; }
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
 
-        /* Word Search */
         .ws-grid { display: grid; gap: 4px; user-select: none; width: fit-content; margin: 0 auto; }
         .ws-cell {
-            width: 1.5rem; height: 1.5rem;
-            display: flex; align-items: center; justify-content: center;
-            background: var(--glass-panel); border-radius: 6px;
-            font-weight: 700; cursor: pointer; color: var(--text-muted);
-            transition: all 0.2s; font-size: 0.75rem;
-            border: 1px solid var(--glass-border);
+            width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center;
+            background: var(--glass-panel); border-radius: 6px; font-weight: 700; cursor: pointer; color: var(--text-muted);
+            transition: all 0.2s; font-size: 0.75rem; border: 1px solid var(--glass-border);
         }
         .ws-cell:hover { background: var(--glass-hover); color: var(--text-main); transform: scale(1.1); z-index: 10; }
         .ws-cell.selected { background: var(--accent); color: white; transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-color: transparent; }
         .ws-cell.found { background: var(--success); color: white; opacity: 0.8; border-color: transparent; }
 
-        /* Utilities */
-        .text-accent { color: var(--accent); }
-        .bg-accent { background-color: var(--accent); }
-        .border-glass { border: var(--glass-border); }
+        /* Link Management Overlay */
+        .link-actions { opacity: 0; transition: opacity 0.2s; }
+        .link-card:hover .link-actions { opacity: 1; }
 
     </style>
 </head>
@@ -241,12 +186,13 @@
         <div id="view-dashboard" class="fade-in max-w-6xl mx-auto space-y-8">
             <header class="flex justify-between items-end">
                 <div>
+                    <h2 class="text-xl font-medium text-[var(--accent)] mb-1" id="dash-greeting">Good Morning</h2>
                     <h1 class="text-7xl font-light tracking-tighter text-[var(--text-main)]" id="clock-time">09:41</h1>
                     <p class="text-[var(--text-muted)] text-lg mt-2 font-medium" id="date-display">Monday, October 24</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold">Current Status</div>
-                    <div class="text-sm font-medium text-[var(--accent)] mt-1" id="dash-status">Ready to learn</div>
+                    <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold" data-i18n="status">Current Status</div>
+                    <div class="text-sm font-medium text-[var(--accent)] mt-1" data-i18n="status_txt">Ready to learn</div>
                 </div>
             </header>
 
@@ -254,18 +200,16 @@
                 <!-- Links -->
                 <div class="col-span-2 min-card p-8 flex flex-col justify-between group">
                     <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">Quick Links</h3>
-                        <button onclick="openModal('modal-add-link')" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"><i class="ph ph-plus text-xl"></i></button>
+                        <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest" data-i18n="ql">Quick Links</h3>
+                        <button onclick="openAddLinkModal()" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"><i class="ph ph-plus text-xl"></i></button>
                     </div>
                     <div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar" id="quick-links-container"></div>
                 </div>
 
                 <!-- Goals Widget -->
                 <div class="col-span-1 min-card p-6 flex flex-col hover-effect">
-                    <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Daily Goals</h3>
-                    <div class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar" id="goals-container">
-                        <!-- Goals -->
-                    </div>
+                    <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4" data-i18n="goals">Daily Goals</h3>
+                    <div class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar" id="goals-container"></div>
                     <div class="mt-4 flex gap-2">
                         <input type="text" id="goal-input" placeholder="Add goal..." class="bg-transparent text-sm w-full outline-none text-[var(--text-main)] border-b border-[var(--glass-border)] pb-1 focus:border-[var(--accent)] transition" onkeypress="if(event.key === 'Enter') addGoal()">
                         <button onclick="addGoal()" class="text-[var(--accent)] hover:text-[var(--text-main)]"><i class="ph-bold ph-plus"></i></button>
@@ -275,7 +219,7 @@
                 <!-- Next Priority Task -->
                 <div class="col-span-1 min-card p-6 flex flex-col justify-center relative overflow-hidden cursor-pointer hover:border-[var(--accent)] transition" onclick="switchTab('tasks')">
                     <div class="absolute top-0 right-0 p-32 bg-[var(--accent)] rounded-full blur-3xl opacity-10 -mr-10 -mt-10"></div>
-                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">Up Next</h3>
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2" data-i18n="up_next">Up Next</h3>
                     <div id="dash-top-task" class="text-xl font-medium text-[var(--text-main)] line-clamp-3">No tasks queued</div>
                     <div id="dash-top-date" class="text-xs text-[var(--text-muted)] mt-2 font-medium">Clear schedule</div>
                 </div>
@@ -284,16 +228,15 @@
 
         <!-- === FLASHCARDS 3.0 === -->
         <div id="view-cards" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
-            <!-- Deck Grid View -->
             <div id="cards-deck-view" class="h-full flex flex-col">
                 <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-light text-[var(--text-main)]">Study Decks</h1>
+                    <h1 class="text-3xl font-light text-[var(--text-main)]" data-i18n="study_decks">Study Decks</h1>
                     <div class="flex gap-2">
                         <button onclick="triggerImportDeck()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-main)] rounded-full text-sm font-medium hover:bg-[var(--glass-hover)] transition flex items-center gap-2 border border-[var(--glass-border)]">
-                            <i class="ph-bold ph-download-simple"></i> Import Deck
+                            <i class="ph-bold ph-download-simple"></i> <span data-i18n="import">Import</span>
                         </button>
                         <button onclick="openModal('modal-add-deck')" class="px-5 py-2 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-lg shadow-blue-500/20 flex items-center gap-2">
-                            <i class="ph-bold ph-plus"></i> New Deck
+                            <i class="ph-bold ph-plus"></i> <span data-i18n="new_deck">New Deck</span>
                         </button>
                     </div>
                 </div>
@@ -311,8 +254,8 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="openAddCardModal()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-main)] rounded-lg text-sm hover:bg-[var(--glass-hover)]">+ Add Card</button>
-                        <button onclick="startStudy('all')" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90">Study All</button>
+                        <button onclick="openAddCardModal()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-main)] rounded-lg text-sm hover:bg-[var(--glass-hover)]" data-i18n="add">+ Add Card</button>
+                        <button onclick="startStudy('all')" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90" data-i18n="all_cards">Study All</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 flex-1 overflow-hidden">
@@ -321,14 +264,14 @@
                     </div>
                     <div class="md:col-span-1 space-y-4">
                         <div class="min-card p-6">
-                            <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4">Actions</h3>
-                            <button onclick="startWordSearch()" class="w-full py-2.5 mb-2 bg-[var(--glass-hover)] text-[var(--text-main)] rounded-xl text-sm font-medium hover:bg-[var(--accent)] hover:text-white transition flex items-center justify-center gap-2"><i class="ph-bold ph-game-controller"></i> Play Word Search</button>
-                            <button onclick="exportDeck()" class="w-full py-2.5 bg-[var(--glass-hover)] text-[var(--text-main)] rounded-xl text-sm font-medium hover:bg-[var(--glass-hover)]/80 transition flex items-center justify-center gap-2"><i class="ph-bold ph-upload-simple"></i> Export JSON</button>
+                            <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4" data-i18n="actions">Actions</h3>
+                            <button onclick="startWordSearch()" class="w-full py-2.5 mb-2 bg-[var(--glass-hover)] text-[var(--text-main)] rounded-xl text-sm font-medium hover:bg-[var(--accent)] hover:text-white transition flex items-center justify-center gap-2"><i class="ph-bold ph-game-controller"></i> <span data-i18n="play_ws">Play Word Search</span></button>
+                            <button onclick="exportDeck()" class="w-full py-2.5 bg-[var(--glass-hover)] text-[var(--text-main)] rounded-xl text-sm font-medium hover:bg-[var(--glass-hover)]/80 transition flex items-center justify-center gap-2"><i class="ph-bold ph-upload-simple"></i> <span data-i18n="export_json">Export JSON</span></button>
                         </div>
                         <div class="min-card p-6">
-                            <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4">Practice Mode</h3>
-                            <button onclick="startStudy('hard')" class="w-full py-3 mb-2 bg-red-500/10 text-red-500 rounded-xl text-sm font-bold hover:bg-red-500/20 transition">Study Hard Only</button>
-                            <button onclick="startStudy('starred')" class="w-full py-3 bg-yellow-500/10 text-yellow-500 rounded-xl text-sm font-bold hover:bg-yellow-500/20 transition">Study Starred Only</button>
+                            <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4" data-i18n="practice_mode">Practice Mode</h3>
+                            <button onclick="startStudy('hard')" class="w-full py-3 mb-2 bg-red-500/10 text-red-500 rounded-xl text-sm font-bold hover:bg-red-500/20 transition" data-i18n="hard_only">Study Hard Only</button>
+                            <button onclick="startStudy('starred')" class="w-full py-3 bg-yellow-500/10 text-yellow-500 rounded-xl text-sm font-bold hover:bg-yellow-500/20 transition" data-i18n="star_only">Study Starred Only</button>
                         </div>
                     </div>
                 </div>
@@ -339,16 +282,16 @@
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-4">
                         <button onclick="showEditView()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition text-[var(--text-main)]"><i class="ph-bold ph-arrow-left"></i></button>
-                        <h1 class="text-2xl font-medium text-[var(--text-main)]">Word Search</h1>
+                        <h1 class="text-2xl font-medium text-[var(--text-main)]" data-i18n="ws">Word Search</h1>
                     </div>
-                    <div class="text-[var(--text-muted)] text-sm">Click the first and last letter of a word</div>
+                    <div class="text-[var(--text-muted)] text-sm" data-i18n="click_hint">Click the first and last letter of a word</div>
                 </div>
                 <div class="flex-1 flex gap-8 overflow-hidden">
                     <div class="flex-1 flex items-center justify-center overflow-auto">
                         <div id="ws-grid-container" class="ws-grid"></div>
                     </div>
                     <div class="w-64 min-card p-6 overflow-y-auto">
-                        <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4 uppercase tracking-widest">Find Words</h3>
+                        <h3 class="text-sm font-bold text-[var(--text-muted)] mb-4 uppercase tracking-widest" data-i18n="find_words">Find Words</h3>
                         <div id="ws-word-list" class="space-y-2 text-sm text-[var(--text-main)] font-mono"></div>
                     </div>
                 </div>
@@ -360,7 +303,7 @@
                     <div class="flex items-center gap-4">
                         <button onclick="showEditView()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition text-[var(--text-main)]"><i class="ph-bold ph-x"></i></button>
                         <div>
-                            <h1 class="text-xl font-medium text-[var(--text-main)]">Studying</h1>
+                            <h1 class="text-xl font-medium text-[var(--text-main)]" data-i18n="studying">Studying</h1>
                             <div class="text-[var(--text-muted)] text-xs" id="study-mode-label">All Cards</div>
                         </div>
                     </div>
@@ -369,15 +312,13 @@
                  <div class="flex-1 flex flex-col items-center justify-center">
                     <div class="w-full max-w-2xl aspect-[3/2] perspective-1000 cursor-pointer group" onclick="flipCard()">
                         <div id="flashcard-inner" class="relative w-full h-full transform-style-3d transition-transform duration-500">
-                            <!-- Front -->
                             <div class="absolute w-full h-full backface-hidden min-card p-12 flex flex-col items-center justify-center text-center bg-[var(--glass-panel)] border-[var(--glass-border)] shadow-2xl">
-                                <div class="text-xs text-[var(--accent)] font-bold uppercase tracking-widest mb-6">Question</div>
+                                <div class="text-xs text-[var(--accent)] font-bold uppercase tracking-widest mb-6" data-i18n="question">Question</div>
                                 <h2 class="text-3xl font-medium leading-snug text-[var(--text-main)]" id="card-front">?</h2>
-                                <div class="absolute bottom-6 text-[var(--text-muted)] text-xs">Tap or Space to flip</div>
+                                <div class="absolute bottom-6 text-[var(--text-muted)] text-xs" data-i18n="flip_hint">Tap or Space to flip</div>
                             </div>
-                            <!-- Back -->
                             <div class="absolute w-full h-full backface-hidden rotate-y-180 min-card p-12 flex flex-col items-center justify-center text-center bg-[var(--bg-color)] border-2 border-[var(--accent)]">
-                                <div class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mb-6">Answer</div>
+                                <div class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mb-6" data-i18n="answer">Answer</div>
                                 <h2 class="text-3xl font-medium text-[var(--accent)] leading-snug" id="card-back">!</h2>
                                 <div class="mt-12 flex gap-4 w-full max-w-xs" onclick="event.stopPropagation()">
                                     <button onclick="rateCard('hard')" class="flex-1 py-3 rounded-xl bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition">Hard</button>
@@ -393,15 +334,15 @@
         <!-- === GRADES === -->
         <div id="view-grades" class="hidden fade-in max-w-5xl mx-auto h-full flex flex-col">
             <div class="flex justify-between items-center mb-8">
-                <h1 class="text-3xl font-light text-[var(--text-main)]">Grades</h1>
+                <h1 class="text-3xl font-light text-[var(--text-main)]" data-i18n="grades">Grades</h1>
                 <button onclick="openModal('modal-add-subject')" class="px-5 py-2 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-lg">
-                    + Add Subject
+                    + <span data-i18n="add_subject">Add Subject</span>
                 </button>
             </div>
             <div class="min-card p-8 mb-8 flex items-center justify-between bg-gradient-to-r from-[var(--glass-panel)] to-[var(--glass-hover)]">
                 <div>
-                    <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-1">Total Average</div>
-                    <div class="text-sm text-[var(--text-muted)]">Across all non-practice subjects</div>
+                    <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-1" data-i18n="total_avg">Total Average</div>
+                    <div class="text-sm text-[var(--text-muted)]" data-i18n="across_all">Across all subjects</div>
                 </div>
                 <div class="text-6xl font-light tracking-tighter text-[var(--text-main)]" id="global-average">--%</div>
             </div>
@@ -411,8 +352,8 @@
         <!-- === TASKS === -->
         <div id="view-tasks" class="hidden fade-in max-w-4xl mx-auto h-full flex flex-col">
             <div class="flex justify-between items-center mb-8">
-                <h1 class="text-3xl font-light text-[var(--text-main)]">Tasks</h1>
-                <button onclick="clearCompletedTasks()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-muted)] rounded-lg text-xs hover:text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition">Clear Done</button>
+                <h1 class="text-3xl font-light text-[var(--text-main)]" data-i18n="tasks">Tasks</h1>
+                <button onclick="clearCompletedTasks()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-muted)] rounded-lg text-xs hover:text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition" data-i18n="clear_done">Clear Done</button>
             </div>
             <div class="min-card flex-1 flex flex-col overflow-hidden p-6">
                 <div class="flex gap-4 mb-6">
@@ -432,13 +373,16 @@
         <!-- === CALENDAR === -->
         <div id="view-calendar" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
             <div class="flex justify-between items-center mb-8">
-                <h1 class="text-3xl font-light text-[var(--text-main)]">Calendar</h1>
-                <button onclick="openModal('modal-import-cal')" class="px-4 py-2 text-xs font-medium bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] text-[var(--text-main)] rounded-lg transition">Sync URL</button>
+                <h1 class="text-3xl font-light text-[var(--text-main)]" data-i18n="calendar">Calendar</h1>
+                <button onclick="openModal('modal-import-cal')" class="px-4 py-2 text-xs font-medium bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] text-[var(--text-main)] rounded-lg transition" data-i18n="sync_url">Sync URL</button>
             </div>
             <div class="flex-1 min-card p-6 flex flex-col relative overflow-hidden">
-                <div id="calendar-iframe-container" class="hidden w-full h-full rounded-xl overflow-hidden">
+                <div id="calendar-iframe-container" class="hidden w-full h-full rounded-xl overflow-hidden relative">
                     <iframe id="cal-frame" src="" class="w-full h-full border-none"></iframe>
-                    <button onclick="clearCalendar()" class="absolute bottom-8 right-8 bg-red-500/80 text-white px-4 py-2 rounded-lg text-xs hover:bg-red-600 backdrop-blur">Remove Sync</button>
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                        <button onclick="clearCalendar()" class="bg-red-500/80 text-white px-4 py-2 rounded-lg text-xs hover:bg-red-600 backdrop-blur" data-i18n="remove_sync">Remove Sync</button>
+                        <button onclick="openCalNewTab()" class="bg-[var(--glass-panel)] border border-[var(--glass-border)] text-[var(--text-main)] px-4 py-2 rounded-lg text-xs hover:bg-[var(--glass-hover)] backdrop-blur" data-i18n="open_tab">Open in New Tab</button>
+                    </div>
                 </div>
                 <div id="calendar-grid-view" class="w-full h-full flex flex-col">
                     <div class="flex justify-between mb-4">
@@ -459,20 +403,18 @@
         <!-- === WHITEBOARD === -->
         <div id="view-whiteboard" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="text-3xl font-light text-[var(--text-main)]">Whiteboard</h1>
+                <h1 class="text-3xl font-light text-[var(--text-main)]" data-i18n="whiteboard">Whiteboard</h1>
                 <div class="flex gap-2 bg-[var(--glass-panel)] p-1 rounded-full border border-[var(--glass-border)] items-center">
                     <button onclick="setPenColor('#ffffff')" class="w-6 h-6 rounded-full bg-white border border-[var(--glass-border)]" title="White"></button>
                     <button onclick="setPenColor('#000000')" class="w-6 h-6 rounded-full bg-black border border-[var(--glass-border)]" title="Black"></button>
                     <button onclick="setPenColor('#ff453a')" class="w-6 h-6 rounded-full bg-red-500 border border-[var(--glass-border)]" title="Red"></button>
                     <button onclick="setPenColor('#30d158')" class="w-6 h-6 rounded-full bg-green-500 border border-[var(--glass-border)]" title="Green"></button>
                     <button onclick="setPenColor('#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500 border border-[var(--glass-border)]" title="Blue"></button>
-                    
                     <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
                     <button onclick="activateTextTool()" id="wb-text-btn" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]" title="Text Tool"><i class="ph-bold ph-text-t"></i></button>
-                    
                     <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
                     <button onclick="downloadWhiteboard()" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]" title="Save Image"><i class="ph-bold ph-download-simple"></i></button>
-                    <button onclick="clearCanvas()" class="px-3 text-xs text-[var(--text-muted)] hover:text-red-400">Clear</button>
+                    <button onclick="clearCanvas()" class="px-3 text-xs text-[var(--text-muted)] hover:text-red-400" data-i18n="clear">Clear</button>
                 </div>
             </div>
             <div class="flex-1 min-card overflow-hidden relative bg-[var(--glass-panel)] border border-[var(--glass-border)]">
@@ -480,15 +422,14 @@
             </div>
         </div>
 
-        <!-- === NOTES (Rich Text) === -->
+        <!-- === NOTES === -->
         <div id="view-notes" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
             <div class="grid grid-cols-12 gap-8 h-full">
                 <div class="col-span-3 flex flex-col gap-4">
-                    <button onclick="createNewNote()" class="w-full py-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition text-[var(--text-main)] border border-[var(--glass-border)]">+ New Note</button>
+                    <button onclick="createNewNote()" class="w-full py-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition text-[var(--text-main)] border border-[var(--glass-border)]" data-i18n="new_note">+ New Note</button>
                     <div id="notes-sidebar" class="space-y-2 overflow-y-auto flex-1 custom-scrollbar"></div>
                 </div>
                 <div class="col-span-9 min-card p-0 flex flex-col relative group overflow-hidden">
-                    <!-- Toolbar -->
                     <div class="flex items-center gap-2 p-4 border-b border-[var(--glass-border)] bg-[var(--glass-panel)]">
                         <input type="text" id="note-title" placeholder="Untitled" class="text-xl font-bold bg-transparent outline-none flex-1 text-[var(--text-main)] placeholder-[var(--text-muted)]">
                         <div class="h-6 w-[1px] bg-[var(--glass-border)] mx-2"></div>
@@ -497,11 +438,7 @@
                         <button onclick="formatDoc('underline')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] underline text-lg" title="Underline">U</button>
                         <button onclick="formatDoc('insertUnorderedList')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="List"><i class="ph-bold ph-list-bullets"></i></button>
                     </div>
-                    
-                    <!-- Editor -->
                     <div id="note-editor" contenteditable="true" class="flex-1 p-8 outline-none text-lg text-[var(--text-main)] leading-relaxed overflow-y-auto custom-scrollbar"></div>
-                    
-                    <!-- Footer -->
                     <div class="absolute bottom-4 right-6 text-xs text-[var(--text-muted)] font-mono opacity-70 bg-[var(--bg-color)]/50 px-2 rounded" id="note-stats">0 words, 0 chars</div>
                 </div>
             </div>
@@ -516,29 +453,14 @@
                 </div>
                 <div class="w-full h-[1px] bg-[var(--text-muted)] opacity-20 mb-6"></div>
                 <div class="grid grid-cols-4 gap-3">
-                    <button onclick="calcClear()" class="calc-key text-red-400 text-sm h-12">AC</button>
+                    <button onclick="calcClear()" class="calc-key text-red-400 text-sm h-12" data-i18n="calc_ac">AC</button>
                     <button onclick="calcBackspace()" class="calc-key text-sm h-12"><i class="ph-bold ph-backspace"></i></button>
                     <button onclick="calcAppend('(')" class="calc-key text-sm h-12">( )</button>
                     <button onclick="calcAppend('/')" class="calc-key accent h-12">÷</button>
-                    
-                    <button onclick="calcAppend('7')" class="calc-key h-12">7</button>
-                    <button onclick="calcAppend('8')" class="calc-key h-12">8</button>
-                    <button onclick="calcAppend('9')" class="calc-key h-12">9</button>
-                    <button onclick="calcAppend('*')" class="calc-key accent h-12">×</button>
-
-                    <button onclick="calcAppend('4')" class="calc-key h-12">4</button>
-                    <button onclick="calcAppend('5')" class="calc-key h-12">5</button>
-                    <button onclick="calcAppend('6')" class="calc-key h-12">6</button>
-                    <button onclick="calcAppend('-')" class="calc-key accent h-12">−</button>
-
-                    <button onclick="calcAppend('1')" class="calc-key h-12">1</button>
-                    <button onclick="calcAppend('2')" class="calc-key h-12">2</button>
-                    <button onclick="calcAppend('3')" class="calc-key h-12">3</button>
-                    <button onclick="calcAppend('+')" class="calc-key accent h-12">+</button>
-
-                    <button onclick="calcAppend('0')" class="calc-key col-span-2 h-12">0</button>
-                    <button onclick="calcAppend('.')" class="calc-key h-12">.</button>
-                    <button onclick="calcSolve()" class="calc-key primary h-12">=</button>
+                    <button onclick="calcAppend('7')" class="calc-key h-12">7</button><button onclick="calcAppend('8')" class="calc-key h-12">8</button><button onclick="calcAppend('9')" class="calc-key h-12">9</button><button onclick="calcAppend('*')" class="calc-key accent h-12">×</button>
+                    <button onclick="calcAppend('4')" class="calc-key h-12">4</button><button onclick="calcAppend('5')" class="calc-key h-12">5</button><button onclick="calcAppend('6')" class="calc-key h-12">6</button><button onclick="calcAppend('-')" class="calc-key accent h-12">−</button>
+                    <button onclick="calcAppend('1')" class="calc-key h-12">1</button><button onclick="calcAppend('2')" class="calc-key h-12">2</button><button onclick="calcAppend('3')" class="calc-key h-12">3</button><button onclick="calcAppend('+')" class="calc-key accent h-12">+</button>
+                    <button onclick="calcAppend('0')" class="calc-key col-span-2 h-12">0</button><button onclick="calcAppend('.')" class="calc-key h-12">.</button><button onclick="calcSolve()" class="calc-key primary h-12">=</button>
                 </div>
             </div>
         </div>
@@ -547,23 +469,19 @@
         <div id="view-focus" class="hidden fade-in max-w-xl mx-auto h-full flex flex-col justify-center items-center">
             <div class="min-card p-12 w-full flex flex-col items-center shadow-2xl relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-2 bg-[var(--accent)]"></div>
-                
                 <div class="w-full mb-12">
                      <select id="focus-task-select" class="w-full bg-transparent text-[var(--text-main)] border-b border-[var(--glass-border)] py-2 text-center outline-none text-lg appearance-none cursor-pointer hover:bg-[var(--glass-hover)] transition rounded-t-lg">
-                         <option value="">Select a Task to Focus On</option>
+                         <option value="" data-i18n="select_task">Select a Task to Focus On</option>
                      </select>
                 </div>
-
                 <div class="text-center mb-12">
-                     <div class="text-xs text-[var(--text-muted)] uppercase tracking-[0.3em] mb-2 font-bold" id="timer-label">FOCUS SESSION</div>
+                     <div class="text-xs text-[var(--text-muted)] uppercase tracking-[0.3em] mb-2 font-bold" id="timer-label" data-i18n="focus_session">FOCUS SESSION</div>
                      <div id="timer-display" class="text-9xl font-bold tracking-tighter text-[var(--text-main)] tabular-nums">25:00</div>
                 </div>
-                
                 <div class="flex gap-8 mb-12">
                     <button onclick="toggleTimer()" id="btn-timer-toggle" class="w-20 h-20 rounded-full bg-[var(--text-main)] text-[var(--bg-color)] flex items-center justify-center text-3xl hover:scale-110 transition shadow-xl"><i class="ph-fill ph-play" id="icon-play"></i></button>
                     <button onclick="resetTimer()" class="w-20 h-20 rounded-full border border-[var(--text-muted)] text-[var(--text-muted)] flex items-center justify-center text-3xl hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition"><i class="ph ph-arrow-counter-clockwise"></i></button>
                 </div>
-                
                 <div class="flex gap-2">
                     <button onclick="setMode(25, 'FOCUS')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition border border-transparent hover:border-[var(--glass-border)]">Pomodoro</button>
                     <button onclick="setMode(5, 'BREAK')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition border border-transparent hover:border-[var(--glass-border)]">Short</button>
@@ -587,7 +505,7 @@
             <h3 id="confirm-title" class="text-lg font-bold mb-2 text-[var(--text-main)]">Confirm</h3>
             <p id="confirm-msg" class="text-sm text-[var(--text-muted)] mb-6">Sure?</p>
             <div class="flex gap-3 justify-center">
-                <button onclick="closeModals()" class="px-4 py-2 border border-[var(--glass-border)] text-[var(--text-muted)] rounded-lg text-sm">Cancel</button>
+                <button onclick="closeModals()" class="px-4 py-2 border border-[var(--glass-border)] text-[var(--text-muted)] rounded-lg text-sm" data-i18n="cancel">Cancel</button>
                 <button id="confirm-btn-action" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Yes</button>
             </div>
         </div>
@@ -598,29 +516,37 @@
             </div>
             <h3 class="text-xl font-bold mb-2 text-[var(--text-main)]">Time's Up!</h3>
             <p class="text-sm text-[var(--text-muted)] mb-6">Good job.</p>
-            <button onclick="closeModals()" class="w-full py-2 bg-[var(--text-main)] text-[var(--bg-color)] rounded-lg text-sm font-bold">Done</button>
+            <button onclick="closeModals()" class="w-full py-2 bg-[var(--text-main)] text-[var(--bg-color)] rounded-lg text-sm font-bold" data-i18n="done">Done</button>
         </div>
 
         <div id="modal-wb-text" class="hidden modal-panel min-card p-6 w-80 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-            <h3 class="text-sm font-bold mb-3 text-[var(--text-main)]">Add Text</h3>
+            <h3 class="text-sm font-bold mb-3 text-[var(--text-main)]" data-i18n="add_text">Add Text</h3>
             <input type="text" id="wb-text-input" class="bare-input w-full mb-4" placeholder="Type here...">
             <div class="flex justify-end gap-2">
-                <button onclick="closeModals()" class="text-xs text-[var(--text-muted)]">Cancel</button>
-                <button onclick="confirmWbText()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded">Add</button>
+                <button onclick="closeModals()" class="text-xs text-[var(--text-muted)]" data-i18n="cancel">Cancel</button>
+                <button onclick="confirmWbText()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded" data-i18n="add">Add</button>
             </div>
         </div>
 
         <div id="modal-settings" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-            <h3 class="text-xl font-medium mb-6 text-[var(--text-main)]">Settings</h3>
+            <h3 class="text-xl font-medium mb-6 text-[var(--text-main)]" data-i18n="settings">Settings</h3>
             <div class="space-y-6">
+                <!-- Language Selector -->
                 <div class="flex justify-between items-center">
-                    <span class="text-[var(--text-main)]">Light Mode</span>
+                    <span class="text-[var(--text-main)]">Language</span>
+                    <select id="lang-select" onchange="setLanguage(this.value)" class="bare-input text-sm bg-transparent w-24 text-right">
+                        <option value="en">English</option>
+                        <option value="nl">Nederlands</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-[var(--text-main)]" data-i18n="light_mode">Light Mode</span>
                     <button onclick="toggleTheme()" id="theme-toggle" class="w-12 h-6 rounded-full bg-[var(--glass-hover)] relative transition border border-[var(--glass-border)]">
                         <div id="theme-dot" class="w-4 h-4 bg-[var(--text-main)] rounded-full absolute top-1 left-1 transition-transform"></div>
                     </button>
                 </div>
                 <div>
-                    <label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block">Accent</label>
+                    <label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block" data-i18n="accent">Accent</label>
                     <div class="flex gap-3">
                         <button onclick="setAccent('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 hover:scale-110 transition"></button>
                         <button onclick="setAccent('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 hover:scale-110 transition"></button>
@@ -630,18 +556,17 @@
                     </div>
                 </div>
                 <div>
-                    <label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block">Background</label>
+                    <label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block" data-i18n="bg">Background</label>
                     <input type="color" onchange="setBg(this.value)" class="cursor-pointer" title="Pick Background Color">
                 </div>
             </div>
             <div class="flex justify-end gap-4 mt-8">
-                <button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">Done</button>
+                <button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium" data-i18n="done">Done</button>
             </div>
         </div>
 
-        <!-- Add Link Modal (Updated with Icons) -->
         <div id="modal-add-link" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">Add Link</h3>
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">Link</h3>
             <input type="text" id="link-name" placeholder="Name" class="bare-input w-full mb-4">
             <input type="text" id="link-url" placeholder="https://" class="bare-input w-full mb-4">
             <div class="mb-6">
@@ -660,54 +585,42 @@
                 </select>
             </div>
             <div class="flex justify-end gap-4">
-                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
-                <button onclick="saveQuickLink()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button>
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
+                <button onclick="saveQuickLink()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button>
             </div>
         </div>
 
         <div id="modal-add-deck" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">New Deck</h3>
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]" data-i18n="new_deck">New Deck</h3>
             <input type="text" id="deck-name" placeholder="Deck Name" class="bare-input w-full mb-8">
             <div class="flex justify-end gap-4">
-                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
-                <button onclick="saveDeck()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button>
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
+                <button onclick="saveDeck()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="create">Create</button>
             </div>
         </div>
 
         <div id="modal-add-card" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-    <h3 class="text-lg font-light mb-1 text-[var(--text-main)]">Add Card</h3>
-
-    <!-- ✅ This line fixes the crash -->
-    <p class="text-xs text-[var(--text-muted)] mb-6">
-        Deck: <span id="add-card-deck-name"></span>
-    </p>
-
-    <input type="text" id="card-q-input" placeholder="Question" class="bare-input w-full mb-4">
-    <input type="text" id="card-a-input" placeholder="Answer" class="bare-input w-full mb-8">
-
-    <div class="flex justify-end gap-4">
-        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">
-            Cancel
-        </button>
-        <button onclick="saveFlashcard()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">
-            Save
-        </button>
-    </div>
-</div>
-
-
-        <div id="modal-add-subject" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">New Subject</h3>
-            <input type="text" id="subject-name" placeholder="Subject Name" class="bare-input w-full mb-8">
+            <h3 class="text-lg font-light mb-1 text-[var(--text-main)]" data-i18n="add">Add Card</h3>
+            <p class="text-xs text-[var(--text-muted)] mb-6">Deck: <span id="add-card-deck-name"></span></p>
+            <input type="text" id="card-q-input" placeholder="Question" class="bare-input w-full mb-4">
+            <input type="text" id="card-a-input" placeholder="Answer" class="bare-input w-full mb-8">
             <div class="flex justify-end gap-4">
-                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
-                <button onclick="saveSubject()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Add</button>
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
+                <button onclick="saveFlashcard()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button>
             </div>
         </div>
 
-        <!-- Add Test Modal (Updated with Practice Checkbox) -->
+        <div id="modal-add-subject" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]" data-i18n="add_subject">New Subject</h3>
+            <input type="text" id="subject-name" placeholder="Subject Name" class="bare-input w-full mb-8">
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
+                <button onclick="saveSubject()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="add">Add</button>
+            </div>
+        </div>
+
         <div id="modal-add-test" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-            <h3 class="text-lg font-light mb-2 text-[var(--text-main)]">Add Result</h3>
+            <h3 class="text-lg font-light mb-2 text-[var(--text-main)]" data-i18n="add_result">Add Result</h3>
             <p class="text-xs text-[var(--text-muted)] mb-6">For <span id="add-test-subject-name" class="font-bold"></span></p>
             <div class="flex gap-2 items-end mb-6">
                 <input type="number" id="test-score" placeholder="Score" class="bare-input w-20 text-center">
@@ -720,8 +633,8 @@
                 <label for="test-practice" class="text-sm text-[var(--text-muted)]">Practice Test (Don't count)</label>
             </div>
             <div class="flex justify-end gap-4">
-                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
-                <button onclick="saveTest()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button>
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
+                <button onclick="saveTest()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button>
             </div>
         </div>
 
@@ -730,19 +643,27 @@
             <p class="text-xs text-[var(--text-muted)] mb-6">Paste Google Calendar Embed URL.</p>
             <input type="text" id="cal-url-input" placeholder="https://calendar.google.com/embed..." class="bare-input w-full mb-8 text-xs">
             <div class="flex justify-end gap-4">
-                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
-                <button onclick="saveCalendarImport()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Import</button>
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
+                <button onclick="saveCalendarImport()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="import_btn">Import</button>
             </div>
         </div>
 
          <div id="modal-add-event" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
             <h3 class="text-lg font-light mb-1 text-[var(--text-main)]" id="event-modal-date">Add Event</h3>
-            <input type="text" id="event-input" placeholder="Event name" class="bare-input w-full mb-8">
-            <div class="flex justify-end gap-4">
-                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button>
-                <button onclick="saveCalEvent()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button>
+            <input type="text" id="event-input" placeholder="Event name" class="bare-input w-full mb-4">
+            <div class="flex gap-4 mb-6">
+                <input type="time" id="event-time" class="bare-input w-full text-sm">
+                <select id="event-repeat" class="bare-input w-full text-sm bg-transparent">
+                    <option value="none">No Repeat</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                </select>
             </div>
-            <div class="mt-4 pt-4 border-t border-[var(--glass-border)]" id="event-list-day"></div>
+            <div class="flex justify-end gap-4">
+                <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
+                <button onclick="saveCalEvent()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button>
+            </div>
+            <div class="mt-4 pt-4 border-t border-[var(--glass-border)] max-h-40 overflow-y-auto custom-scrollbar" id="event-list-day"></div>
         </div>
 
     </div>
@@ -751,19 +672,134 @@
         const DB = { get: (k, d) => JSON.parse(localStorage.getItem(k)) || d, set: (k, v) => localStorage.setItem(k, JSON.stringify(v)) };
         function showAlert(t, m) { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; openModal('modal-alert'); }
         function showConfirm(t, m, y) { document.getElementById('confirm-title').innerText=t; document.getElementById('confirm-msg').innerText=m; document.getElementById('confirm-btn-action').onclick=()=>{y();closeModals()}; openModal('modal-confirm'); }
+        
+        // --- LANGUAGE & TRANSLATION ---
+        const tr = {
+            en: {
+                home: "Home", tasks: "Tasks", calendar: "Calendar", notes: "Notes", draw: "Draw", study: "Study", grades: "Grades", calc: "Calc", focus: "Focus", settings: "Settings",
+                status: "Current Status", status_txt: "Ready to learn", ql: "Quick Links", goals: "Daily Goals", up_next: "Up Next", no_tasks: "No tasks queued", clear_sched: "Clear schedule",
+                new_task: "New Task...", clear_done: "Clear Done",
+                sync_url: "Sync URL", remove_sync: "Remove Sync", open_tab: "Open in New Tab",
+                new_note: "New Note", untitled: "Untitled",
+                whiteboard: "Whiteboard", text_tool: "Text Tool", save_img: "Save Image", clear: "Clear", add_text: "Add Text",
+                study_decks: "Study Decks", import: "Import", new_deck: "New Deck", cards: "cards", actions: "Actions", play_ws: "Play Word Search", export_json: "Export JSON", practice_mode: "Practice Mode", hard_only: "Study Hard Only", star_only: "Study Starred Only", shortcuts: "Shortcuts",
+                studying: "Studying", all_cards: "All Cards", question: "Question", answer: "Answer", flip_hint: "Tap or Space to flip",
+                ws: "Word Search", find_words: "Find Words", click_hint: "Click first and last letter",
+                total_avg: "Total Average", across_all: "Across all subjects", add_subject: "Add Subject", add_result: "Add Result", delete: "Delete",
+                focus_session: "Focus Session", select_task: "Select a Task",
+                light_mode: "Light Mode", accent: "Accent", bg: "Background", done: "Done", cancel: "Cancel", save: "Save", create: "Create", add: "Add", import_btn: "Import",
+                greeting_m: "Good Morning", greeting_a: "Good Afternoon", greeting_e: "Good Evening",
+                confirm_del_deck: "Delete this deck?", confirm_del_sub: "Delete subject?", are_you_sure: "Are you sure?",
+                practice: "Practice"
+            },
+            nl: {
+                home: "Start", tasks: "Taken", calendar: "Kalender", notes: "Notities", draw: "Tekenen", study: "Studeren", grades: "Punten", calc: "Rekenmachine", focus: "Focus", settings: "Instellingen",
+                status: "Huidige Status", status_txt: "Klaar om te leren", ql: "Snelkoppelingen", goals: "Doelen", up_next: "Volgende Taak", no_tasks: "Geen taken", clear_sched: "Agenda is leeg",
+                new_task: "Nieuwe taak...", clear_done: "Voltooid wissen",
+                sync_url: "Sync URL", remove_sync: "Sync verwijderen", open_tab: "Open in nieuw tabblad",
+                new_note: "Nieuwe notitie", untitled: "Naamloos",
+                whiteboard: "Whiteboard", text_tool: "Tekst", save_img: "Opslaan", clear: "Wissen", add_text: "Tekst toevoegen",
+                study_decks: "Studeerdecks", import: "Importeren", new_deck: "Nieuw Deck", cards: "kaarten", actions: "Acties", play_ws: "Woordzoeker", export_json: "Export JSON", practice_mode: "Oefenmodus", hard_only: "Alleen Moeilijk", star_only: "Alleen Met Ster", shortcuts: "Sneltoetsen",
+                studying: "Studeren", all_cards: "Alle Kaarten", question: "Vraag", answer: "Antwoord", flip_hint: "Tik of Spatie om te draaien",
+                ws: "Woordzoeker", find_words: "Zoek Woorden", click_hint: "Klik eerste en laatste letter",
+                total_avg: "Totaal Gemiddelde", across_all: "Over alle vakken", add_subject: "Vak Toevoegen", add_result: "Punt Toevoegen", delete: "Verwijder",
+                focus_session: "Focus Sessie", select_task: "Selecteer een taak",
+                light_mode: "Lichte Modus", accent: "Accent", bg: "Achtergrond", done: "Klaar", cancel: "Annuleren", save: "Opslaan", create: "Maken", add: "Toevoegen", import_btn: "Importeer",
+                greeting_m: "Goedemorgen", greeting_a: "Goedemiddag", greeting_e: "Goedenavond",
+                confirm_del_deck: "Verwijder dit deck?", confirm_del_sub: "Vak verwijderen?", are_you_sure: "Ben je zeker?",
+                practice: "Oefening"
+            }
+        };
+
+        let currentLang = DB.get('os_lang', 'en');
+        document.getElementById('lang-select').value = currentLang;
+
+        function t(key) { return tr[currentLang][key] || key; }
+
+        function updateInterfaceText() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(tr[currentLang][key]) {
+                    if(el.tagName === 'INPUT' && el.getAttribute('placeholder')) el.placeholder = tr[currentLang][key];
+                    else el.innerText = tr[currentLang][key];
+                }
+            });
+            // Update tooltips
+            const tooltips = {
+                'btn-dashboard': 'home', 'btn-tasks': 'tasks', 'btn-calendar': 'calendar', 'btn-notes': 'notes',
+                'btn-whiteboard': 'draw', 'btn-cards': 'study', 'btn-grades': 'grades', 'btn-calc': 'calc', 'btn-focus': 'focus'
+            };
+            for (const [id, key] of Object.entries(tooltips)) {
+                const el = document.getElementById(id);
+                if(el) el.setAttribute('data-tooltip', t(key));
+            }
+            updateGreeting();
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            DB.set('os_lang', lang);
+            updateInterfaceText();
+            // Re-render components that have embedded strings
+            renderDecks(); renderGrades(); renderTasks(); 
+        }
+
+        function updateGreeting() {
+            const h = new Date().getHours();
+            let g = t('greeting_m');
+            if (h >= 12) g = t('greeting_a');
+            if (h >= 18) g = t('greeting_e');
+            document.getElementById('dash-greeting').innerText = `${g}, Student`;
+        }
+
+        // --- THEME ---
         let theme=DB.get('os_theme','dark'), accent=DB.get('os_accent','#3b82f6'), customBg=DB.get('os_custom_bg',null);
         function applyTheme(){ document.documentElement.setAttribute('data-theme', theme); document.documentElement.style.setProperty('--accent', accent); document.getElementById('theme-dot').style.transform=theme==='light'?'translateX(24px)':'translateX(0)'; if(customBg)document.getElementById('ambient-bg').style.background=customBg; }
         function toggleTheme(){ theme=theme==='dark'?'light':'dark'; DB.set('os_theme', theme); applyTheme(); }
         function setAccent(c){ accent=c; DB.set('os_accent', accent); applyTheme(); }
         function setBg(c){ customBg=c; DB.set('os_custom_bg', customBg); applyTheme(); }
         applyTheme();
+
         function switchTab(id) { document.querySelectorAll('div[id^="view-"]').forEach(el=>el.classList.add('hidden')); document.getElementById(`view-${id}`).classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); document.getElementById(`btn-${id}`)?.classList.add('active'); if(id==='whiteboard')resizeCanvas(); }
         function openModal(id) { document.getElementById('modal-overlay').classList.remove('hidden'); document.querySelectorAll('.modal-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); const i=document.getElementById(id).querySelector('input'); if(i)setTimeout(()=>i.focus(),100); }
         function closeModals(){ document.getElementById('modal-overlay').classList.add('hidden'); }
         document.getElementById('modal-overlay').addEventListener('click', (e)=>{ if(e.target.id==='modal-overlay')closeModals(); });
 
+        // --- LINKS MANAGEMENT ---
+        let links = DB.get('os_links', [{name:'Canvas', url:'https://canvas.instructure.com', icon:'ph-fill ph-link'}]);
+        let editingLinkIndex = -1;
+
+        function renderLinks() {
+            const c = document.getElementById('quick-links-container');
+            c.innerHTML = '';
+            links.forEach((l, i) => {
+                c.innerHTML += `
+                <div class="relative group min-w-[80px] h-24 link-card">
+                    <a href="${l.url}" target="_blank" class="w-full h-full bg-[var(--glass-panel)] rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-[var(--glass-hover)] transition">
+                        <i class="${l.icon || 'ph-fill ph-link'} text-2xl text-[var(--accent)] group-hover:scale-110 transition"></i><span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)] truncate px-2">${l.name}</span>
+                    </a>
+                    <div class="absolute top-1 right-1 flex gap-1 link-actions">
+                        <button onclick="editLink(${i})" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-[var(--accent)]"><i class="ph-bold ph-pencil"></i></button>
+                        <button onclick="deleteLink(${i})" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-red-500"><i class="ph-bold ph-trash"></i></button>
+                    </div>
+                </div>`;
+            });
+        }
+        function openAddLinkModal() { editingLinkIndex = -1; document.getElementById('link-name').value=''; document.getElementById('link-url').value=''; openModal('modal-add-link'); }
+        function editLink(i) { editingLinkIndex = i; document.getElementById('link-name').value=links[i].name; document.getElementById('link-url').value=links[i].url; document.getElementById('link-icon').value=links[i].icon||'ph-fill ph-link'; openModal('modal-add-link'); }
+        function deleteLink(i) { if(confirm(t('are_you_sure'))) { links.splice(i, 1); DB.set('os_links', links); renderLinks(); } }
+        function saveQuickLink() {
+            const name = document.getElementById('link-name').value; let url = document.getElementById('link-url').value; const icon = document.getElementById('link-icon').value;
+            if(name && url) {
+                if(!url.startsWith('http')) url = 'https://' + url;
+                if(editingLinkIndex > -1) links[editingLinkIndex] = {name, url, icon}; else links.push({name, url, icon});
+                DB.set('os_links', links); renderLinks(); closeModals();
+            }
+        }
+        renderLinks();
+
         let goals = DB.get('os_goals', []);
-        function renderGoals() { const c=document.getElementById('goals-container'); c.innerHTML=''; if(!goals.length)c.innerHTML='<div class="text-xs text-[var(--text-muted)] italic">No goals set.</div>'; goals.forEach((g,i)=>{ c.innerHTML+=`<div class="flex items-center gap-3 py-1 text-sm text-[var(--text-main)] group"><input type="checkbox" ${g.done?'checked':''} onchange="toggleGoal(${i})" class="accent-[var(--accent)] w-4 h-4 cursor-pointer"><span class="flex-1 ${g.done?'line-through opacity-50':''}">${g.text}</span><button onclick="deleteGoal(${i})" class="text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-x"></i></button></div>`; }); }
+        function renderGoals() { const c=document.getElementById('goals-container'); c.innerHTML=''; if(!goals.length)c.innerHTML=`<div class="text-xs text-[var(--text-muted)] italic">${t('no_tasks')}</div>`; goals.forEach((g,i)=>{ c.innerHTML+=`<div class="flex items-center gap-3 py-1 text-sm text-[var(--text-main)] group"><input type="checkbox" ${g.done?'checked':''} onchange="toggleGoal(${i})" class="accent-[var(--accent)] w-4 h-4 cursor-pointer"><span class="flex-1 ${g.done?'line-through opacity-50':''}">${g.text}</span><button onclick="deleteGoal(${i})" class="text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-x"></i></button></div>`; }); }
         function addGoal(){ const i=document.getElementById('goal-input'); if(i.value){ goals.push({text:i.value, done:false}); DB.set('os_goals', goals); i.value=''; renderGoals(); } }
         function toggleGoal(i){ goals[i].done=!goals[i].done; DB.set('os_goals', goals); renderGoals(); }
         function deleteGoal(i){ goals.splice(i,1); DB.set('os_goals', goals); renderGoals(); }
@@ -771,14 +807,13 @@
 
         let decks = DB.get('os_decks', [{id:1, name:'History', cards:[]}]);
         let activeDeckId=null, studyQueue=[], studyIndex=0, isFlipped=false;
-        function renderDecks() { const c=document.getElementById('decks-container'); c.innerHTML=''; decks.forEach(d=>{ c.innerHTML+=`<div class="min-card p-6 cursor-pointer hover:border-[var(--accent)] transition flex flex-col justify-between h-40 group relative" onclick="showEditView(${d.id})"><div><h3 class="text-xl font-medium text-[var(--text-main)] truncate">${d.name}</h3><p class="text-sm text-[var(--text-muted)]">${d.cards.length} cards</p></div><div class="flex justify-between items-end"><i class="ph-fill ph-cards text-3xl text-[var(--accent)] opacity-20 group-hover:opacity-100 transition"></i></div><button onclick="event.stopPropagation(); deleteDeck(${d.id})" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-trash"></i></button></div>`; }); }
+        function renderDecks() { const c=document.getElementById('decks-container'); c.innerHTML=''; decks.forEach(d=>{ c.innerHTML+=`<div class="min-card p-6 cursor-pointer hover:border-[var(--accent)] transition flex flex-col justify-between h-40 group relative" onclick="showEditView(${d.id})"><div><h3 class="text-xl font-medium text-[var(--text-main)] truncate">${d.name}</h3><p class="text-sm text-[var(--text-muted)]">${d.cards.length} ${t('cards')}</p></div><div class="flex justify-between items-end"><i class="ph-fill ph-cards text-3xl text-[var(--accent)] opacity-20 group-hover:opacity-100 transition"></i></div><button onclick="event.stopPropagation(); deleteDeck(${d.id})" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-trash"></i></button></div>`; }); }
         function saveDeck(){ const n=document.getElementById('deck-name').value; if(n){ decks.push({id:Date.now(), name:n, cards:[]}); DB.set('os_decks', decks); document.getElementById('deck-name').value=''; closeModals(); renderDecks(); } }
-        function deleteDeck(id){ showConfirm("Delete Deck", "Delete this deck?", ()=>{ decks=decks.filter(d=>d.id!==id); DB.set('os_decks', decks); renderDecks(); }); }
-        function showEditView(id){ if(id)activeDeckId=id; const d=decks.find(x=>x.id===activeDeckId); if(!d)return; document.getElementById('cards-deck-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-edit-view').classList.remove('hidden'); document.getElementById('edit-deck-title').innerText=d.name; document.getElementById('edit-deck-stats').innerText=`${d.cards.length} Cards • ${d.cards.filter(c=>c.starred).length} Starred • ${d.cards.filter(c=>c.status==='hard').length} Hard`; renderCardList(d); }
+        function deleteDeck(id){ showConfirm(t('delete'), t('confirm_del_deck'), ()=>{ decks=decks.filter(d=>d.id!==id); DB.set('os_decks', decks); renderDecks(); }); }
+        function showEditView(id){ if(id)activeDeckId=id; const d=decks.find(x=>x.id===activeDeckId); if(!d)return; document.getElementById('cards-deck-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-edit-view').classList.remove('hidden'); document.getElementById('edit-deck-title').innerText=d.name; document.getElementById('edit-deck-stats').innerText=`${d.cards.length} ${t('cards')}`; renderCardList(d); }
         function renderCardList(d){ const l=document.getElementById('cards-list-container'); l.innerHTML=''; if(!d.cards.length)l.innerHTML='<div class="text-center p-8 text-[var(--text-muted)] italic">No cards yet.</div>'; d.cards.forEach((c,i)=>{ l.innerHTML+=`<div class="flex items-center gap-4 p-3 bg-[var(--glass-hover)] rounded-xl border border-[var(--glass-border)]"><button onclick="toggleStarCard(${i})" class="${c.starred?'text-yellow-400':'text-[var(--text-muted)] hover:text-yellow-400'}"><i class="ph-fill ph-star"></i></button><div class="flex-1 min-w-0 grid grid-cols-2 gap-4"><div class="truncate text-sm font-medium text-[var(--text-main)]" title="${c.q}">${c.q}</div><div class="truncate text-sm text-[var(--text-muted)]" title="${c.a}">${c.a}</div></div><div class="flex gap-2"><span class="text-[10px] uppercase px-2 py-1 rounded-full ${c.status==='hard'?'bg-red-500/20 text-red-500':'bg-green-500/20 text-green-500'}">${c.status||'new'}</span><button onclick="deleteCard(${i})" class="text-[var(--text-muted)] hover:text-red-500"><i class="ph-bold ph-trash"></i></button></div></div>`; }); }
         function showDeckList(){ document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-deck-view').classList.remove('hidden'); renderDecks(); }
         
-        // FIXED: Correctly accepts optional ID to ensure context
         function openAddCardModal(id){ 
             if(id) activeDeckId = id; 
             const d=decks.find(x=>x.id===activeDeckId); 
@@ -790,7 +825,7 @@
         function saveFlashcard(){ const q=document.getElementById('card-q-input').value, a=document.getElementById('card-a-input').value; if(q&&activeDeckId){ const d=decks.find(x=>x.id===activeDeckId); d.cards.push({q,a,status:'new',starred:false}); DB.set('os_decks', decks); document.getElementById('card-q-input').value=''; document.getElementById('card-a-input').value=''; closeModals(); showEditView(); } }
         function deleteCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards.splice(i,1); DB.set('os_decks', decks); showEditView(); }
         function toggleStarCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards[i].starred=!d.cards[i].starred; DB.set('os_decks', decks); showEditView(); }
-        function startStudy(m){ const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert("Error","No cards.");return;} if(m==='all')studyQueue=[...d.cards]; else if(m==='hard')studyQueue=d.cards.filter(c=>c.status==='hard'); else if(m==='starred')studyQueue=d.cards.filter(c=>c.starred); if(!studyQueue.length){showAlert("Empty","No matching cards.");return;} studyQueue.sort(()=>Math.random()-0.5); studyIndex=0; document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.remove('hidden'); document.getElementById('study-mode-label').innerText={all:"All Cards",hard:"Hard Cards Only",starred:"Starred Cards Only"}[m]; updateStudyCard(); document.addEventListener('keydown', handleStudyKeys); }
+        function startStudy(m){ const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert("Error","No cards.");return;} if(m==='all')studyQueue=[...d.cards]; else if(m==='hard')studyQueue=d.cards.filter(c=>c.status==='hard'); else if(m==='starred')studyQueue=d.cards.filter(c=>c.starred); if(!studyQueue.length){showAlert("Empty","No matching cards.");return;} studyQueue.sort(()=>Math.random()-0.5); studyIndex=0; document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.remove('hidden'); document.getElementById('study-mode-label').innerText={all:t('all_cards'),hard:t('hard_only'),starred:t('star_only')}[m]; updateStudyCard(); document.addEventListener('keydown', handleStudyKeys); }
         function handleStudyKeys(e){ if(document.getElementById('cards-study-view').classList.contains('hidden'))return; if(e.code==='Space'){e.preventDefault();flipCard()} if(e.code==='ArrowRight')nextCard(); if(e.code==='ArrowLeft')prevCard(); }
         function updateStudyCard(){ isFlipped=false; document.getElementById('flashcard-inner').style.transform='rotateY(0deg)'; const c=studyQueue[studyIndex]; document.getElementById('card-front').innerText=c.q; setTimeout(()=>document.getElementById('card-back').innerText=c.a,200); document.getElementById('study-counter').innerText=`${studyIndex+1}/${studyQueue.length}`; }
         function flipCard(){ isFlipped=!isFlipped; document.getElementById('flashcard-inner').style.transform=isFlipped?'rotateY(180deg)':'rotateY(0deg)'; }
@@ -807,17 +842,13 @@
             const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert("Error","No cards.");return;}
             document.getElementById('cards-edit-view').classList.add('hidden');
             document.getElementById('cards-wordsearch-view').classList.remove('hidden');
-            
-            // Fix: Filter to only placeable words
             let potential = d.cards.map(c=>c.a.toUpperCase().replace(/[^A-Z]/g,'')).filter(w=>w.length>2).slice(0,8);
             if(potential.length===0){showAlert("Error","No suitable words found (need >2 letters)."); showEditView(); return;}
-            
             initWSGrid(potential);
         }
         function initWSGrid(potential) {
-            const size=12; wsGrid=Array(size).fill(0).map(()=>Array(size).fill(''));
+            const size=14; wsGrid=Array(size).fill(0).map(()=>Array(size).fill('')); 
             let placedList = [];
-            // Place words
             potential.forEach(w => {
                 let placed=false;
                 for(let i=0;i<50;i++){
@@ -827,9 +858,7 @@
                 }
                 if(placed) placedList.push(w);
             });
-            wsWords = placedList; // Only track placed words
-            
-            // Fill random
+            wsWords = placedList;
             for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!wsGrid[r][c]) wsGrid[r][c]=String.fromCharCode(65+Math.floor(Math.random()*26));
             renderWS();
         }
@@ -843,7 +872,7 @@
             else for(let i=0;i<w.length;i++) wsGrid[r+i][c]=w[i];
         }
         function renderWS() {
-            const gc=document.getElementById('ws-grid-container'); gc.innerHTML=''; gc.style.gridTemplateColumns=`repeat(12, 1fr)`;
+            const gc=document.getElementById('ws-grid-container'); gc.innerHTML=''; gc.style.gridTemplateColumns=`repeat(14, 1fr)`;
             wsGrid.forEach((row,r) => row.forEach((l,c) => {
                 const div=document.createElement('div'); div.className='ws-cell'; div.innerText=l; div.dataset.r=r; div.dataset.c=c;
                 div.onclick=()=>handleWSCell(r,c,div); gc.appendChild(div);
@@ -854,31 +883,15 @@
         }
         function handleWSCell(r,c,div) {
             if(div.classList.contains('found')) return;
-            // Toggle selection logic: Start and End
-            if(wsSelected.length===0) {
-                wsSelected.push({r,c,div}); div.classList.add('selected');
-            } else if(wsSelected.length===1) {
-                wsSelected.push({r,c,div}); div.classList.add('selected');
-                checkWSSelection();
-            } else {
-                // Reset
-                wsSelected.forEach(s=>s.div.classList.remove('selected'));
-                wsSelected=[{r,c,div}]; div.classList.add('selected');
-            }
+            if(wsSelected.length===0) { wsSelected.push({r,c,div}); div.classList.add('selected'); }
+            else if(wsSelected.length===1) { wsSelected.push({r,c,div}); div.classList.add('selected'); checkWSSelection(); }
+            else { wsSelected.forEach(s=>s.div.classList.remove('selected')); wsSelected=[{r,c,div}]; div.classList.add('selected'); }
         }
         function checkWSSelection() {
             const s=wsSelected[0], e=wsSelected[1];
-            // Check if straight line
             if(s.r===e.r || s.c===e.c || Math.abs(s.r-e.r)===Math.abs(s.c-e.c)) {
-                // Get word from grid
-                let word = "";
-                const dr=Math.sign(e.r-s.r), dc=Math.sign(e.c-s.c);
-                let cr=s.r, cc=s.c;
-                while(true) {
-                    word += wsGrid[cr][cc];
-                    if(cr===e.r && cc===e.c) break;
-                    cr+=dr; cc+=dc;
-                }
+                let word = ""; const dr=Math.sign(e.r-s.r), dc=Math.sign(e.c-s.c); let cr=s.r, cc=s.c;
+                while(true) { word += wsGrid[cr][cc]; if(cr===e.r && cc===e.c) break; cr+=dr; cc+=dc; }
                 const rev = word.split('').reverse().join('');
                 if(wsWords.includes(word) || wsWords.includes(rev)) {
                     const found = wsWords.includes(word) ? word : rev;
@@ -908,18 +921,16 @@
             subjects.forEach(s => {
                 let ss=0, sm=0;
                 s.tests.forEach(t => { 
-                    if (!t.isPractice) {
-                        ss += parseFloat(t.score); sm += parseFloat(t.max); 
-                    }
+                    if (!t.isPractice) { ss += parseFloat(t.score); sm += parseFloat(t.max); }
                 });
                 ts += ss; tm += sm; const avg = sm > 0 ? Math.round((ss/sm)*100) : 0;
-                c.innerHTML += `<div class="min-card p-6"><div class="flex justify-between items-start mb-4"><h3 class="text-xl font-medium text-[var(--text-main)]">${s.name}</h3><div class="text-2xl font-light ${avg>=50?'text-green-500':'text-red-500'}">${avg}%</div></div><div class="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar">${s.tests.map(t=>`<div class="flex justify-between text-sm border-b border-[var(--glass-border)] pb-1 ${t.isPractice ? 'opacity-60 italic' : ''}"><span class="text-[var(--text-muted)]">${t.name||'Test'}${t.isPractice ? ' (Practice)' : ''}</span><span class="text-[var(--text-main)]">${t.score}/${t.max}</span></div>`).join('')}${!s.tests.length?'<div class="text-xs text-[var(--text-muted)]">No results</div>':''}</div><div class="flex justify-between"><button onclick="deleteSubject(${s.id})" class="text-xs text-[var(--text-muted)] hover:text-red-500">Delete</button><button onclick="openAddTestModal(${s.id})" class="text-xs bg-[var(--glass-hover)] px-3 py-1 rounded-full text-[var(--text-main)] hover:bg-[var(--accent)] hover:text-white transition">+ Add Result</button></div></div>`;
+                c.innerHTML += `<div class="min-card p-6"><div class="flex justify-between items-start mb-4"><h3 class="text-xl font-medium text-[var(--text-main)]">${s.name}</h3><div class="text-2xl font-light ${avg>=50?'text-green-500':'text-red-500'}">${avg}%</div></div><div class="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar">${s.tests.map(t=>`<div class="flex justify-between text-sm border-b border-[var(--glass-border)] pb-1 ${t.isPractice ? 'opacity-60 italic' : ''}"><span class="text-[var(--text-muted)]">${t.name||'Test'}${t.isPractice ? ' (Practice)' : ''}</span><span class="text-[var(--text-main)]">${t.score}/${t.max}</span></div>`).join('')}${!s.tests.length?'<div class="text-xs text-[var(--text-muted)]">No results</div>':''}</div><div class="flex justify-between"><button onclick="deleteSubject(${s.id})" class="text-xs text-[var(--text-muted)] hover:text-red-500">${t('delete')}</button><button onclick="openAddTestModal(${s.id})" class="text-xs bg-[var(--glass-hover)] px-3 py-1 rounded-full text-[var(--text-main)] hover:bg-[var(--accent)] hover:text-white transition">+ ${t('add_result')}</button></div></div>`;
             });
             const ga = tm > 0 ? Math.round((ts/tm)*100) : 0;
             document.getElementById('global-average').innerText = tm > 0 ? `${ga}%` : '--%';
         }
         function saveSubject(){ const n=document.getElementById('subject-name').value; if(n){ subjects.push({id:Date.now(), name:n, tests:[]}); DB.set('os_subjects', subjects); document.getElementById('subject-name').value=''; closeModals(); renderGrades(); } }
-        function deleteSubject(id){ showConfirm("Delete Subject", "Delete?", ()=>{ subjects=subjects.filter(s=>s.id!==id); DB.set('os_subjects', subjects); renderGrades(); }); }
+        function deleteSubject(id){ showConfirm(t('delete'), t('confirm_del_sub'), ()=>{ subjects=subjects.filter(s=>s.id!==id); DB.set('os_subjects', subjects); renderGrades(); }); }
         function openAddTestModal(id){ activeSubjectId=id; document.getElementById('add-test-subject-name').innerText=subjects.find(s=>s.id===id).name; openModal('modal-add-test'); }
         function saveTest(){ 
             const s=document.getElementById('test-score').value, m=document.getElementById('test-max').value, n=document.getElementById('test-name').value, p=document.getElementById('test-practice').checked;
@@ -936,10 +947,10 @@
         function renderTasks() {
             const l=document.getElementById('full-task-list'); l.innerHTML=''; 
             const ord={high:0,med:1,low:2}; tasks.sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; if(ord[a.priority]!==ord[b.priority])return ord[a.priority]-ord[b.priority]; return new Date(a.date||'9999')-new Date(b.date||'9999'); });
-            const sel=document.getElementById('focus-task-select'); const v=sel.value; sel.innerHTML='<option value="">Select a Task to Focus On</option>'; tasks.filter(t=>!t.done).forEach(t=>{const o=document.createElement('option');o.value=t.id;o.innerText=t.text;sel.appendChild(o)}); sel.value=v;
+            const sel=document.getElementById('focus-task-select'); const v=sel.value; sel.innerHTML=`<option value="">${t('select_task')}</option>`; tasks.filter(t=>!t.done).forEach(t=>{const o=document.createElement('option');o.value=t.id;o.innerText=t.text;sel.appendChild(o)}); sel.value=v;
             const top=tasks.find(t=>!t.done); 
             if(top){document.getElementById('dash-top-task').innerText=top.text; document.getElementById('dash-top-date').innerText=top.date?`Due ${top.date}`:'Do it now';}
-            else{document.getElementById('dash-top-task').innerText="All clear"; document.getElementById('dash-top-date').innerText="Relax";}
+            else{document.getElementById('dash-top-task').innerText=t('no_tasks'); document.getElementById('dash-top-date').innerText=t('clear_sched');}
             tasks.forEach(t=>{ const c=t.priority==='high'?'bg-red-500':t.priority==='med'?'bg-yellow-500':'bg-green-500'; l.innerHTML+=`<div class="flex items-center gap-4 p-4 border-b border-[var(--glass-border)] group ${t.done?'opacity-30':''}"><div onclick="toggleTask(${t.id})" class="w-5 h-5 rounded-full border border-[var(--text-muted)] cursor-pointer flex items-center justify-center ${t.done?'bg-[var(--text-main)] border-none':''}">${t.done?'<i class="ph-bold ph-check text-[var(--bg-color)] text-xs"></i>':''}</div><div class="flex-1 flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full ${c}"></div><span class="font-light text-lg text-[var(--text-main)] ${t.done?'line-through':''}">${t.text}</span></div><div class="text-xs text-[var(--text-muted)] font-mono">${t.date||''}</div><button onclick="deleteTask(${t.id})" class="text-[var(--text-muted)] hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i class="ph ph-trash"></i></button></div>`; });
             DB.set('os_tasks_v2', tasks);
         }
@@ -954,11 +965,46 @@
         const cUrl=DB.get('os_cal_url',''); if(cUrl){document.getElementById('calendar-grid-view').classList.add('hidden');document.getElementById('calendar-iframe-container').classList.remove('hidden');document.getElementById('cal-frame').src=cUrl;}
         function renderCalendar(){ const g=document.getElementById('calendar-grid'); g.innerHTML=''; const fd=new Date(curY,curM,1).getDay(), dim=new Date(curY,curM+1,0).getDate(), mn=["January","February","March","April","May","June","July","August","September","October","November","December"]; document.getElementById('cal-month-name').innerText=`${mn[curM]} ${curY}`; for(let i=0;i<fd;i++)g.appendChild(document.createElement('div')); const tod=new Date(); for(let i=1;i<=dim;i++){ const k=`${curY}-${String(curM+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`, has=calEvents[k]&&calEvents[k].length>0, el=document.createElement('div'); const isT=i===tod.getDate()&&curM===tod.getMonth()&&curY===tod.getFullYear(); el.className=`cal-day ${isT?'today':''}`; el.innerHTML=`<span>${i}</span>${has?'<div class="event-dot"></div>':''}`; el.onclick=()=>openEventModal(k); g.appendChild(el); } }
         function changeMonth(d){ curM+=d; if(curM>11){curM=0;curY++} if(curM<0){curM=11;curY--} renderCalendar(); }
-        function openEventModal(k){ document.getElementById('event-modal-date').innerText=k; const l=document.getElementById('event-list-day'); l.innerHTML=''; (calEvents[k]||[]).forEach((e,i)=>{ l.innerHTML+=`<div class="flex justify-between py-2 border-b border-[var(--glass-border)] text-[var(--text-main)] text-sm"><span>${e}</span><button onclick="delEv('${k}',${i})"><i class="ph ph-trash"></i></button></div>`; }); openModal('modal-add-event'); document.getElementById('event-input').dataset.date=k; }
-        function saveCalEvent(){ const k=document.getElementById('event-input').dataset.date, v=document.getElementById('event-input').value; if(v){ if(!calEvents[k])calEvents[k]=[]; calEvents[k].push(v); DB.set('os_events', calEvents); document.getElementById('event-input').value=''; closeModals(); renderCalendar(); } }
+        function openEventModal(k){ document.getElementById('event-modal-date').innerText=k; const l=document.getElementById('event-list-day'); l.innerHTML=''; (calEvents[k]||[]).forEach((e,i)=>{ l.innerHTML+=`<div class="flex justify-between py-2 border-b border-[var(--glass-border)] text-[var(--text-main)] text-sm"><span>${e.title} ${e.time?`(${e.time})`:''}</span><button onclick="delEv('${k}',${i})"><i class="ph ph-trash"></i></button></div>`; }); openModal('modal-add-event'); document.getElementById('event-input').dataset.date=k; }
+        
+        function saveCalEvent(){ 
+            const k=document.getElementById('event-input').dataset.date;
+            const v=document.getElementById('event-input').value; 
+            const t=document.getElementById('event-time').value;
+            const r=document.getElementById('event-repeat').value;
+            
+            if(v){ 
+                if(!calEvents[k]) calEvents[k]=[];
+                calEvents[k].push({title: v, time: t});
+                
+                if(r === 'daily') {
+                    for(let i=1; i<=30; i++) {
+                        const d = new Date(k); d.setDate(d.getDate() + i);
+                        const nk = d.toISOString().split('T')[0];
+                        if(!calEvents[nk]) calEvents[nk]=[];
+                        calEvents[nk].push({title: v, time: t, recurring: true});
+                    }
+                } else if(r === 'weekly') {
+                    for(let i=1; i<=8; i++) {
+                        const d = new Date(k); d.setDate(d.getDate() + (i*7));
+                        const nk = d.toISOString().split('T')[0];
+                        if(!calEvents[nk]) calEvents[nk]=[];
+                        calEvents[nk].push({title: v, time: t, recurring: true});
+                    }
+                }
+
+                DB.set('os_events', calEvents); 
+                document.getElementById('event-input').value=''; 
+                document.getElementById('event-time').value='';
+                closeModals(); 
+                renderCalendar(); 
+            } 
+        }
+        
         function delEv(k,i){ calEvents[k].splice(i,1); DB.set('os_events', calEvents); openEventModal(k); renderCalendar(); }
         function saveCalendarImport(){ const u=document.getElementById('cal-url-input').value; if(u){ DB.set('os_cal_url', u); document.getElementById('cal-frame').src=u; document.getElementById('calendar-grid-view').classList.add('hidden'); document.getElementById('calendar-iframe-container').classList.remove('hidden'); closeModals(); } }
         function clearCalendar(){ DB.set('os_cal_url',''); document.getElementById('calendar-iframe-container').classList.add('hidden'); document.getElementById('calendar-grid-view').classList.remove('hidden'); }
+        function openCalNewTab() { const u = DB.get('os_cal_url',''); if(u) window.open(u, '_blank'); }
         renderCalendar();
 
         const cvs=document.getElementById('wb-canvas'), ctx=cvs.getContext('2d'); let painting=false, wTxt=false, wCol='#ffffff';
@@ -968,6 +1014,10 @@
         function endPos(){ painting=false; ctx.beginPath(); }
         function draw(e){ if(!painting)return; const p=getCoords(e); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
         cvs.addEventListener('mousedown', startPos); cvs.addEventListener('mouseup', endPos); cvs.addEventListener('mousemove', draw);
+        cvs.addEventListener('touchstart', (e)=>{ e.preventDefault(); startPos(e.touches[0]); }, {passive: false});
+        cvs.addEventListener('touchend', endPos);
+        cvs.addEventListener('touchmove', (e)=>{ e.preventDefault(); draw(e.touches[0]); }, {passive: false});
+
         function setPenColor(c){ wTxt=false; ctx.strokeStyle=c; ctx.lineWidth=2; wCol=c; }
         function activateTextTool(){ wTxt=true; }
         function confirmWbText(){ const t=document.getElementById('wb-text-input').value, x=document.getElementById('wb-text-input').dataset.x, y=document.getElementById('wb-text-input').dataset.y; if(t){ ctx.fillStyle=wCol; ctx.font="16px Inter"; ctx.fillText(t,x,y); } document.getElementById('wb-text-input').value=''; closeModals(); wTxt=false; }
@@ -997,33 +1047,7 @@
         function updateNoteCount(){ const t=document.getElementById('note-editor').innerText; const w=t.trim()?t.trim().split(/\s+/).length:0; document.getElementById('note-stats').innerText=`${w} words, ${t.length} chars`; }
         document.getElementById('note-title').addEventListener('input', saveNote); document.getElementById('note-editor').addEventListener('input', saveNote); renderNotes(); loadNote(notes[0].id);
 
-        let links = DB.get('os_links', [{name:'Canvas', url:'https://canvas.instructure.com', icon:'ph-fill ph-link'}]);
-        function renderLinks() {
-            const c = document.getElementById('quick-links-container');
-            c.innerHTML = '';
-            links.forEach(l => {
-                c.innerHTML += `<a href="${l.url}" target="_blank" class="min-w-[80px] h-24 bg-[var(--glass-panel)] rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-[var(--glass-hover)] transition group">
-                    <i class="${l.icon || 'ph-fill ph-link'} text-2xl text-[var(--accent)] group-hover:scale-110 transition"></i><span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">${l.name}</span>
-                </a>`;
-            });
-        }
-        function saveQuickLink() {
-            const name = document.getElementById('link-name').value;
-            let url = document.getElementById('link-url').value;
-            const icon = document.getElementById('link-icon').value;
-            if(name && url) {
-                if(!url.startsWith('http')) url = 'https://' + url;
-                links.push({name, url, icon});
-                DB.set('os_links', links);
-                renderLinks();
-                document.getElementById('link-name').value = '';
-                document.getElementById('link-url').value = '';
-                closeModals();
-            }
-        }
-        renderLinks();
-        
-
+        updateInterfaceText(); // Init Translation
     </script>
 </body>
 </html>
