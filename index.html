@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student OS</title>
+    <link rel="icon" href="icon.png" type="image/png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,7 +17,6 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="icon.png" media="(prefers-color-scheme: light)" />
 
     <style>
         :root {
@@ -33,11 +33,13 @@
             
             --accent: #3b82f6;
             
+            /* Status Colors */
             --danger: #ef4444;
             --success: #22c55e;
             --warning: #f59e0b;
         }
 
+        /* Light Mode Overrides */
         [data-theme="light"] {
             --bg-color: #f2f2f7;
             --text-main: #1c1c1e;
@@ -58,64 +60,108 @@
             transition: background-color 0.4s ease, color 0.4s ease;
         }
 
+        /* Dynamic Wallpaper */
         .ambient-light {
-            position: fixed; width: 100vw; height: 100vh; top: 0; left: 0;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0; left: 0;
             background: var(--custom-bg, radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), transparent 50%), radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1), transparent 40%));
-            z-index: -1; pointer-events: none; transition: background 0.5s;
+            z-index: -1;
+            pointer-events: none;
+            transition: background 0.5s;
         }
 
+        /* Minimal Card */
         .min-card {
-            background: var(--glass-panel); border: var(--glass-border); border-radius: 20px;
+            background: var(--glass-panel);
+            border: var(--glass-border);
+            border-radius: 20px;
             transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background 0.2s, border-color 0.2s;
-            overflow: hidden; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            overflow: hidden;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
-        .min-card.hover-effect:hover { background: var(--glass-hover); transform: translateY(-2px); border-color: var(--text-muted); }
+        .min-card.hover-effect:hover {
+            background: var(--glass-hover);
+            transform: translateY(-2px);
+            border-color: var(--text-muted);
+        }
 
+        /* Sidebar Icon Button */
         .nav-btn {
-            width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted); transition: all 0.2s; position: relative;
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            position: relative;
         }
         .nav-btn:hover { color: var(--text-main); background: var(--glass-hover); }
         .nav-btn.active { color: white; background: var(--accent); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        
+        /* Tooltip */
         .nav-btn:hover::after {
-            content: attr(data-tooltip); position: absolute; left: 56px;
-            background: var(--glass-panel); backdrop-filter: blur(10px); border: var(--glass-border);
-            padding: 4px 10px; border-radius: 6px; font-size: 11px; color: var(--text-main);
-            white-space: nowrap; pointer-events: none; opacity: 1; animation: fadeIn 0.2s; font-weight: 500; z-index: 50;
+            content: attr(data-tooltip);
+            position: absolute; left: 56px;
+            background: var(--glass-panel);
+            backdrop-filter: blur(10px);
+            border: var(--glass-border);
+            padding: 4px 10px; border-radius: 6px;
+            font-size: 11px; color: var(--text-main);
+            white-space: nowrap; pointer-events: none;
+            opacity: 1; animation: fadeIn 0.2s; font-weight: 500;
+            z-index: 50;
         }
 
+        /* Inputs */
         .bare-input {
-            background: transparent; border: none; outline: none; color: var(--text-main);
-            border-bottom: 1px solid var(--text-muted); transition: border-color 0.2s; padding: 8px 0;
+            background: transparent; border: none; outline: none;
+            color: var(--text-main); border-bottom: 1px solid var(--text-muted);
+            transition: border-color 0.2s; padding: 8px 0;
         }
         .bare-input:focus { border-bottom-color: var(--accent); }
         .bare-input::placeholder { color: var(--text-muted); opacity: 0.5; }
+        
         select.bare-input option { background: var(--bg-color); color: var(--text-main); }
         
+        /* Checkbox & Color */
         input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; padding: 0; cursor: pointer; }
+        input[type="color"] {
+            -webkit-appearance: none; border: none;
+            width: 32px; height: 32px; border-radius: 50%;
+            overflow: hidden; padding: 0; cursor: pointer;
+        }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--glass-border); }
 
+        /* Animations */
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
 
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; opacity: 0.2; }
         ::-webkit-scrollbar-track { background: transparent; }
         
+        /* Calendar Grid */
         .cal-day {
-            display: flex; flex-direction: column; padding: 6px; border-radius: 8px;
-            font-size: 0.9rem; color: var(--text-muted); transition: background 0.2s; cursor: pointer; position: relative; min-height: 50px; flex: 1;
+            display: flex; flex-direction: column;
+            padding: 6px; border-radius: 8px;
+            font-size: 0.9rem; color: var(--text-muted);
+            transition: background 0.2s; cursor: pointer; position: relative;
+            min-height: 50px; flex: 1;
         }
         .cal-day:hover { background: var(--glass-hover); color: var(--text-main); }
         .cal-day.today { background: var(--accent); color: white; font-weight: 600; }
-        .event-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 4px; }
-        .cal-day.today .event-dot { background: white; }
+        .event-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 4px; margin-right: 2px; display: inline-block; }
+        .cal-day.today .event-dot { border: 1px solid white; }
 
+        /* Calculator Keys */
         .calc-key {
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem; transition: background 0.1s; cursor: pointer;
             background: var(--glass-hover); color: var(--text-main);
         }
@@ -123,6 +169,7 @@
         .calc-key.accent { background: var(--glass-border); color: var(--accent); font-weight: 600; }
         .calc-key.primary { background: var(--accent); color: white; }
 
+        /* Rich Text Notes Styles */
         [contenteditable]:empty:before { content: attr(placeholder); color: var(--text-muted); opacity: 0.5; display: block; }
         #note-editor ul { list-style-type: disc; padding-left: 1.5rem; }
         #note-editor ol { list-style-type: decimal; padding-left: 1.5rem; }
@@ -130,25 +177,40 @@
         #note-editor i { font-style: italic; }
         #note-editor u { text-decoration: underline; }
         
+        /* Whiteboard */
         canvas { touch-action: none; cursor: crosshair; }
+
+        /* Flashcard 3D Logic */
         .perspective-1000 { perspective: 1000px; }
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
 
+        /* Word Search */
         .ws-grid { display: grid; gap: 4px; user-select: none; width: fit-content; margin: 0 auto; }
         .ws-cell {
-            width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center;
-            background: var(--glass-panel); border-radius: 6px; font-weight: 700; cursor: pointer; color: var(--text-muted);
-            transition: all 0.2s; font-size: 0.75rem; border: 1px solid var(--glass-border);
+            width: 1.5rem; height: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--glass-panel); border-radius: 6px;
+            font-weight: 700; cursor: pointer; color: var(--text-muted);
+            transition: all 0.2s; font-size: 0.75rem;
+            border: 1px solid var(--glass-border);
         }
         .ws-cell:hover { background: var(--glass-hover); color: var(--text-main); transform: scale(1.1); z-index: 10; }
         .ws-cell.selected { background: var(--accent); color: white; transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-color: transparent; }
         .ws-cell.found { background: var(--success); color: white; opacity: 0.8; border-color: transparent; }
 
-        /* Link Management Overlay */
-        .link-actions { opacity: 0; transition: opacity 0.2s; }
-        .link-card:hover .link-actions { opacity: 1; }
+        /* Color Picker Radio */
+        .color-radio {
+            appearance: none; width: 24px; height: 24px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent; transition: transform 0.2s;
+        }
+        .color-radio:checked { transform: scale(1.2); border-color: var(--text-main); }
+
+        /* Utilities */
+        .text-accent { color: var(--accent); }
+        .bg-accent { background-color: var(--accent); }
+        .border-glass { border: var(--glass-border); }
 
     </style>
 </head>
@@ -423,7 +485,7 @@
             </div>
         </div>
 
-        <!-- === NOTES === -->
+        <!-- === NOTES (Rich Text) === -->
         <div id="view-notes" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
             <div class="grid grid-cols-12 gap-8 h-full">
                 <div class="col-span-3 flex flex-col gap-4">
@@ -532,10 +594,18 @@
         <div id="modal-settings" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
             <h3 class="text-xl font-medium mb-6 text-[var(--text-main)]" data-i18n="settings">Settings</h3>
             <div class="space-y-6">
+                <!-- Shortcuts Info -->
+                <div class="text-xs text-[var(--text-muted)] bg-[var(--glass-panel)] p-3 rounded-lg">
+                    <p class="font-bold mb-1" data-i18n="shortcuts">Shortcuts</p>
+                    <p>Alt + 1-9: Tabs</p>
+                    <p>Alt + T: Task</p>
+                    <p>Alt + N: Note</p>
+                    <p>Esc: Close</p>
+                </div>
                 <!-- Language Selector -->
                 <div class="flex justify-between items-center">
                     <span class="text-[var(--text-main)]">Language</span>
-                    <select id="lang-select" onchange="setLanguage(this.value)" class="bare-input text-sm bg-transparent w-24 text-right">
+                    <select id="lang-select" onchange="setLanguage(this.value)" class="bare-input text-sm bg-transparent w-24 text-right cursor-pointer">
                         <option value="en">English</option>
                         <option value="nl">Nederlands</option>
                     </select>
@@ -566,8 +636,9 @@
             </div>
         </div>
 
+        <!-- Add Link Modal (Updated with Icons) -->
         <div id="modal-add-link" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
-            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">Link</h3>
+            <h3 class="text-lg font-light mb-6 text-[var(--text-main)]">Add Link</h3>
             <input type="text" id="link-name" placeholder="Name" class="bare-input w-full mb-4">
             <input type="text" id="link-url" placeholder="https://" class="bare-input w-full mb-4">
             <div class="mb-6">
@@ -660,6 +731,18 @@
                     <option value="weekly">Weekly</option>
                 </select>
             </div>
+            
+            <div class="mb-6">
+                <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Color Tag</label>
+                <div class="flex gap-3" id="event-color-picker">
+                    <input type="radio" name="eventColor" value="#3b82f6" class="color-radio bg-blue-500" checked>
+                    <input type="radio" name="eventColor" value="#ef4444" class="color-radio bg-red-500">
+                    <input type="radio" name="eventColor" value="#22c55e" class="color-radio bg-green-500">
+                    <input type="radio" name="eventColor" value="#f59e0b" class="color-radio bg-amber-500">
+                    <input type="radio" name="eventColor" value="#8b5cf6" class="color-radio bg-purple-500">
+                </div>
+            </div>
+
             <div class="flex justify-end gap-4">
                 <button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button>
                 <button onclick="saveCalEvent()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button>
@@ -691,7 +774,7 @@
                 light_mode: "Light Mode", accent: "Accent", bg: "Background", done: "Done", cancel: "Cancel", save: "Save", create: "Create", add: "Add", import_btn: "Import",
                 greeting_m: "Good Morning", greeting_a: "Good Afternoon", greeting_e: "Good Evening",
                 confirm_del_deck: "Delete this deck?", confirm_del_sub: "Delete subject?", are_you_sure: "Are you sure?",
-                practice: "Practice"
+                practice: "Practice", calc_ac: "AC"
             },
             nl: {
                 home: "Start", tasks: "Taken", calendar: "Kalender", notes: "Notities", draw: "Tekenen", study: "Studeren", grades: "Punten", calc: "Rekenmachine", focus: "Focus", settings: "Instellingen",
@@ -708,7 +791,7 @@
                 light_mode: "Lichte Modus", accent: "Accent", bg: "Achtergrond", done: "Klaar", cancel: "Annuleren", save: "Opslaan", create: "Maken", add: "Toevoegen", import_btn: "Importeer",
                 greeting_m: "Goedemorgen", greeting_a: "Goedemiddag", greeting_e: "Goedenavond",
                 confirm_del_deck: "Verwijder dit deck?", confirm_del_sub: "Vak verwijderen?", are_you_sure: "Ben je zeker?",
-                practice: "Oefening"
+                practice: "Oefening", calc_ac: "AC"
             }
         };
 
@@ -725,7 +808,6 @@
                     else el.innerText = tr[currentLang][key];
                 }
             });
-            // Update tooltips
             const tooltips = {
                 'btn-dashboard': 'home', 'btn-tasks': 'tasks', 'btn-calendar': 'calendar', 'btn-notes': 'notes',
                 'btn-whiteboard': 'draw', 'btn-cards': 'study', 'btn-grades': 'grades', 'btn-calc': 'calc', 'btn-focus': 'focus'
@@ -741,7 +823,6 @@
             currentLang = lang;
             DB.set('os_lang', lang);
             updateInterfaceText();
-            // Re-render components that have embedded strings
             renderDecks(); renderGrades(); renderTasks(); 
         }
 
@@ -765,6 +846,30 @@
         function openModal(id) { document.getElementById('modal-overlay').classList.remove('hidden'); document.querySelectorAll('.modal-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); const i=document.getElementById(id).querySelector('input'); if(i)setTimeout(()=>i.focus(),100); }
         function closeModals(){ document.getElementById('modal-overlay').classList.add('hidden'); }
         document.getElementById('modal-overlay').addEventListener('click', (e)=>{ if(e.target.id==='modal-overlay')closeModals(); });
+
+        // --- SHORTCUTS ---
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Escape') closeModals();
+            
+            // Only trigger Alt shortcuts if not in an input field
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+
+            if (e.altKey) {
+                switch(e.key) {
+                    case '1': switchTab('dashboard'); break;
+                    case '2': switchTab('tasks'); break;
+                    case '3': switchTab('calendar'); break;
+                    case '4': switchTab('notes'); break;
+                    case '5': switchTab('whiteboard'); break;
+                    case '6': switchTab('cards'); break;
+                    case '7': switchTab('grades'); break;
+                    case '8': switchTab('calc'); break;
+                    case '9': switchTab('focus'); break;
+                    case 't': document.getElementById('task-input').focus(); switchTab('tasks'); e.preventDefault(); break;
+                    case 'n': createNewNote(); switchTab('notes'); e.preventDefault(); break;
+                }
+            }
+        });
 
         // --- LINKS MANAGEMENT ---
         let links = DB.get('os_links', [{name:'Canvas', url:'https://canvas.instructure.com', icon:'ph-fill ph-link'}]);
@@ -964,7 +1069,20 @@
 
         let calEvents=DB.get('os_events',{}), curM=new Date().getMonth(), curY=new Date().getFullYear();
         const cUrl=DB.get('os_cal_url',''); if(cUrl){document.getElementById('calendar-grid-view').classList.add('hidden');document.getElementById('calendar-iframe-container').classList.remove('hidden');document.getElementById('cal-frame').src=cUrl;}
-        function renderCalendar(){ const g=document.getElementById('calendar-grid'); g.innerHTML=''; const fd=new Date(curY,curM,1).getDay(), dim=new Date(curY,curM+1,0).getDate(), mn=["January","February","March","April","May","June","July","August","September","October","November","December"]; document.getElementById('cal-month-name').innerText=`${mn[curM]} ${curY}`; for(let i=0;i<fd;i++)g.appendChild(document.createElement('div')); const tod=new Date(); for(let i=1;i<=dim;i++){ const k=`${curY}-${String(curM+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`, has=calEvents[k]&&calEvents[k].length>0, el=document.createElement('div'); const isT=i===tod.getDate()&&curM===tod.getMonth()&&curY===tod.getFullYear(); el.className=`cal-day ${isT?'today':''}`; el.innerHTML=`<span>${i}</span>${has?'<div class="event-dot"></div>':''}`; el.onclick=()=>openEventModal(k); g.appendChild(el); } }
+        function renderCalendar(){ const g=document.getElementById('calendar-grid'); g.innerHTML=''; const fd=new Date(curY,curM,1).getDay(), dim=new Date(curY,curM+1,0).getDate(), mn=["January","February","March","April","May","June","July","August","September","October","November","December"]; document.getElementById('cal-month-name').innerText=`${mn[curM]} ${curY}`; for(let i=0;i<fd;i++)g.appendChild(document.createElement('div')); const tod=new Date(); for(let i=1;i<=dim;i++){ const k=`${curY}-${String(curM+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`, has=calEvents[k]&&calEvents[k].length>0, el=document.createElement('div'); const isT=i===tod.getDate()&&curM===tod.getMonth()&&curY===tod.getFullYear(); el.className=`cal-day ${isT?'today':''}`; 
+            
+            // Render Dots with Colors
+            let dots = '';
+            if (has) {
+                calEvents[k].forEach(ev => {
+                    const color = ev.color || 'var(--accent)';
+                    dots += `<div class="event-dot" style="background-color: ${color};"></div>`;
+                });
+            }
+            
+            el.innerHTML=`<span>${i}</span><div class="flex flex-wrap gap-1 mt-1">${dots}</div>`; 
+            el.onclick=()=>openEventModal(k); g.appendChild(el); 
+        } }
         function changeMonth(d){ curM+=d; if(curM>11){curM=0;curY++} if(curM<0){curM=11;curY--} renderCalendar(); }
         function openEventModal(k){ document.getElementById('event-modal-date').innerText=k; const l=document.getElementById('event-list-day'); l.innerHTML=''; (calEvents[k]||[]).forEach((e,i)=>{ l.innerHTML+=`<div class="flex justify-between py-2 border-b border-[var(--glass-border)] text-[var(--text-main)] text-sm"><span>${e.title} ${e.time?`(${e.time})`:''}</span><button onclick="delEv('${k}',${i})"><i class="ph ph-trash"></i></button></div>`; }); openModal('modal-add-event'); document.getElementById('event-input').dataset.date=k; }
         
@@ -973,24 +1091,25 @@
             const v=document.getElementById('event-input').value; 
             const t=document.getElementById('event-time').value;
             const r=document.getElementById('event-repeat').value;
+            const c = document.querySelector('input[name="eventColor"]:checked')?.value || '#3b82f6';
             
             if(v){ 
                 if(!calEvents[k]) calEvents[k]=[];
-                calEvents[k].push({title: v, time: t});
+                calEvents[k].push({title: v, time: t, color: c});
                 
                 if(r === 'daily') {
                     for(let i=1; i<=30; i++) {
                         const d = new Date(k); d.setDate(d.getDate() + i);
                         const nk = d.toISOString().split('T')[0];
                         if(!calEvents[nk]) calEvents[nk]=[];
-                        calEvents[nk].push({title: v, time: t, recurring: true});
+                        calEvents[nk].push({title: v, time: t, recurring: true, color: c});
                     }
                 } else if(r === 'weekly') {
                     for(let i=1; i<=8; i++) {
                         const d = new Date(k); d.setDate(d.getDate() + (i*7));
                         const nk = d.toISOString().split('T')[0];
                         if(!calEvents[nk]) calEvents[nk]=[];
-                        calEvents[nk].push({title: v, time: t, recurring: true});
+                        calEvents[nk].push({title: v, time: t, recurring: true, color: c});
                     }
                 }
 
