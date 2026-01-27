@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student OS</title>
+    <title>Student OS 4.6</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -492,10 +492,10 @@
                     <div class="flex items-center gap-2 p-4 border-b border-[var(--glass-border)] bg-[var(--glass-panel)]">
                         <input type="text" id="note-title" placeholder="Untitled" class="text-xl font-bold bg-transparent outline-none flex-1 text-[var(--text-main)] placeholder-[var(--text-muted)]">
                         <div class="h-6 w-[1px] bg-[var(--glass-border)] mx-2"></div>
-                        <button onclick="formatDoc('bold')" class="p-2 rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="Bold"><i class="ph-bold ph-text-b"></i></button>
-                        <button onclick="formatDoc('italic')" class="p-2 rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="Italic"><i class="ph-bold ph-text-i"></i></button>
-                        <button onclick="formatDoc('underline')" class="p-2 rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="Underline"><i class="ph-bold ph-text-u"></i></button>
-                        <button onclick="formatDoc('insertUnorderedList')" class="p-2 rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="List"><i class="ph-bold ph-list-bullets"></i></button>
+                        <button onclick="formatDoc('bold')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] font-bold text-lg" title="Bold">B</button>
+                        <button onclick="formatDoc('italic')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] italic text-lg" title="Italic">I</button>
+                        <button onclick="formatDoc('underline')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] underline text-lg" title="Underline">U</button>
+                        <button onclick="formatDoc('insertUnorderedList')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="List"><i class="ph-bold ph-list-bullets"></i></button>
                     </div>
                     
                     <!-- Editor -->
@@ -765,7 +765,16 @@
         function showEditView(id){ if(id)activeDeckId=id; const d=decks.find(x=>x.id===activeDeckId); if(!d)return; document.getElementById('cards-deck-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-edit-view').classList.remove('hidden'); document.getElementById('edit-deck-title').innerText=d.name; document.getElementById('edit-deck-stats').innerText=`${d.cards.length} Cards • ${d.cards.filter(c=>c.starred).length} Starred • ${d.cards.filter(c=>c.status==='hard').length} Hard`; renderCardList(d); }
         function renderCardList(d){ const l=document.getElementById('cards-list-container'); l.innerHTML=''; if(!d.cards.length)l.innerHTML='<div class="text-center p-8 text-[var(--text-muted)] italic">No cards yet.</div>'; d.cards.forEach((c,i)=>{ l.innerHTML+=`<div class="flex items-center gap-4 p-3 bg-[var(--glass-hover)] rounded-xl border border-[var(--glass-border)]"><button onclick="toggleStarCard(${i})" class="${c.starred?'text-yellow-400':'text-[var(--text-muted)] hover:text-yellow-400'}"><i class="ph-fill ph-star"></i></button><div class="flex-1 min-w-0 grid grid-cols-2 gap-4"><div class="truncate text-sm font-medium text-[var(--text-main)]" title="${c.q}">${c.q}</div><div class="truncate text-sm text-[var(--text-muted)]" title="${c.a}">${c.a}</div></div><div class="flex gap-2"><span class="text-[10px] uppercase px-2 py-1 rounded-full ${c.status==='hard'?'bg-red-500/20 text-red-500':'bg-green-500/20 text-green-500'}">${c.status||'new'}</span><button onclick="deleteCard(${i})" class="text-[var(--text-muted)] hover:text-red-500"><i class="ph-bold ph-trash"></i></button></div></div>`; }); }
         function showDeckList(){ document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-deck-view').classList.remove('hidden'); renderDecks(); }
-        function openAddCardModal(){ const d=decks.find(x=>x.id===activeDeckId); document.getElementById('add-card-deck-name').innerText=d.name; openModal('modal-add-card'); }
+        
+        // FIXED: Correctly accepts optional ID to ensure context
+        function openAddCardModal(id){ 
+            if(id) activeDeckId = id; 
+            const d=decks.find(x=>x.id===activeDeckId); 
+            if(!d) return; 
+            document.getElementById('add-card-deck-name').innerText=d.name; 
+            openModal('modal-add-card'); 
+        }
+        
         function saveFlashcard(){ const q=document.getElementById('card-q-input').value, a=document.getElementById('card-a-input').value; if(q&&activeDeckId){ const d=decks.find(x=>x.id===activeDeckId); d.cards.push({q,a,status:'new',starred:false}); DB.set('os_decks', decks); document.getElementById('card-q-input').value=''; document.getElementById('card-a-input').value=''; closeModals(); showEditView(); } }
         function deleteCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards.splice(i,1); DB.set('os_decks', decks); showEditView(); }
         function toggleStarCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards[i].starred=!d.cards[i].starred; DB.set('os_decks', decks); showEditView(); }
