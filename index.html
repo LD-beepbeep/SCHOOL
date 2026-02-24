@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student OS</title>
+    <title>Student OS 6.0</title>
     <link rel="icon" href="icon.png" type="image/png">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,17 +66,45 @@
         .color-radio { appearance: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
         .color-radio:checked { transform: scale(1.2); border-color: var(--text-main); }
         .link-actions { opacity: 0; transition: opacity 0.2s; } .link-card:hover .link-actions { opacity: 1; }
+        /* Widget drag/drop */
+        .widget-dragging { opacity: 0.4 !important; border: 2px dashed var(--accent) !important; }
+        .widget-drag-over { border: 2px dashed var(--accent) !important; background: rgba(59,130,246,0.08) !important; }
+        .widget-item { cursor: default; }
+        /* Grades bar */
+        .grade-bar { height: 6px; border-radius: 3px; transition: width 0.7s cubic-bezier(0.2,0,0,1); }
+        /* WB tabs */
+        .wb-tab { padding: 5px 14px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; color: var(--text-muted); white-space:nowrap; }
+        .wb-tab.active-tab { background: var(--accent); color: white; }
+        .wb-tab:not(.active-tab):hover { background: var(--glass-hover); color: var(--text-main); }
+        /* Profile avatar */
+        .profile-btn { width: 40px; height: 40px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
+        .profile-btn:hover { transform: scale(1.08); }
+        /* Emoji grid */
+        .emoji-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 4px; }
+        .emoji-opt { font-size: 1.4rem; padding: 6px; border-radius: 8px; cursor: pointer; text-align: center; transition: background 0.15s; }
+        .emoji-opt:hover { background: var(--glass-hover); }
+        /* Note size buttons */
+        .nsz { padding: 1px 5px; border-radius: 4px; font-weight: bold; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+        .nsz:hover { background: var(--glass-hover); color: var(--text-main); }
+        /* Clock color var */
+        :root { --clock-color: #ffffff; }
+        [data-theme="light"] { --clock-color: #1c1c1e; }
+        #clock-time { color: var(--clock-color) !important; }
     </style>
 </head>
 <body class="flex h-screen w-screen selection:bg-blue-500 selection:text-white">
 
     <div class="ambient-light" id="ambient-bg"></div>
     <input type="file" id="import-deck-input" class="hidden" accept=".json,.csv" onchange="handleImportDeck(this)">
+    <input type="file" id="profile-img-input" class="hidden" accept="image/*" onchange="handleProfileImage(this)">
+    <input type="file" id="wb-img-input" class="hidden" accept="image/*" onchange="wbInsertImage(this)">
 
     <!-- Sidebar -->
     <nav class="w-20 h-full flex flex-col items-center py-6 border-r border-[var(--glass-border)] z-50 bg-[var(--bg-color)]/80 backdrop-blur-xl">
-        <div class="mb-8 w-10 h-10 bg-[var(--text-main)] rounded-xl flex items-center justify-center text-[var(--bg-color)] shadow-lg">
-            <i class="ph-bold ph-student text-xl"></i>
+        <div class="mb-8">
+            <div class="profile-btn bg-[var(--text-main)] shadow-lg" id="profile-btn" onclick="openModal('modal-profile')" title="Change Profile Picture">
+                <span id="profile-display"><i class="ph-bold ph-student text-xl text-[var(--bg-color)]"></i></span>
+            </div>
         </div>
         <div class="flex flex-col gap-3">
             <button onclick="switchTab('dashboard')" class="nav-btn active" id="btn-dashboard" data-tooltip="Home"><i class="ph ph-squares-four text-xl"></i></button>
@@ -106,11 +135,12 @@
                 <div class="text-right">
                     <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold" data-i18n="status">Current Status</div>
                     <div class="text-sm font-medium text-[var(--accent)] mt-1" data-i18n="status_txt">Ready to learn</div>
+                    <button onclick="openModal('modal-widgets')" class="mt-2 text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition flex items-center gap-1 ml-auto"><i class="ph ph-sliders text-sm"></i> Widgets</button>
                 </div>
             </header>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-96">
                 <!-- Links -->
-                <div class="col-span-2 min-card p-8 flex flex-col justify-between group">
+                <div class="col-span-2 min-card p-8 flex flex-col justify-between group widget-item" id="widget-links" draggable="true" data-widget="links">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest" data-i18n="ql">Quick Links</h3>
                         <button onclick="openAddLinkModal()" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"><i class="ph ph-plus text-xl"></i></button>
@@ -118,7 +148,7 @@
                     <div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar" id="quick-links-container"></div>
                 </div>
                 <!-- Goals -->
-                <div class="col-span-1 min-card p-6 flex flex-col hover-effect">
+                <div class="col-span-1 min-card p-6 flex flex-col hover-effect widget-item" id="widget-goals" draggable="true" data-widget="goals">
                     <h3 class="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4" data-i18n="goals">Daily Goals</h3>
                     <div class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar" id="goals-container"></div>
                     <div class="mt-4 flex gap-2">
@@ -126,12 +156,18 @@
                         <button onclick="addGoal()" class="text-[var(--accent)] hover:text-[var(--text-main)]"><i class="ph-bold ph-plus"></i></button>
                     </div>
                 </div>
-                <!-- Task -->
-                <div class="col-span-1 min-card p-6 flex flex-col justify-center relative overflow-hidden cursor-pointer hover:border-[var(--accent)] transition" onclick="switchTab('tasks')">
-                    <div class="absolute top-0 right-0 p-32 bg-[var(--accent)] rounded-full blur-3xl opacity-10 -mr-10 -mt-10"></div>
-                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2" data-i18n="up_next">Up Next</h3>
-                    <div id="dash-top-task" class="text-xl font-medium text-[var(--text-main)] line-clamp-3">No tasks queued</div>
-                    <div id="dash-top-date" class="text-xs text-[var(--text-muted)] mt-2 font-medium">Clear schedule</div>
+                <!-- Task / Up Next -->
+                <div class="col-span-1 min-card p-6 flex flex-col justify-between relative overflow-hidden widget-item" id="widget-upnext" draggable="true" data-widget="upnext">
+                    <div class="absolute top-0 right-0 p-32 bg-[var(--accent)] rounded-full blur-3xl opacity-10 -mr-10 -mt-10 pointer-events-none"></div>
+                    <div class="cursor-pointer" onclick="switchTab('tasks')">
+                        <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2" data-i18n="up_next">Up Next</h3>
+                        <div id="dash-top-task" class="text-xl font-medium text-[var(--text-main)] line-clamp-2">No tasks queued</div>
+                        <div id="dash-top-date" class="text-xs text-[var(--text-muted)] mt-2 font-medium">Clear schedule</div>
+                    </div>
+                    <div class="flex gap-2 mt-4 relative z-10">
+                        <input type="text" id="dash-quick-task" placeholder="Quick add task…" class="bg-transparent text-xs w-full outline-none text-[var(--text-main)] border-b border-[var(--glass-border)] pb-1 focus:border-[var(--accent)] transition" onkeypress="if(event.key==='Enter') dashAddTask()">
+                        <button onclick="dashAddTask()" class="text-[var(--accent)]"><i class="ph-bold ph-plus text-sm"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -249,10 +285,14 @@
                 <button onclick="clearCompletedTasks()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-muted)] rounded-lg text-xs hover:text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition" data-i18n="clear_done">Clear Done</button>
             </div>
             <div class="min-card flex-1 flex flex-col overflow-hidden p-6">
-                <div class="flex gap-4 mb-6">
-                    <input type="text" id="task-input" placeholder="New Task..." class="bare-input flex-1 text-lg">
+                <div class="flex gap-4 mb-6 flex-wrap items-center">
+                    <input type="text" id="task-input" placeholder="New Task..." class="bare-input flex-1 text-lg min-w-32">
                     <select id="task-prio" class="bare-input w-32 text-sm bg-transparent"><option value="high">High</option><option value="med">Medium</option><option value="low" selected>Low</option></select>
                     <input type="date" id="task-date" class="bare-input w-32 text-sm text-[var(--text-muted)]">
+                    <div class="flex items-center gap-1.5" title="Task color">
+                        <input type="color" id="task-color" value="#3b82f6" style="width:26px;height:26px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,0.2);cursor:pointer;background:none;">
+                        <button onclick="document.getElementById('task-color').value='#000000'" class="text-[8px] text-[var(--text-muted)] hover:text-red-400 border border-[var(--glass-border)] rounded-full w-5 h-5 flex items-center justify-center" title="No color">✕</button>
+                    </div>
                     <button onclick="addTask()" class="bg-[var(--text-main)] text-[var(--bg-color)] w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90"><i class="ph-bold ph-plus"></i></button>
                 </div>
                 <div class="flex-1 overflow-y-auto space-y-1 pr-2 custom-scrollbar" id="full-task-list"></div>
@@ -287,11 +327,15 @@
             </div>
         </div>
 
-        <!-- Whiteboard (V2) -->
+        <!-- Whiteboard (V3: multi-board, fullscreen, image) -->
         <div id="view-whiteboard" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h1 class="text-3xl font-light text-[var(--text-main)]" data-i18n="whiteboard">Whiteboard</h1>
-                <div class="flex gap-3 bg-[var(--glass-panel)] p-2 rounded-xl border border-[var(--glass-border)] items-center">
+            <div class="flex justify-between items-center mb-3 gap-2 flex-wrap">
+                <div class="flex items-center gap-2">
+                    <h1 class="text-3xl font-light text-[var(--text-main)]" data-i18n="whiteboard">Whiteboard</h1>
+                    <div class="flex gap-1 overflow-x-auto" id="wb-tabs"></div>
+                    <button onclick="wbNewBoard()" class="w-8 h-8 rounded-lg bg-[var(--glass-panel)] border border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] flex items-center justify-center transition"><i class="ph-bold ph-plus text-sm"></i></button>
+                </div>
+                <div class="flex gap-3 bg-[var(--glass-panel)] p-2 rounded-xl border border-[var(--glass-border)] items-center flex-wrap">
                     <button onclick="wbUndo()" class="text-[var(--text-main)] hover:text-[var(--accent)]"><i class="ph-bold ph-arrow-u-up-left"></i></button>
                     <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
                     <button onclick="setPenColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)]"></button>
@@ -299,15 +343,18 @@
                     <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 border border-[var(--glass-border)]"></button>
                     <button onclick="setPenColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 border border-[var(--glass-border)]"></button>
                     <button onclick="setPenColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 border border-[var(--glass-border)]"></button>
-                    
+                    <button onclick="setPenColor('#f59e0b')" class="w-5 h-5 rounded-full bg-amber-500 border border-[var(--glass-border)]"></button>
+                    <input type="color" id="wb-custom-color" onchange="setPenColor(this.value)" title="Custom color" style="width:20px;height:20px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,0.25);cursor:pointer;">
                     <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
                     <input type="range" id="wb-size" min="1" max="20" value="2" class="w-16 h-1 bg-[var(--text-muted)] rounded-lg appearance-none cursor-pointer">
-                    
                     <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
                     <button onclick="activateTextTool()" id="wb-text-btn" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]"><i class="ph-bold ph-text-t"></i></button>
                     <button onclick="activateEraser()" id="wb-erase-btn" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]"><i class="ph-bold ph-eraser"></i></button>
+                    <button onclick="document.getElementById('wb-img-input').click()" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]" title="Insert image"><i class="ph-bold ph-image"></i></button>
                     <div class="w-[1px] h-6 bg-[var(--text-muted)] opacity-20 mx-1"></div>
+                    <button onclick="wbToggleFullscreen()" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]" title="Fullscreen"><i class="ph-bold ph-arrows-out" id="wb-fs-icon"></i></button>
                     <button onclick="downloadWhiteboard()" class="px-2 text-[var(--text-muted)] hover:text-[var(--text-main)]"><i class="ph-bold ph-download-simple"></i></button>
+                    <button onclick="wbDeleteBoard()" class="px-2 text-[var(--text-muted)] hover:text-red-400"><i class="ph-bold ph-trash"></i></button>
                     <button onclick="clearCanvas()" class="px-3 text-xs text-[var(--text-muted)] hover:text-red-400" data-i18n="clear">Clear</button>
                 </div>
             </div>
@@ -321,16 +368,24 @@
             <div class="grid grid-cols-12 gap-8 h-full">
                 <div class="col-span-3 flex flex-col gap-4">
                     <button onclick="createNewNote()" class="w-full py-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition text-[var(--text-main)] border border-[var(--glass-border)]" data-i18n="new_note">+ New Note</button>
-                    <div id="notes-sidebar" class="space-y-2 overflow-y-auto flex-1 custom-scrollbar"></div>
+                    <div id="notes-sidebar" class="space-y-1 overflow-y-auto flex-1 custom-scrollbar"></div>
                 </div>
                 <div class="col-span-9 min-card p-0 flex flex-col relative group overflow-hidden">
-                    <div class="flex items-center gap-2 p-4 border-b border-[var(--glass-border)] bg-[var(--glass-panel)]">
-                        <input type="text" id="note-title" placeholder="Untitled" class="text-xl font-bold bg-transparent outline-none flex-1 text-[var(--text-main)] placeholder-[var(--text-muted)]">
-                        <div class="h-6 w-[1px] bg-[var(--glass-border)] mx-2"></div>
-                        <button onclick="formatDoc('bold')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] font-bold text-lg" title="Bold">B</button>
-                        <button onclick="formatDoc('italic')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] italic text-lg" title="Italic">I</button>
-                        <button onclick="formatDoc('underline')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] underline text-lg" title="Underline">U</button>
-                        <button onclick="formatDoc('insertUnorderedList')" class="p-2 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="List"><i class="ph-bold ph-list-bullets"></i></button>
+                    <div class="flex items-center gap-1 p-3 border-b border-[var(--glass-border)] bg-[var(--glass-panel)] flex-wrap">
+                        <input type="text" id="note-title" placeholder="Untitled" class="text-xl font-bold bg-transparent outline-none text-[var(--text-main)] placeholder-[var(--text-muted)]" style="min-width:80px;max-width:160px;">
+                        <div class="h-6 w-[1px] bg-[var(--glass-border)] mx-1"></div>
+                        <button onclick="formatDoc('bold')" class="p-1 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] font-bold text-sm" title="Bold">B</button>
+                        <button onclick="formatDoc('italic')" class="p-1 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] italic text-sm" title="Italic">I</button>
+                        <button onclick="formatDoc('underline')" class="p-1 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)] underline text-sm" title="Underline">U</button>
+                        <button onclick="formatDoc('insertUnorderedList')" class="p-1 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="List"><i class="ph-bold ph-list-bullets"></i></button>
+                        <button onclick="noteInsertCheckbox()" class="p-1 w-8 h-8 flex items-center justify-center rounded hover:bg-[var(--glass-hover)] text-[var(--text-main)]" title="Checkbox"><i class="ph-bold ph-check-square"></i></button>
+                        <div class="h-6 w-[1px] bg-[var(--glass-border)] mx-1"></div>
+                        <button onclick="formatDoc('fontSize','2')" class="nsz text-[10px]">S</button>
+                        <button onclick="formatDoc('fontSize','3')" class="nsz text-xs">M</button>
+                        <button onclick="formatDoc('fontSize','5')" class="nsz text-sm">L</button>
+                        <button onclick="formatDoc('fontSize','7')" class="nsz text-base">XL</button>
+                        <div class="h-6 w-[1px] bg-[var(--glass-border)] mx-1"></div>
+                        <button onclick="deleteCurrentNote()" class="p-1 w-8 h-8 flex items-center justify-center rounded hover:bg-red-500/20 text-[var(--text-muted)] hover:text-red-400 transition" title="Delete Note"><i class="ph-bold ph-trash text-sm"></i></button>
                     </div>
                     <div id="note-editor" contenteditable="true" class="flex-1 p-8 outline-none text-lg text-[var(--text-main)] leading-relaxed overflow-y-auto custom-scrollbar"></div>
                     <div class="absolute bottom-4 right-6 text-xs text-[var(--text-muted)] font-mono opacity-70 bg-[var(--bg-color)]/50 px-2 rounded" id="note-stats">0 words, 0 chars</div>
@@ -376,9 +431,34 @@
         <div id="modal-wb-text" class="hidden modal-panel min-card p-6 w-80 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-sm font-bold mb-3 text-[var(--text-main)]" data-i18n="add_text">Add Text</h3><input type="text" id="wb-text-input" class="bare-input w-full mb-4" placeholder="Type here..."><div class="flex justify-end gap-2"><button onclick="closeModals()" class="text-xs text-[var(--text-muted)]" data-i18n="cancel">Cancel</button><button onclick="confirmWbText()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded" data-i18n="add">Add</button></div></div>
         
         <!-- Settings -->
-        <div id="modal-settings" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-xl font-medium mb-6 text-[var(--text-main)]" data-i18n="settings">Settings</h3><div class="space-y-6"><div class="text-xs text-[var(--text-muted)] bg-[var(--glass-panel)] p-3 rounded-lg"><p class="font-bold mb-1" data-i18n="shortcuts">Shortcuts</p><p>Alt + 1-9: Tabs</p><p>Alt + T: Task</p><p>Alt + N: Note</p><p>Esc: Close</p></div><div class="flex justify-between items-center"><span class="text-[var(--text-main)]">Language</span><select id="lang-select" onchange="setLanguage(this.value)" class="bare-input text-sm bg-transparent w-24 text-right cursor-pointer"><option value="en">English</option><option value="nl">Nederlands</option></select></div><div class="flex justify-between items-center"><span class="text-[var(--text-main)]" data-i18n="light_mode">Light Mode</span><button onclick="toggleTheme()" id="theme-toggle" class="w-12 h-6 rounded-full bg-[var(--glass-hover)] relative transition border border-[var(--glass-border)]"><div id="theme-dot" class="w-4 h-4 bg-[var(--text-main)] rounded-full absolute top-1 left-1 transition-transform"></div></button></div><div><label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block" data-i18n="accent">Accent</label><div class="flex gap-3"><button onclick="setAccent('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 hover:scale-110 transition"></button><button onclick="setAccent('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 hover:scale-110 transition"></button><button onclick="setAccent('#10b981')" class="w-8 h-8 rounded-full bg-emerald-500 hover:scale-110 transition"></button><button onclick="setAccent('#8b5cf6')" class="w-8 h-8 rounded-full bg-violet-500 hover:scale-110 transition"></button><button onclick="setAccent('#f59e0b')" class="w-8 h-8 rounded-full bg-amber-500 hover:scale-110 transition"></button></div></div><div><label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block" data-i18n="bg">Background</label><input type="color" onchange="setBg(this.value)" class="cursor-pointer" title="Pick Background Color"></div></div><div class="flex justify-end gap-4 mt-8"><button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium" data-i18n="done">Done</button></div></div>
+        <div id="modal-settings" class="hidden modal-panel min-card p-8 w-[400px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[90vh] overflow-y-auto"><h3 class="text-xl font-medium mb-6 text-[var(--text-main)]" data-i18n="settings">Settings</h3><div class="space-y-5"><div class="text-xs text-[var(--text-muted)] bg-[var(--glass-panel)] p-3 rounded-lg"><p class="font-bold mb-1" data-i18n="shortcuts">Shortcuts</p><p>Alt + 1-9: Tabs</p><p>Alt + T: Task</p><p>Alt + N: Note</p><p>Esc: Close</p></div><div class="flex justify-between items-center"><span class="text-[var(--text-main)]">Language</span><select id="lang-select" onchange="setLanguage(this.value)" class="bare-input text-sm bg-transparent w-24 text-right cursor-pointer"><option value="en">English</option><option value="nl">Nederlands</option></select></div><div class="flex justify-between items-center"><span class="text-[var(--text-main)]" data-i18n="light_mode">Light Mode</span><button onclick="toggleTheme()" id="theme-toggle" class="w-12 h-6 rounded-full bg-[var(--glass-hover)] relative transition border border-[var(--glass-border)]"><div id="theme-dot" class="w-4 h-4 bg-[var(--text-main)] rounded-full absolute top-1 left-1 transition-transform"></div></button></div><div><label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block" data-i18n="accent">Accent</label><div class="flex gap-3 flex-wrap"><button onclick="setAccent('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 hover:scale-110 transition"></button><button onclick="setAccent('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 hover:scale-110 transition"></button><button onclick="setAccent('#10b981')" class="w-8 h-8 rounded-full bg-emerald-500 hover:scale-110 transition"></button><button onclick="setAccent('#8b5cf6')" class="w-8 h-8 rounded-full bg-violet-500 hover:scale-110 transition"></button><button onclick="setAccent('#f59e0b')" class="w-8 h-8 rounded-full bg-amber-500 hover:scale-110 transition"></button><button onclick="setAccent('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 hover:scale-110 transition"></button></div></div><div class="flex justify-between items-center"><div><label class="text-[var(--text-main)] text-sm font-medium block">Clock Color</label><p class="text-xs text-[var(--text-muted)]">The big time display</p></div><input type="color" id="clock-color-picker" value="#ffffff" onchange="setClockColor(this.value)" style="width:36px;height:36px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,0.2);cursor:pointer;"></div><div><label class="text-[var(--text-muted)] text-xs uppercase tracking-widest font-bold mb-2 block" data-i18n="bg">Background</label><input type="color" onchange="setBg(this.value)" class="cursor-pointer" title="Pick Background Color"></div></div><div class="flex justify-end gap-4 mt-8"><button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium" data-i18n="done">Done</button></div></div>
 
-        <div id="modal-add-link" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-6 text-[var(--text-main)]" data-i18n="link">Add Link</h3><input type="text" id="link-name" placeholder="Name" class="bare-input w-full mb-4"><input type="text" id="link-url" placeholder="https://" class="bare-input w-full mb-4"><div class="mb-4"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Icon</label><select id="link-icon" class="bare-input w-full text-sm bg-transparent cursor-pointer"><option value="ph-fill ph-link">Default Link</option><option value="fa-brands fa-google">Google</option><option value="fa-brands fa-google-drive">Drive</option><option value="fa-solid fa-chalkboard-user">Classroom/Canvas</option><option value="fa-brands fa-wikipedia-w">Wikipedia</option><option value="fa-solid fa-book">Book</option><option value="fa-solid fa-school">School</option><option value="fa-solid fa-calculator">Math/Calc</option><option value="fa-solid fa-flask">Science</option><option value="fa-solid fa-globe">Language/Geo</option></select></div><div class="mb-6"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Open In</label><div class="flex gap-4 text-sm text-[var(--text-main)]"><label><input type="radio" name="linkMode" value="newtab" checked> New Tab</label><label><input type="radio" name="linkMode" value="iframe"> Open in App (Iframe)</label></div><p class="text-[10px] text-[var(--text-muted)] mt-1 italic">Note: Google/Canvas block iframes.</p></div><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button><button onclick="saveQuickLink()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button></div></div>
+        <div id="modal-add-link" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-6 text-[var(--text-main)]" data-i18n="link">Add Link</h3><input type="text" id="link-name" placeholder="Name" class="bare-input w-full mb-4"><input type="text" id="link-url" placeholder="https://" class="bare-input w-full mb-4"><div class="mb-4"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Icon</label><select id="link-icon" class="bare-input w-full text-sm bg-transparent cursor-pointer"><option value="ph-fill ph-link">🔗 Default Link</option><optgroup label="— Study Subjects —"><option value="fa-solid fa-book">📖 Book / Study</option><option value="fa-solid fa-graduation-cap">🎓 Course / Class</option><option value="fa-solid fa-flask">🔬 Science / Lab</option><option value="fa-solid fa-calculator">🧮 Math / Calc</option><option value="fa-solid fa-globe">🌍 Language / Geo</option><option value="fa-solid fa-landmark">🏛️ History</option><option value="fa-solid fa-atom">⚛️ Physics / Chemistry</option><option value="fa-solid fa-dna">🧬 Biology</option><option value="fa-solid fa-music">🎵 Music</option><option value="fa-solid fa-palette">🎨 Art</option><option value="fa-solid fa-code">💻 Computer Science</option><option value="fa-solid fa-pen-nib">✍️ Writing / Literature</option></optgroup><optgroup label="— Platforms —"><option value="fa-brands fa-google">Google</option><option value="fa-brands fa-google-drive">Google Drive</option><option value="fa-solid fa-chalkboard-user">Canvas / Classroom</option><option value="fa-brands fa-wikipedia-w">Wikipedia</option><option value="fa-solid fa-school">School Portal</option><option value="fa-brands fa-youtube">YouTube</option><option value="fa-solid fa-video">Video / Meeting</option><option value="fa-solid fa-envelope">Email</option></optgroup></select></div><div class="mb-6"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Open In</label><div class="flex gap-4 text-sm text-[var(--text-main)]"><label><input type="radio" name="linkMode" value="newtab" checked> New Tab</label><label><input type="radio" name="linkMode" value="iframe"> Open in App (Iframe)</label></div><p class="text-[10px] text-[var(--text-muted)] mt-1 italic">Note: Google/Canvas block iframes.</p></div><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button><button onclick="saveQuickLink()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button></div></div>
+
+        <!-- Profile modal -->
+        <div id="modal-profile" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-medium mb-1 text-[var(--text-main)]">Profile Picture</h3>
+            <p class="text-xs text-[var(--text-muted)] mb-4">Tap an emoji or upload a photo</p>
+            <div class="emoji-grid mb-4">
+                <div class="emoji-opt" onclick="setProfileEmoji('🎓')">🎓</div><div class="emoji-opt" onclick="setProfileEmoji('📚')">📚</div><div class="emoji-opt" onclick="setProfileEmoji('🧑‍💻')">🧑‍💻</div><div class="emoji-opt" onclick="setProfileEmoji('✏️')">✏️</div><div class="emoji-opt" onclick="setProfileEmoji('🦊')">🦊</div><div class="emoji-opt" onclick="setProfileEmoji('🐱')">🐱</div>
+                <div class="emoji-opt" onclick="setProfileEmoji('🐼')">🐼</div><div class="emoji-opt" onclick="setProfileEmoji('🦁')">🦁</div><div class="emoji-opt" onclick="setProfileEmoji('🌟')">🌟</div><div class="emoji-opt" onclick="setProfileEmoji('🚀')">🚀</div><div class="emoji-opt" onclick="setProfileEmoji('🎯')">🎯</div><div class="emoji-opt" onclick="setProfileEmoji('💡')">💡</div>
+                <div class="emoji-opt" onclick="setProfileEmoji('🎮')">🎮</div><div class="emoji-opt" onclick="setProfileEmoji('🔥')">🔥</div><div class="emoji-opt" onclick="setProfileEmoji('⚡')">⚡</div><div class="emoji-opt" onclick="setProfileEmoji('🧠')">🧠</div><div class="emoji-opt" onclick="setProfileEmoji('🎸')">🎸</div><div class="emoji-opt" onclick="setProfileEmoji('🌈')">🌈</div>
+            </div>
+            <button onclick="document.getElementById('profile-img-input').click()" class="w-full py-2 mb-4 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-xl text-sm text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition flex items-center justify-center gap-2"><i class="ph-bold ph-upload"></i> Upload Photo</button>
+            <div class="flex justify-end"><button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">Done</button></div>
+        </div>
+
+        <!-- Widget config modal -->
+        <div id="modal-widgets" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+            <h3 class="text-lg font-medium mb-2 text-[var(--text-main)]">Customize Widgets</h3>
+            <p class="text-xs text-[var(--text-muted)] mb-5">Toggle visibility, pick colors, and drag widgets on the dashboard to reorder.</p>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-links" checked onchange="setWidgetVisible('links',this.checked)" class="w-4 h-4"><label class="text-sm text-[var(--text-main)]" for="wv-links">Quick Links</label></div><input type="color" id="wc-links" value="#3b82f6" onchange="setWidgetColor('links',this.value)" style="width:26px;height:26px;border-radius:50%;padding:0;border:none;cursor:pointer;" title="Widget tint"></div>
+                <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-goals" checked onchange="setWidgetVisible('goals',this.checked)" class="w-4 h-4"><label class="text-sm text-[var(--text-main)]" for="wv-goals">Daily Goals</label></div><input type="color" id="wc-goals" value="#22c55e" onchange="setWidgetColor('goals',this.value)" style="width:26px;height:26px;border-radius:50%;padding:0;border:none;cursor:pointer;" title="Widget tint"></div>
+                <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-upnext" checked onchange="setWidgetVisible('upnext',this.checked)" class="w-4 h-4"><label class="text-sm text-[var(--text-main)]" for="wv-upnext">Up Next</label></div><input type="color" id="wc-upnext" value="#f59e0b" onchange="setWidgetColor('upnext',this.value)" style="width:26px;height:26px;border-radius:50%;padding:0;border:none;cursor:pointer;" title="Widget tint"></div>
+            </div>
+            <div class="flex justify-end mt-6"><button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">Done</button></div>
+        </div>
         
         <div id="modal-add-deck" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-6 text-[var(--text-main)]" data-i18n="new_deck">New Deck</h3><input type="text" id="deck-name" placeholder="Deck Name" class="bare-input w-full mb-8"><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button><button onclick="saveDeck()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="create">Create</button></div></div>
         <div id="modal-add-card" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-1 text-[var(--text-main)]" data-i18n="add">Add Card</h3><p class="text-xs text-[var(--text-muted)] mb-6">Deck: <span id="add-card-deck-name"></span></p><input type="text" id="card-q-input" placeholder="Question" class="bare-input w-full mb-4"><input type="text" id="card-a-input" placeholder="Answer" class="bare-input w-full mb-8"><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]" data-i18n="cancel">Cancel</button><button onclick="saveFlashcard()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded" data-i18n="save">Save</button></div></div>
@@ -424,97 +504,154 @@
             updateGreeting();
         }
         function setLanguage(lang) { currentLang = lang; DB.set('os_lang', lang); updateInterfaceText(); renderDecks(); renderGrades(); renderTasks(); }
-        function updateGreeting() { const h = new Date().getHours(); let g = t('greeting_m'); if (h >= 12) g = t('greeting_a'); if (h >= 18) g = t('greeting_e'); document.getElementById('dash-greeting').innerText = `${g}, Student`; }
+        function updateGreeting() { const h = new Date().getHours(); let g = t('greeting_m'); if (h >= 12) g = t('greeting_a'); if (h >= 18) g = t('greeting_e'); document.getElementById('dash-greeting').innerText = g + ', Student'; }
 
         let theme=DB.get('os_theme','dark'), accent=DB.get('os_accent','#3b82f6'), customBg=DB.get('os_custom_bg',null);
-        function applyTheme(){ document.documentElement.setAttribute('data-theme', theme); document.documentElement.style.setProperty('--accent', accent); document.getElementById('theme-dot').style.transform=theme==='light'?'translateX(24px)':'translateX(0)'; if(customBg)document.getElementById('ambient-bg').style.background=customBg; }
+        let clockColor = DB.get('os_clock_color', '');
+        function applyTheme(){
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.style.setProperty('--accent', accent);
+            document.getElementById('theme-dot').style.transform = theme==='light' ? 'translateX(24px)' : 'translateX(0)';
+            if(customBg) document.getElementById('ambient-bg').style.background = customBg;
+            var cc = clockColor || (theme==='light' ? '#1c1c1e' : '#ffffff');
+            document.documentElement.style.setProperty('--clock-color', cc);
+            var cp = document.getElementById('clock-color-picker');
+            if(cp) cp.value = (cc.length === 7) ? cc : '#ffffff';
+        }
         function toggleTheme(){ theme=theme==='dark'?'light':'dark'; DB.set('os_theme', theme); applyTheme(); }
         function setAccent(c){ accent=c; DB.set('os_accent', accent); applyTheme(); }
         function setBg(c){ customBg=c; DB.set('os_custom_bg', customBg); applyTheme(); }
+        function setClockColor(c){ clockColor=c; DB.set('os_clock_color', c); applyTheme(); }
         applyTheme();
 
-        function switchTab(id) { document.querySelectorAll('div[id^="view-"]').forEach(el=>el.classList.add('hidden')); document.getElementById(`view-${id}`).classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); document.getElementById(`btn-${id}`)?.classList.add('active'); if(id==='whiteboard')resizeCanvas(); }
-        function openModal(id) { document.getElementById('modal-overlay').classList.remove('hidden'); document.querySelectorAll('.modal-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); const i=document.getElementById(id).querySelector('input'); if(i)setTimeout(()=>i.focus(),100); }
+        function switchTab(id) { document.querySelectorAll('div[id^="view-"]').forEach(el=>el.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); var btn=document.getElementById('btn-'+id); if(btn) btn.classList.add('active'); if(id==='whiteboard') setTimeout(resizeCanvas, 50); }
+        function openModal(id) { document.getElementById('modal-overlay').classList.remove('hidden'); document.querySelectorAll('.modal-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); var i=document.getElementById(id).querySelector('input'); if(i) setTimeout(function(){ i.focus(); }, 100); }
         function closeModals(){ document.getElementById('modal-overlay').classList.add('hidden'); }
-        document.getElementById('modal-overlay').addEventListener('click', (e)=>{ if(e.target.id==='modal-overlay')closeModals(); });
+        document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target.id==='modal-overlay') closeModals(); });
 
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', function(e) {
             if(e.key === 'Escape') closeModals();
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
             if (e.altKey) {
-                switch(e.key) {
-                    case '1': switchTab('dashboard'); break; case '2': switchTab('tasks'); break; case '3': switchTab('calendar'); break; case '4': switchTab('notes'); break; case '5': switchTab('whiteboard'); break; case '6': switchTab('cards'); break; case '7': switchTab('grades'); break; case '8': switchTab('calc'); break; case '9': switchTab('focus'); break; case 't': document.getElementById('task-input').focus(); switchTab('tasks'); e.preventDefault(); break; case 'n': createNewNote(); switchTab('notes'); e.preventDefault(); break;
-                }
+                if(e.key==='1') switchTab('dashboard');
+                else if(e.key==='2') switchTab('tasks');
+                else if(e.key==='3') switchTab('calendar');
+                else if(e.key==='4') switchTab('notes');
+                else if(e.key==='5') switchTab('whiteboard');
+                else if(e.key==='6') switchTab('cards');
+                else if(e.key==='7') switchTab('grades');
+                else if(e.key==='8') switchTab('calc');
+                else if(e.key==='9') switchTab('focus');
+                else if(e.key==='t'){ document.getElementById('task-input').focus(); switchTab('tasks'); e.preventDefault(); }
+                else if(e.key==='n'){ createNewNote(); switchTab('notes'); e.preventDefault(); }
             }
         });
 
+        // ===== PROFILE =====
+        var profileData = DB.get('os_profile', {type:'icon'});
+        function renderProfile() {
+            var el = document.getElementById('profile-display');
+            if(!el) return;
+            if(profileData.type === 'emoji') {
+                el.innerHTML = '<span style="font-size:1.3rem;line-height:1;">' + profileData.value + '</span>';
+            } else if(profileData.type === 'image') {
+                el.innerHTML = '<img src="' + profileData.value + '" style="width:100%;height:100%;object-fit:cover;">';
+            } else {
+                el.innerHTML = '<i class="ph-bold ph-student text-xl text-[var(--bg-color)]"></i>';
+            }
+        }
+        function setProfileEmoji(emoji) { profileData = {type:'emoji', value:emoji}; DB.set('os_profile', profileData); renderProfile(); closeModals(); }
+        function handleProfileImage(inp) {
+            var f = inp.files[0]; if(!f) return;
+            var r = new FileReader();
+            r.onload = function(e) { profileData = {type:'image', value:e.target.result}; DB.set('os_profile', profileData); renderProfile(); closeModals(); };
+            r.readAsDataURL(f); inp.value = '';
+        }
+        renderProfile();
+
+        // ===== WIDGET CONFIG =====
+        var widgetCfg = DB.get('os_widget_cfg', {links:{v:true,c:''},goals:{v:true,c:''},upnext:{v:true,c:''}});
+        function applyWidgetCfg() {
+            ['links','goals','upnext'].forEach(function(w) {
+                var el = document.getElementById('widget-'+w);
+                var cfg = widgetCfg[w] || {v:true,c:''};
+                if(!el) return;
+                el.style.display = cfg.v ? '' : 'none';
+                el.style.background = cfg.c ? cfg.c + '22' : '';
+                var cb = document.getElementById('wv-'+w); if(cb) cb.checked = cfg.v;
+                var ci = document.getElementById('wc-'+w); if(ci && cfg.c) ci.value = cfg.c;
+            });
+        }
+        function setWidgetVisible(w, v) { widgetCfg[w] = widgetCfg[w]||{}; widgetCfg[w].v = v; DB.set('os_widget_cfg', widgetCfg); applyWidgetCfg(); }
+        function setWidgetColor(w, c) { widgetCfg[w] = widgetCfg[w]||{}; widgetCfg[w].c = c; DB.set('os_widget_cfg', widgetCfg); applyWidgetCfg(); }
+        applyWidgetCfg();
+
+        // Widget drag-and-drop
+        var dragSrc = null;
+        document.querySelectorAll('.widget-item').forEach(function(el) {
+            el.addEventListener('dragstart', function(e) { dragSrc = el; el.classList.add('widget-dragging'); e.dataTransfer.effectAllowed = 'move'; });
+            el.addEventListener('dragend', function() { el.classList.remove('widget-dragging'); document.querySelectorAll('.widget-item').forEach(function(x){ x.classList.remove('widget-drag-over'); }); });
+            el.addEventListener('dragover', function(e) { e.preventDefault(); if(el !== dragSrc) el.classList.add('widget-drag-over'); return false; });
+            el.addEventListener('dragleave', function() { el.classList.remove('widget-drag-over'); });
+            el.addEventListener('drop', function(e) {
+                e.preventDefault(); el.classList.remove('widget-drag-over');
+                if(dragSrc && dragSrc !== el) {
+                    var grid = el.parentNode;
+                    var items = Array.from(grid.children);
+                    var si = items.indexOf(dragSrc), ti = items.indexOf(el);
+                    if(si < ti) grid.insertBefore(dragSrc, el.nextSibling); else grid.insertBefore(dragSrc, el);
+                }
+            });
+        });
+
+        // ===== LINKS =====
         let links = DB.get('os_links', [{name:'Canvas', url:'https://canvas.instructure.com', icon:'ph-fill ph-link', mode:'newtab'}]);
         let editingLinkIndex = -1;
         function renderLinks() {
             const c = document.getElementById('quick-links-container'); c.innerHTML = '';
             links.forEach((l, i) => {
-                c.innerHTML += `
-                <div class="relative group min-w-[80px] h-24 link-card" onclick="handleLinkClick(${i})">
-                    <div class="w-full h-full bg-[var(--glass-panel)] rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-[var(--glass-hover)] transition cursor-pointer">
-                        <i class="${l.icon || 'ph-fill ph-link'} text-2xl text-[var(--accent)] group-hover:scale-110 transition"></i><span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)] truncate px-2">${l.name}</span>
-                    </div>
-                    <div class="absolute top-1 right-1 flex gap-1 link-actions opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="event.stopPropagation(); editLink(${i})" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-[var(--accent)]"><i class="ph-bold ph-pencil"></i></button>
-                        <button onclick="event.stopPropagation(); deleteLink(${i})" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-red-500"><i class="ph-bold ph-trash"></i></button>
-                    </div>
-                </div>`;
+                c.innerHTML += '<div class="relative group min-w-[80px] h-24 link-card" onclick="handleLinkClick(' + i + ')"><div class="w-full h-full bg-[var(--glass-panel)] rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-[var(--glass-hover)] transition cursor-pointer"><i class="' + (l.icon||'ph-fill ph-link') + ' text-2xl text-[var(--accent)] group-hover:scale-110 transition"></i><span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)] truncate px-2">' + l.name + '</span></div><div class="absolute top-1 right-1 flex gap-1 link-actions opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="event.stopPropagation(); editLink(' + i + ')" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-[var(--accent)]"><i class="ph-bold ph-pencil"></i></button><button onclick="event.stopPropagation(); deleteLink(' + i + ')" class="bg-black/50 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] hover:bg-red-500"><i class="ph-bold ph-trash"></i></button></div></div>';
             });
         }
-        function handleLinkClick(i) {
-            const l = links[i];
-            if(l.mode === 'iframe') {
-                document.getElementById('browser-frame').src = l.url;
-                document.getElementById('browser-title').innerText = l.name;
-                document.getElementById('modal-browser').classList.remove('hidden');
-            } else { window.open(l.url, '_blank'); }
-        }
-        function openAddLinkModal() { editingLinkIndex = -1; document.getElementById('link-name').value=''; document.getElementById('link-url').value=''; openModal('modal-add-link'); }
-        function editLink(i) { editingLinkIndex = i; document.getElementById('link-name').value=links[i].name; document.getElementById('link-url').value=links[i].url; document.getElementById('link-icon').value=links[i].icon||'ph-fill ph-link'; openModal('modal-add-link'); }
-        function deleteLink(i) { if(confirm(t('are_you_sure'))) { links.splice(i, 1); DB.set('os_links', links); renderLinks(); } }
+        function handleLinkClick(i) { const l=links[i]; if(l.mode==='iframe'){document.getElementById('browser-frame').src=l.url;document.getElementById('browser-title').innerText=l.name;document.getElementById('modal-browser').classList.remove('hidden');}else{window.open(l.url,'_blank');} }
+        function openAddLinkModal() { editingLinkIndex=-1; document.getElementById('link-name').value=''; document.getElementById('link-url').value=''; openModal('modal-add-link'); }
+        function editLink(i) { editingLinkIndex=i; document.getElementById('link-name').value=links[i].name; document.getElementById('link-url').value=links[i].url; document.getElementById('link-icon').value=links[i].icon||'ph-fill ph-link'; openModal('modal-add-link'); }
+        function deleteLink(i) { if(confirm(t('are_you_sure'))){links.splice(i,1);DB.set('os_links',links);renderLinks();} }
         function saveQuickLink() {
-            const name = document.getElementById('link-name').value; let url = document.getElementById('link-url').value; const icon = document.getElementById('link-icon').value;
-            const mode = document.querySelector('input[name="linkMode"]:checked').value;
-            if(name && url) {
-                if(!url.startsWith('http')) url = 'https://' + url;
-                if(editingLinkIndex > -1) links[editingLinkIndex] = {name, url, icon, mode}; else links.push({name, url, icon, mode});
-                DB.set('os_links', links); renderLinks(); closeModals();
-            }
+            const name=document.getElementById('link-name').value; let url=document.getElementById('link-url').value; const icon=document.getElementById('link-icon').value;
+            const mode=document.querySelector('input[name="linkMode"]:checked').value;
+            if(name&&url){ if(!url.startsWith('http'))url='https://'+url; if(editingLinkIndex>-1)links[editingLinkIndex]={name,url,icon,mode};else links.push({name,url,icon,mode}); DB.set('os_links',links); renderLinks(); closeModals(); }
         }
         renderLinks();
 
+        // ===== GOALS =====
         let goals = DB.get('os_goals', []);
-        function renderGoals() { const c=document.getElementById('goals-container'); c.innerHTML=''; if(!goals.length)c.innerHTML=`<div class="text-xs text-[var(--text-muted)] italic">${t('no_tasks')}</div>`; goals.forEach((g,i)=>{ c.innerHTML+=`<div class="flex items-center gap-3 py-1 text-sm text-[var(--text-main)] group"><input type="checkbox" ${g.done?'checked':''} onchange="toggleGoal(${i})" class="accent-[var(--accent)] w-4 h-4 cursor-pointer"><span class="flex-1 ${g.done?'line-through opacity-50':''}">${g.text}</span><button onclick="deleteGoal(${i})" class="text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-x"></i></button></div>`; }); }
-        function addGoal(){ const i=document.getElementById('goal-input'); if(i.value){ goals.push({text:i.value, done:false}); DB.set('os_goals', goals); i.value=''; renderGoals(); } }
-        function toggleGoal(i){ goals[i].done=!goals[i].done; DB.set('os_goals', goals); renderGoals(); }
-        function deleteGoal(i){ goals.splice(i,1); DB.set('os_goals', goals); renderGoals(); }
+        function renderGoals() { const c=document.getElementById('goals-container'); c.innerHTML=''; if(!goals.length)c.innerHTML='<div class="text-xs text-[var(--text-muted)] italic">'+t('no_tasks')+'</div>'; goals.forEach((g,i)=>{ c.innerHTML+='<div class="flex items-center gap-3 py-1 text-sm text-[var(--text-main)] group"><input type="checkbox" '+(g.done?'checked':'')+' onchange="toggleGoal('+i+')" class="w-4 h-4"><span class="flex-1 '+(g.done?'line-through opacity-50':'')+'">'+g.text+'</span><button onclick="deleteGoal('+i+')" class="text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-x"></i></button></div>'; }); }
+        function addGoal(){ const i=document.getElementById('goal-input'); if(i.value){goals.push({text:i.value,done:false});DB.set('os_goals',goals);i.value='';renderGoals();} }
+        function toggleGoal(i){ goals[i].done=!goals[i].done; DB.set('os_goals',goals); renderGoals(); }
+        function deleteGoal(i){ goals.splice(i,1); DB.set('os_goals',goals); renderGoals(); }
         renderGoals();
 
+        // ===== FLASHCARDS =====
         let decks = DB.get('os_decks', [{id:1, name:'History', cards:[]}]);
         let activeDeckId=null, studyQueue=[], studyIndex=0, isFlipped=false;
-        function renderDecks() { const c=document.getElementById('decks-container'); c.innerHTML=''; decks.forEach(d=>{ c.innerHTML+=`<div class="min-card p-6 cursor-pointer hover:border-[var(--accent)] transition flex flex-col justify-between h-40 group relative" onclick="showEditView(${d.id})"><div><h3 class="text-xl font-medium text-[var(--text-main)] truncate">${d.name}</h3><p class="text-sm text-[var(--text-muted)]">${d.cards.length} ${t('cards')}</p></div><div class="flex justify-between items-end"><i class="ph-fill ph-cards text-3xl text-[var(--accent)] opacity-20 group-hover:opacity-100 transition"></i></div><button onclick="event.stopPropagation(); deleteDeck(${d.id})" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-trash"></i></button></div>`; }); }
-        function saveDeck(){ const n=document.getElementById('deck-name').value; if(n){ decks.push({id:Date.now(), name:n, cards:[]}); DB.set('os_decks', decks); document.getElementById('deck-name').value=''; closeModals(); renderDecks(); } }
-        function deleteDeck(id){ showConfirm(t('delete'), t('confirm_del_deck'), ()=>{ decks=decks.filter(d=>d.id!==id); DB.set('os_decks', decks); renderDecks(); }); }
-        function showEditView(id){ if(id)activeDeckId=id; const d=decks.find(x=>x.id===activeDeckId); if(!d)return; document.getElementById('cards-deck-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-edit-view').classList.remove('hidden'); document.getElementById('edit-deck-title').innerText=d.name; document.getElementById('edit-deck-stats').innerText=`${d.cards.length} ${t('cards')}`; renderCardList(d); }
-        function renderCardList(d){ const l=document.getElementById('cards-list-container'); l.innerHTML=''; if(!d.cards.length)l.innerHTML='<div class="text-center p-8 text-[var(--text-muted)] italic">No cards yet.</div>'; d.cards.forEach((c,i)=>{ l.innerHTML+=`<div class="flex items-center gap-4 p-3 bg-[var(--glass-hover)] rounded-xl border border-[var(--glass-border)]"><button onclick="toggleStarCard(${i})" class="${c.starred?'text-yellow-400':'text-[var(--text-muted)] hover:text-yellow-400'}"><i class="ph-fill ph-star"></i></button><div class="flex-1 min-w-0 grid grid-cols-2 gap-4"><div class="truncate text-sm font-medium text-[var(--text-main)]" title="${c.q}">${c.q}</div><div class="truncate text-sm text-[var(--text-muted)]" title="${c.a}">${c.a}</div></div><div class="flex gap-2"><span class="text-[10px] uppercase px-2 py-1 rounded-full ${c.status==='hard'?'bg-red-500/20 text-red-500':'bg-green-500/20 text-green-500'}">${c.status||'new'}</span><button onclick="deleteCard(${i})" class="text-[var(--text-muted)] hover:text-red-500"><i class="ph-bold ph-trash"></i></button></div></div>`; }); }
+        function renderDecks() { const c=document.getElementById('decks-container'); c.innerHTML=''; decks.forEach(d=>{ c.innerHTML+='<div class="min-card p-6 cursor-pointer hover:border-[var(--accent)] transition flex flex-col justify-between h-40 group relative" onclick="showEditView('+d.id+')"><div><h3 class="text-xl font-medium text-[var(--text-main)] truncate">'+d.name+'</h3><p class="text-sm text-[var(--text-muted)]">'+d.cards.length+' '+t('cards')+'</p></div><div class="flex justify-between items-end"><i class="ph-fill ph-cards text-3xl text-[var(--accent)] opacity-20 group-hover:opacity-100 transition"></i></div><button onclick="event.stopPropagation(); deleteDeck('+d.id+')" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="ph-bold ph-trash"></i></button></div>'; }); }
+        function saveDeck(){ const n=document.getElementById('deck-name').value; if(n){decks.push({id:Date.now(),name:n,cards:[]});DB.set('os_decks',decks);document.getElementById('deck-name').value='';closeModals();renderDecks();} }
+        function deleteDeck(id){ showConfirm(t('delete'),t('confirm_del_deck'),()=>{decks=decks.filter(d=>d.id!==id);DB.set('os_decks',decks);renderDecks();}); }
+        function showEditView(id){ if(id)activeDeckId=id; const d=decks.find(x=>x.id===activeDeckId); if(!d)return; document.getElementById('cards-deck-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-edit-view').classList.remove('hidden'); document.getElementById('edit-deck-title').innerText=d.name; document.getElementById('edit-deck-stats').innerText=d.cards.length+' '+t('cards'); renderCardList(d); }
+        function renderCardList(d){ const l=document.getElementById('cards-list-container'); l.innerHTML=''; if(!d.cards.length)l.innerHTML='<div class="text-center p-8 text-[var(--text-muted)] italic">No cards yet.</div>'; d.cards.forEach((c,i)=>{ l.innerHTML+='<div class="flex items-center gap-4 p-3 bg-[var(--glass-hover)] rounded-xl border border-[var(--glass-border)]"><button onclick="toggleStarCard('+i+')" class="'+(c.starred?'text-yellow-400':'text-[var(--text-muted)] hover:text-yellow-400')+'"><i class="ph-fill ph-star"></i></button><div class="flex-1 min-w-0 grid grid-cols-2 gap-4"><div class="truncate text-sm font-medium text-[var(--text-main)]" title="'+c.q+'">'+c.q+'</div><div class="truncate text-sm text-[var(--text-muted)]" title="'+c.a+'">'+c.a+'</div></div><div class="flex gap-2"><span class="text-[10px] uppercase px-2 py-1 rounded-full '+(c.status==='hard'?'bg-red-500/20 text-red-500':'bg-green-500/20 text-green-500')+'">'+(c.status||'new')+'</span><button onclick="deleteCard('+i+')" class="text-[var(--text-muted)] hover:text-red-500"><i class="ph-bold ph-trash"></i></button></div></div>'; }); }
         function showDeckList(){ document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.add('hidden'); document.getElementById('cards-deck-view').classList.remove('hidden'); renderDecks(); }
-        
-        function openAddCardModal(id){ if(id) activeDeckId = id; const d=decks.find(x=>x.id===activeDeckId); if(!d) return; document.getElementById('add-card-deck-name').innerText=d.name; openModal('modal-add-card'); }
-        function saveFlashcard(){ const q=document.getElementById('card-q-input').value, a=document.getElementById('card-a-input').value; if(q&&activeDeckId){ const d=decks.find(x=>x.id===activeDeckId); d.cards.push({q,a,status:'new',starred:false}); DB.set('os_decks', decks); document.getElementById('card-q-input').value=''; document.getElementById('card-a-input').value=''; closeModals(); showEditView(); } }
-        function deleteCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards.splice(i,1); DB.set('os_decks', decks); showEditView(); }
-        function toggleStarCard(i){ const d=decks.find(x=>x.id===activeDeckId); d.cards[i].starred=!d.cards[i].starred; DB.set('os_decks', decks); showEditView(); }
-        function startStudy(m){ const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert("Error","No cards.");return;} if(m==='all')studyQueue=[...d.cards]; else if(m==='hard')studyQueue=d.cards.filter(c=>c.status==='hard'); else if(m==='starred')studyQueue=d.cards.filter(c=>c.starred); if(!studyQueue.length){showAlert("Empty","No matching cards.");return;} studyQueue.sort(()=>Math.random()-0.5); studyIndex=0; document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.remove('hidden'); document.getElementById('study-mode-label').innerText={all:t('all_cards'),hard:t('hard_only'),starred:t('star_only')}[m]; updateStudyCard(); document.addEventListener('keydown', handleStudyKeys); }
+        function openAddCardModal(id){ if(id)activeDeckId=id; const d=decks.find(x=>x.id===activeDeckId); if(!d)return; document.getElementById('add-card-deck-name').innerText=d.name; openModal('modal-add-card'); }
+        function saveFlashcard(){ const q=document.getElementById('card-q-input').value, a=document.getElementById('card-a-input').value; if(q&&activeDeckId){const d=decks.find(x=>x.id===activeDeckId);d.cards.push({q,a,status:'new',starred:false});DB.set('os_decks',decks);document.getElementById('card-q-input').value='';document.getElementById('card-a-input').value='';closeModals();showEditView();} }
+        function deleteCard(i){ const d=decks.find(x=>x.id===activeDeckId);d.cards.splice(i,1);DB.set('os_decks',decks);showEditView(); }
+        function toggleStarCard(i){ const d=decks.find(x=>x.id===activeDeckId);d.cards[i].starred=!d.cards[i].starred;DB.set('os_decks',decks);showEditView(); }
+        function startStudy(m){ const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert('Error','No cards.');return;} if(m==='all')studyQueue=[...d.cards]; else if(m==='hard')studyQueue=d.cards.filter(c=>c.status==='hard'); else if(m==='starred')studyQueue=d.cards.filter(c=>c.starred); if(!studyQueue.length){showAlert('Empty','No matching cards.');return;} studyQueue.sort(()=>Math.random()-0.5); studyIndex=0; document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-study-view').classList.remove('hidden'); document.getElementById('study-mode-label').innerText={all:t('all_cards'),hard:t('hard_only'),starred:t('star_only')}[m]; updateStudyCard(); document.addEventListener('keydown', handleStudyKeys); }
         function handleStudyKeys(e){ if(document.getElementById('cards-study-view').classList.contains('hidden'))return; if(e.code==='Space'){e.preventDefault();flipCard()} if(e.code==='ArrowRight'){rateCard('easy');} if(e.code==='ArrowLeft'){rateCard('hard');} }
-        function updateStudyCard(){ isFlipped=false; document.getElementById('flashcard-inner').style.transform='rotateY(0deg)'; const c=studyQueue[studyIndex]; document.getElementById('card-front').innerText=c.q; setTimeout(()=>document.getElementById('card-back').innerText=c.a,200); document.getElementById('study-counter').innerText=`${studyIndex+1}/${studyQueue.length}`; }
+        function updateStudyCard(){ isFlipped=false; document.getElementById('flashcard-inner').style.transform='rotateY(0deg)'; const c=studyQueue[studyIndex]; document.getElementById('card-front').innerText=c.q; setTimeout(()=>document.getElementById('card-back').innerText=c.a,200); document.getElementById('study-counter').innerText=(studyIndex+1)+'/'+studyQueue.length; }
         function flipCard(){ isFlipped=!isFlipped; document.getElementById('flashcard-inner').style.transform=isFlipped?'rotateY(180deg)':'rotateY(0deg)'; }
-        function nextCard(){ if(studyIndex<studyQueue.length-1){studyIndex++;updateStudyCard()}else{showConfirm("Finished","Go back?",showEditView)} }
-        function rateCard(r){ const cur=studyQueue[studyIndex], d=decks.find(x=>x.id===activeDeckId), real=d.cards.find(c=>c.q===cur.q&&c.a===cur.a); if(real){real.status=r;DB.set('os_decks', decks)} nextCard(); }
-        
-        function exportDeck() { const d=decks.find(x=>x.id===activeDeckId); const s="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(d)); const a=document.createElement('a'); a.href=s; a.download=d.name+".json"; a.click(); }
+        function nextCard(){ if(studyIndex<studyQueue.length-1){studyIndex++;updateStudyCard()}else{showConfirm('Finished','Go back?',showEditView)} }
+        function rateCard(r){ const cur=studyQueue[studyIndex], d=decks.find(x=>x.id===activeDeckId), real=d.cards.find(c=>c.q===cur.q&&c.a===cur.a); if(real){real.status=r;DB.set('os_decks',decks)} nextCard(); }
+        function exportDeck() { const d=decks.find(x=>x.id===activeDeckId); const s='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(d)); const a=document.createElement('a'); a.href=s; a.download=d.name+'.json'; a.click(); }
         function triggerImportDeck() { document.getElementById('import-deck-input').click(); }
         function handleImportDeck(inp) { 
             const f=inp.files[0]; if(!f)return; 
@@ -524,18 +661,12 @@
                     if(f.name.endsWith('.csv')) {
                         const lines = e.target.result.split('\n');
                         const cards = [];
-                        lines.forEach(l => {
-                            const [q, a] = l.split(',');
-                            if(q && a) cards.push({q: q.trim(), a: a.trim(), status: 'new', starred: false});
-                        });
-                        if(cards.length) {
-                            decks.push({id:Date.now(), name: f.name.replace('.csv',''), cards});
-                            DB.set('os_decks', decks); renderDecks(); showAlert("Success", "CSV imported!");
-                        } else throw new Error();
+                        lines.forEach(l => { const [q, a] = l.split(','); if(q && a) cards.push({q: q.trim(), a: a.trim(), status: 'new', starred: false}); });
+                        if(cards.length) { decks.push({id:Date.now(), name: f.name.replace('.csv',''), cards}); DB.set('os_decks', decks); renderDecks(); showAlert('Success', 'CSV imported!'); } else throw new Error();
                     } else {
-                        const d=JSON.parse(e.target.result); if(!d.name||!d.cards)throw new Error(); d.id=Date.now(); decks.push(d); DB.set('os_decks',decks); renderDecks(); showAlert("Success","Deck imported!");
+                        const d=JSON.parse(e.target.result); if(!d.name||!d.cards)throw new Error(); d.id=Date.now(); decks.push(d); DB.set('os_decks',decks); renderDecks(); showAlert('Success','Deck imported!');
                     }
-                }catch(err){showAlert("Error","Invalid file.");}
+                }catch(err){showAlert('Error','Invalid file.');}
             }; 
             r.readAsText(f); inp.value=''; 
         }
@@ -543,10 +674,10 @@
         // Word Search
         let wsWords=[], wsGrid=[], wsSelected=[];
         function startWordSearch() {
-            const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert("Error","No cards.");return;}
+            const d=decks.find(x=>x.id===activeDeckId); if(!d.cards.length){showAlert('Error','No cards.');return;}
             document.getElementById('cards-edit-view').classList.add('hidden'); document.getElementById('cards-wordsearch-view').classList.remove('hidden');
             let potential = d.cards.map(c=>c.a.toUpperCase().replace(/[^A-Z]/g,'')).filter(w=>w.length>2).slice(0,8);
-            if(potential.length===0){showAlert("Error","No words > 2 chars."); showEditView(); return;}
+            if(potential.length===0){showAlert('Error','No words > 2 chars.'); showEditView(); return;}
             initWSGrid(potential);
         }
         function initWSGrid(potential) {
@@ -558,9 +689,9 @@
         function canPlace(w,r,c,dir,size) { if(dir){if(c+w.length>size)return false;for(let i=0;i<w.length;i++)if(wsGrid[r][c+i]&&wsGrid[r][c+i]!==w[i])return false;}else{if(r+w.length>size)return false;for(let i=0;i<w.length;i++)if(wsGrid[r+i][c]&&wsGrid[r+i][c]!==w[i])return false;} return true; }
         function placeWord(w,r,c,dir) { if(dir)for(let i=0;i<w.length;i++)wsGrid[r][c+i]=w[i];else for(let i=0;i<w.length;i++)wsGrid[r+i][c]=w[i]; }
         function renderWS() {
-            const gc=document.getElementById('ws-grid-container'); gc.innerHTML=''; gc.style.gridTemplateColumns=`repeat(14, 1fr)`;
+            const gc=document.getElementById('ws-grid-container'); gc.innerHTML=''; gc.style.gridTemplateColumns='repeat(14, 1fr)';
             wsGrid.forEach((row,r)=>row.forEach((l,c)=>{const d=document.createElement('div');d.className='ws-cell';d.innerText=l;d.onclick=()=>handleWSCell(r,c,d);gc.appendChild(d);}));
-            document.getElementById('ws-word-list').innerHTML=wsWords.map(w=>`<div id="ws-word-${w}" class="py-1 px-2 rounded hover:bg-[var(--glass-hover)]">${w}</div>`).join('');
+            document.getElementById('ws-word-list').innerHTML=wsWords.map(w=>'<div id="ws-word-'+w+'" class="py-1 px-2 rounded hover:bg-[var(--glass-hover)]">'+w+'</div>').join('');
             wsSelected=[];
         }
         function handleWSCell(r,c,div) {
@@ -572,12 +703,12 @@
         function checkWSSelection() {
             const s=wsSelected[0], e=wsSelected[1];
             if(s.r===e.r || s.c===e.c || Math.abs(s.r-e.r)===Math.abs(s.c-e.c)) {
-                let word=""; const dr=Math.sign(e.r-s.r), dc=Math.sign(e.c-s.c); let cr=s.r, cc=s.c;
+                let word=''; const dr=Math.sign(e.r-s.r), dc=Math.sign(e.c-s.c); let cr=s.r, cc=s.c;
                 while(true){ word+=wsGrid[cr][cc]; if(cr===e.r&&cc===e.c)break; cr+=dr; cc+=dc; }
                 const rev=word.split('').reverse().join('');
                 if(wsWords.includes(word)||wsWords.includes(rev)){
                     const f=wsWords.includes(word)?word:rev; markWSFound(s,e,dr,dc);
-                    const el=document.getElementById(`ws-word-${f}`); el.style.textDecoration='line-through'; el.style.opacity='0.5';
+                    const el=document.getElementById('ws-word-'+f); el.style.textDecoration='line-through'; el.style.opacity='0.5';
                 }
             }
             setTimeout(()=>{wsSelected.forEach(x=>x.div.classList.remove('selected'));wsSelected=[]},500);
@@ -585,37 +716,147 @@
         function markWSFound(s,e,dr,dc){ let cr=s.r, cc=s.c; while(true){ const el=document.getElementById('ws-grid-container').children[cr*14+cc]; if(el)el.classList.add('found'); if(cr===e.r&&cc===e.c)break; cr+=dr; cc+=dc; } }
         renderDecks();
 
+        // ===== GRADES (improved UI) =====
         let subjects = DB.get('os_subjects', []); let activeSubjectId = null;
-        function renderGrades() { const c=document.getElementById('subjects-container'); c.innerHTML=''; let ts=0, tm=0; subjects.forEach(s=>{ let ss=0, sm=0; s.tests.forEach(t=>{ if(!t.isPractice){ss+=parseFloat(t.score);sm+=parseFloat(t.max);} }); ts+=ss; tm+=sm; const avg=sm>0?Math.round((ss/sm)*100):0; c.innerHTML+=`<div class="min-card p-6"><div class="flex justify-between items-start mb-4"><h3 class="text-xl font-medium text-[var(--text-main)]">${s.name}</h3><div class="text-2xl font-light ${avg>=50?'text-green-500':'text-red-500'}">${avg}%</div></div><div class="space-y-2 mb-4 max-h-32 overflow-y-auto custom-scrollbar">${s.tests.map(t=>`<div class="flex justify-between text-sm border-b border-[var(--glass-border)] pb-1 ${t.isPractice?'opacity-60 italic':''}"><span class="text-[var(--text-muted)]">${t.name||'Test'}${t.isPractice?' (Practice)':''}</span><span class="text-[var(--text-main)]">${t.score}/${t.max}</span></div>`).join('')}${!s.tests.length?'<div class="text-xs text-[var(--text-muted)]">No results</div>':''}</div><div class="flex justify-between"><button onclick="deleteSubject(${s.id})" class="text-xs text-[var(--text-muted)] hover:text-red-500">${t('delete')}</button><button onclick="openAddTestModal(${s.id})" class="text-xs bg-[var(--glass-hover)] px-3 py-1 rounded-full text-[var(--text-main)] hover:bg-[var(--accent)] hover:text-white transition">+ ${t('add_result')}</button></div></div>`; }); const ga=tm>0?Math.round((ts/tm)*100):0; document.getElementById('global-average').innerText=tm>0?`${ga}%`:'--%'; }
+        const subjectColors = ['#3b82f6','#ef4444','#22c55e','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+        function renderGrades() {
+            const c = document.getElementById('subjects-container'); c.innerHTML = '';
+            let ts=0, tm=0;
+            subjects.forEach(function(s, si) {
+                let ss=0, sm=0;
+                s.tests.forEach(function(tt){ if(!tt.isPractice){ ss+=parseFloat(tt.score); sm+=parseFloat(tt.max); } });
+                ts+=ss; tm+=sm;
+                const avg = sm>0 ? Math.round((ss/sm)*100) : null;
+                const col = subjectColors[si % subjectColors.length];
+                const avgStr = avg!==null ? avg+'%' : '--%';
+                const bw = avg !== null ? avg : 0;
+                const bc = avg===null ? 'var(--accent)' : avg>=70 ? '#22c55e' : avg>=50 ? '#f59e0b' : '#ef4444';
+
+                let testsHtml = '';
+                s.tests.forEach(function(tt) {
+                    const tp = Math.round((parseFloat(tt.score)/parseFloat(tt.max))*100);
+                    const tbg = tp>=50 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)';
+                    const tfc = tp>=50 ? '#22c55e' : '#ef4444';
+                    const row = '<div class="flex justify-between text-sm border-b border-[var(--glass-border)] pb-1 '+(tt.isPractice?'opacity-50 italic':'')+'"><span class="text-[var(--text-muted)]">'+(tt.name||'Test')+(tt.isPractice?' (Practice)':'')+'</span><div class="flex items-center gap-2"><span class="text-[var(--text-main)] font-medium">'+tt.score+'/'+tt.max+'</span><span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:'+tbg+';color:'+tfc+'">'+tp+'%</span></div></div>';
+                    testsHtml += row;
+                });
+                if(!s.tests.length) testsHtml = '<div class="text-xs text-[var(--text-muted)] italic">No results yet</div>';
+
+                const card = '<div class="min-card p-6 flex flex-col gap-3" style="border-left:4px solid '+col+'"><div class="flex justify-between items-start"><div><h3 class="text-lg font-semibold text-[var(--text-main)]">'+s.name+'</h3><span class="text-xs text-[var(--text-muted)]">'+s.tests.filter(function(tt){return !tt.isPractice;}).length+' graded tests</span></div><div class="text-3xl font-light" style="color:'+bc+'">'+avgStr+'</div></div><div class="w-full h-2 bg-[var(--glass-hover)] rounded-full overflow-hidden"><div class="grade-bar h-full rounded-full" style="width:'+bw+'%;background:'+bc+';"></div></div><div class="space-y-1.5 max-h-28 overflow-y-auto">'+testsHtml+'</div><div class="flex justify-between items-center pt-1"><button onclick="deleteSubject('+s.id+')" class="text-xs text-[var(--text-muted)] hover:text-red-500 transition">'+t('delete')+'</button><button onclick="openAddTestModal('+s.id+')" class="text-xs bg-[var(--glass-hover)] px-3 py-1.5 rounded-full text-[var(--text-main)] hover:bg-[var(--accent)] hover:text-white transition">+ '+t('add_result')+'</button></div></div>';
+                c.innerHTML += card;
+            });
+            const ga = tm>0 ? Math.round((ts/tm)*100) : null;
+            document.getElementById('global-average').innerText = ga!==null ? ga+'%' : '--%';
+        }
         function saveSubject(){ const n=document.getElementById('subject-name').value; if(n){ subjects.push({id:Date.now(), name:n, tests:[]}); DB.set('os_subjects', subjects); document.getElementById('subject-name').value=''; closeModals(); renderGrades(); } }
         function deleteSubject(id){ showConfirm(t('delete'), t('confirm_del_sub'), ()=>{ subjects=subjects.filter(s=>s.id!==id); DB.set('os_subjects', subjects); renderGrades(); }); }
         function openAddTestModal(id){ activeSubjectId=id; document.getElementById('add-test-subject-name').innerText=subjects.find(s=>s.id===id).name; openModal('modal-add-test'); }
         function saveTest(){ const s=document.getElementById('test-score').value, m=document.getElementById('test-max').value, n=document.getElementById('test-name').value, p=document.getElementById('test-practice').checked; if(s&&m&&activeSubjectId){ subjects.find(x=>x.id===activeSubjectId).tests.push({score:s, max:m, name:n, isPractice:p}); DB.set('os_subjects', subjects); document.getElementById('test-score').value=''; document.getElementById('test-name').value=''; document.getElementById('test-practice').checked=false; closeModals(); renderGrades(); } }
         renderGrades();
 
+        // ===== TASKS (with color) =====
         let tasks = DB.get('os_tasks_v2', []);
-        function renderTasks() { const l=document.getElementById('full-task-list'); l.innerHTML=''; const ord={high:0,med:1,low:2}; tasks.sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; if(ord[a.priority]!==ord[b.priority])return ord[a.priority]-ord[b.priority]; return new Date(a.date||'9999')-new Date(b.date||'9999'); }); const sel=document.getElementById('focus-task-select'); const v=sel.value; sel.innerHTML=`<option value="">${t('select_task')}</option>`; tasks.filter(t=>!t.done).forEach(t=>{const o=document.createElement('option');o.value=t.id;o.innerText=t.text;sel.appendChild(o)}); sel.value=v; const top=tasks.find(t=>!t.done); if(top){document.getElementById('dash-top-task').innerText=top.text; document.getElementById('dash-top-date').innerText=top.date?`Due ${top.date}`:'Do it now';} else{document.getElementById('dash-top-task').innerText=t('no_tasks'); document.getElementById('dash-top-date').innerText=t('clear_sched');} tasks.forEach(t=>{ const c=t.priority==='high'?'bg-red-500':t.priority==='med'?'bg-yellow-500':'bg-green-500'; l.innerHTML+=`<div class="flex items-center gap-4 p-4 border-b border-[var(--glass-border)] group ${t.done?'opacity-30':''}"><div onclick="toggleTask(${t.id})" class="w-5 h-5 rounded-full border border-[var(--text-muted)] cursor-pointer flex items-center justify-center ${t.done?'bg-[var(--text-main)] border-none':''}">${t.done?'<i class="ph-bold ph-check text-[var(--bg-color)] text-xs"></i>':''}</div><div class="flex-1 flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full ${c}"></div><span class="font-light text-lg text-[var(--text-main)] ${t.done?'line-through':''}">${t.text}</span></div><div class="text-xs text-[var(--text-muted)] font-mono">${t.date||''}</div><button onclick="deleteTask(${t.id})" class="text-[var(--text-muted)] hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i class="ph ph-trash"></i></button></div>`; }); DB.set('os_tasks_v2', tasks); }
-        function addTask(){ const t=document.getElementById('task-input').value.trim(), p=document.getElementById('task-prio').value, d=document.getElementById('task-date').value; if(t){tasks.push({id:Date.now(), text:t, priority:p, date:d, done:false}); document.getElementById('task-input').value=''; renderTasks();} }
-        function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t)t.done=!t.done; renderTasks(); }
+        function renderTasks() {
+            const l=document.getElementById('full-task-list'); l.innerHTML='';
+            const ord={high:0,med:1,low:2};
+            tasks.sort((a,b)=>{ if(a.done!==b.done)return a.done?1:-1; if(ord[a.priority]!==ord[b.priority])return ord[a.priority]-ord[b.priority]; return new Date(a.date||'9999')-new Date(b.date||'9999'); });
+            const sel=document.getElementById('focus-task-select'); const v=sel.value; sel.innerHTML='<option value="">'+t('select_task')+'</option>';
+            tasks.filter(tk=>!tk.done).forEach(tk=>{ const o=document.createElement('option'); o.value=tk.id; o.innerText=tk.text; sel.appendChild(o); }); sel.value=v;
+            const top=tasks.find(tk=>!tk.done);
+            if(top){ document.getElementById('dash-top-task').innerText=top.text; document.getElementById('dash-top-date').innerText=top.date?'Due '+top.date:'Do it now'; }
+            else{ document.getElementById('dash-top-task').innerText=t('no_tasks'); document.getElementById('dash-top-date').innerText=t('clear_sched'); }
+            tasks.forEach(function(tk) {
+                const pc = tk.priority==='high'?'#ef4444':tk.priority==='med'?'#f59e0b':'#22c55e';
+                const bgS = (tk.color && tk.color!=='#000000') ? 'background:'+tk.color+'18;border-left:3px solid '+tk.color+';' : '';
+                const doneHtml = tk.done ? '<i class="ph-bold ph-check text-[var(--bg-color)] text-xs"></i>' : '';
+                const row = '<div class="flex items-center gap-4 p-4 border-b border-[var(--glass-border)] group '+(tk.done?'opacity-30':'')+'" style="'+bgS+'"><div onclick="toggleTask('+tk.id+')" class="w-5 h-5 rounded-full border border-[var(--text-muted)] cursor-pointer flex items-center justify-center flex-shrink-0 '+(tk.done?'bg-[var(--text-main)] border-none':'')+'">'+doneHtml+'</div><div class="flex-1 flex items-center gap-2 min-w-0"><div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:'+pc+'"></div><span class="font-light text-lg text-[var(--text-main)] truncate '+(tk.done?'line-through':'')+'">'+tk.text+'</span></div><div class="text-xs text-[var(--text-muted)] font-mono flex-shrink-0">'+(tk.date||'')+'</div><button onclick="deleteTask('+tk.id+')" class="text-[var(--text-muted)] hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i class="ph ph-trash"></i></button></div>';
+                l.innerHTML += row;
+            });
+            DB.set('os_tasks_v2', tasks);
+        }
+        function addTask(){
+            const txt=document.getElementById('task-input').value.trim();
+            const p=document.getElementById('task-prio').value;
+            const d=document.getElementById('task-date').value;
+            const col=document.getElementById('task-color').value;
+            if(txt){ tasks.push({id:Date.now(), text:txt, priority:p, date:d, done:false, color:col}); document.getElementById('task-input').value=''; renderTasks(); }
+        }
+        function dashAddTask(){
+            const inp=document.getElementById('dash-quick-task');
+            const txt=inp.value.trim();
+            if(txt){ tasks.push({id:Date.now(), text:txt, priority:'med', date:'', done:false, color:'#000000'}); inp.value=''; renderTasks(); }
+        }
+        function toggleTask(id){ const tk=tasks.find(x=>x.id===id); if(tk)tk.done=!tk.done; renderTasks(); }
         function deleteTask(id){ tasks=tasks.filter(x=>x.id!==id); renderTasks(); }
-        function clearCompletedTasks() { tasks = tasks.filter(t => !t.done); DB.set('os_tasks_v2', tasks); renderTasks(); }
+        function clearCompletedTasks() { tasks = tasks.filter(tk => !tk.done); DB.set('os_tasks_v2', tasks); renderTasks(); }
         renderTasks();
-        setInterval(()=>{const n=new Date();document.getElementById('clock-time').innerText=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('date-display').innerText=n.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})},1000);
 
+        setInterval(function(){ const n=new Date(); document.getElementById('clock-time').innerText=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); document.getElementById('date-display').innerText=n.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'}); },1000);
+
+        // ===== CALENDAR =====
         let calEvents=DB.get('os_events',{}), curM=new Date().getMonth(), curY=new Date().getFullYear();
         const cUrl=DB.get('os_cal_url',''); if(cUrl){document.getElementById('calendar-grid-view').classList.add('hidden');document.getElementById('calendar-iframe-container').classList.remove('hidden');document.getElementById('cal-frame').src=cUrl;}
-        function renderCalendar(){ const g=document.getElementById('calendar-grid'); g.innerHTML=''; const fd=new Date(curY,curM,1).getDay(), dim=new Date(curY,curM+1,0).getDate(), mn=["January","February","March","April","May","June","July","August","September","October","November","December"]; document.getElementById('cal-month-name').innerText=`${mn[curM]} ${curY}`; for(let i=0;i<fd;i++)g.appendChild(document.createElement('div')); const tod=new Date(); for(let i=1;i<=dim;i++){ const k=`${curY}-${String(curM+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`, has=calEvents[k]&&calEvents[k].length>0, el=document.createElement('div'); const isT=i===tod.getDate()&&curM===tod.getMonth()&&curY===tod.getFullYear(); el.className=`cal-day ${isT?'today':''}`; let dots=''; if(has){calEvents[k].forEach(ev=>{const c=ev.color||'var(--accent)'; dots+=`<div class="event-dot" style="background-color:${c}"></div>`})}; el.innerHTML=`<span>${i}</span><div class="flex flex-wrap gap-1 mt-1">${dots}</div>`; el.onclick=()=>openEventModal(k); g.appendChild(el); } }
-        function changeMonth(d){ curM+=d; if(curM>11){curM=0;curY++} if(curM<0){curM=11;curY--} renderCalendar(); }
-        function openEventModal(k){ document.getElementById('event-modal-date').innerText=k; const l=document.getElementById('event-list-day'); l.innerHTML=''; (calEvents[k]||[]).forEach((e,i)=>{ l.innerHTML+=`<div class="flex justify-between py-2 border-b border-[var(--glass-border)] text-[var(--text-main)] text-sm"><span>${e.title} ${e.time?`(${e.time})`:''}</span><button onclick="delEv('${k}',${i})"><i class="ph ph-trash"></i></button></div>`; }); openModal('modal-add-event'); document.getElementById('event-input').dataset.date=k; }
-        function saveCalEvent(){ const k=document.getElementById('event-input').dataset.date, v=document.getElementById('event-input').value, t=document.getElementById('event-time').value, r=document.getElementById('event-repeat').value, c=document.querySelector('input[name="eventColor"]:checked')?.value||'#3b82f6'; if(v){ if(!calEvents[k])calEvents[k]=[]; calEvents[k].push({title:v, time:t, color:c}); if(r==='daily'){for(let i=1;i<=30;i++){const d=new Date(k);d.setDate(d.getDate()+i);const nk=d.toISOString().split('T')[0];if(!calEvents[nk])calEvents[nk]=[];calEvents[nk].push({title:v,time:t,recurring:true,color:c});}}else if(r==='weekly'){for(let i=1;i<=8;i++){const d=new Date(k);d.setDate(d.getDate()+(i*7));const nk=d.toISOString().split('T')[0];if(!calEvents[nk])calEvents[nk]=[];calEvents[nk].push({title:v,time:t,recurring:true,color:c});}} DB.set('os_events', calEvents); document.getElementById('event-input').value=''; document.getElementById('event-time').value=''; closeModals(); renderCalendar(); } }
+        function renderCalendar(){ const g=document.getElementById('calendar-grid'); g.innerHTML=''; const fd=new Date(curY,curM,1).getDay(), dim=new Date(curY,curM+1,0).getDate(), mn=['January','February','March','April','May','June','July','August','September','October','November','December']; document.getElementById('cal-month-name').innerText=mn[curM]+' '+curY; for(let i=0;i<fd;i++)g.appendChild(document.createElement('div')); const tod=new Date(); for(let i=1;i<=dim;i++){ const k=curY+'-'+String(curM+1).padStart(2,'0')+'-'+String(i).padStart(2,'0'), has=calEvents[k]&&calEvents[k].length>0, el=document.createElement('div'); const isT=i===tod.getDate()&&curM===tod.getMonth()&&curY===tod.getFullYear(); el.className='cal-day '+(isT?'today':''); let dots=''; if(has){calEvents[k].forEach(ev=>{const ec=ev.color||'var(--accent)'; dots+='<div class="event-dot" style="background-color:'+ec+'"></div>';})} el.innerHTML='<span>'+i+'</span><div class="flex flex-wrap gap-1 mt-1">'+dots+'</div>'; el.onclick=()=>openEventModal(k); g.appendChild(el); } }
+        function changeMonth(d){ curM+=d; if(curM>11){curM=0;curY++;} if(curM<0){curM=11;curY--;} renderCalendar(); }
+        function openEventModal(k){ document.getElementById('event-modal-date').innerText=k; const l=document.getElementById('event-list-day'); l.innerHTML=''; (calEvents[k]||[]).forEach((e,i)=>{ l.innerHTML+='<div class="flex justify-between py-2 border-b border-[var(--glass-border)] text-[var(--text-main)] text-sm"><span>'+e.title+' '+(e.time?'('+e.time+')':'')+'</span><button onclick="delEv(\''+k+'\','+i+')"><i class="ph ph-trash"></i></button></div>'; }); openModal('modal-add-event'); document.getElementById('event-input').dataset.date=k; }
+        function saveCalEvent(){ const k=document.getElementById('event-input').dataset.date, v=document.getElementById('event-input').value, ti=document.getElementById('event-time').value, r=document.getElementById('event-repeat').value, c=document.querySelector('input[name="eventColor"]:checked')?.value||'#3b82f6'; if(v){ if(!calEvents[k])calEvents[k]=[]; calEvents[k].push({title:v,time:ti,color:c}); if(r==='daily'){for(let i=1;i<=30;i++){const d=new Date(k);d.setDate(d.getDate()+i);const nk=d.toISOString().split('T')[0];if(!calEvents[nk])calEvents[nk]=[];calEvents[nk].push({title:v,time:ti,recurring:true,color:c});}}else if(r==='weekly'){for(let i=1;i<=8;i++){const d=new Date(k);d.setDate(d.getDate()+(i*7));const nk=d.toISOString().split('T')[0];if(!calEvents[nk])calEvents[nk]=[];calEvents[nk].push({title:v,time:ti,recurring:true,color:c});}} DB.set('os_events', calEvents); document.getElementById('event-input').value=''; document.getElementById('event-time').value=''; closeModals(); renderCalendar(); } }
         function delEv(k,i){ calEvents[k].splice(i,1); DB.set('os_events', calEvents); openEventModal(k); renderCalendar(); }
         function saveCalendarImport(){ const u=document.getElementById('cal-url-input').value; if(u){ DB.set('os_cal_url', u); document.getElementById('cal-frame').src=u; document.getElementById('calendar-grid-view').classList.add('hidden'); document.getElementById('calendar-iframe-container').classList.remove('hidden'); closeModals(); } }
         function clearCalendar(){ DB.set('os_cal_url',''); document.getElementById('calendar-iframe-container').classList.add('hidden'); document.getElementById('calendar-grid-view').classList.remove('hidden'); }
         function openCalNewTab() { const u = DB.get('os_cal_url',''); if(u) window.open(u, '_blank'); }
         renderCalendar();
 
+        // ===== WHITEBOARD (multi-board, fullscreen, image) =====
+        var boards = DB.get('os_boards', [{id:1, name:'Board 1', data:null}]);
+        var activeBoardId = boards[0] ? boards[0].id : 1;
         const cvs=document.getElementById('wb-canvas'), ctx=cvs.getContext('2d'); 
         let painting=false, wTxt=false, wCol='#ffffff', wbHistory=[], wbStep=-1;
+
+        function renderWbTabs() {
+            var bar = document.getElementById('wb-tabs'); if(!bar) return;
+            bar.innerHTML = '';
+            boards.forEach(function(b) {
+                var tab = document.createElement('div');
+                tab.className = 'wb-tab ' + (b.id===activeBoardId ? 'active-tab' : '');
+                tab.innerText = b.name;
+                tab.title = 'Double-click to rename';
+                tab.onclick = function() { wbSwitchBoard(b.id); };
+                tab.ondblclick = function() { var nn = prompt('Rename:', b.name); if(nn){ b.name=nn; DB.set('os_boards',boards); renderWbTabs(); } };
+                bar.appendChild(tab);
+            });
+        }
+        function wbSaveCurrentBoard() {
+            var b = boards.find(function(x){ return x.id===activeBoardId; });
+            if(b) { b.data = cvs.toDataURL(); DB.set('os_boards', boards); }
+        }
+        function wbSwitchBoard(id) {
+            wbSaveCurrentBoard();
+            activeBoardId = id;
+            wbHistory=[]; wbStep=-1;
+            var b = boards.find(function(x){ return x.id===id; });
+            ctx.clearRect(0,0,cvs.width,cvs.height);
+            if(b && b.data) { var img=new Image(); img.src=b.data; img.onload=function(){ ctx.drawImage(img,0,0); pushHistory(); }; } else { pushHistory(); }
+            renderWbTabs();
+        }
+        function wbNewBoard() {
+            wbSaveCurrentBoard();
+            var nid = Date.now();
+            boards.push({id:nid, name:'Board '+(boards.length+1), data:null});
+            DB.set('os_boards', boards);
+            activeBoardId = nid;
+            ctx.clearRect(0,0,cvs.width,cvs.height);
+            wbHistory=[]; wbStep=-1; pushHistory();
+            renderWbTabs();
+        }
+        function wbDeleteBoard() {
+            if(boards.length<=1){ showAlert('Cannot delete','Need at least one board.'); return; }
+            showConfirm('Delete Board','Delete this board?', function(){
+                boards = boards.filter(function(x){ return x.id!==activeBoardId; });
+                DB.set('os_boards', boards);
+                activeBoardId = boards[0].id;
+                wbSwitchBoard(activeBoardId);
+            });
+        }
         function resizeCanvas(){ 
             const img=cvs.toDataURL(); 
             cvs.width=cvs.parentElement.clientWidth; cvs.height=cvs.parentElement.clientHeight; 
@@ -631,10 +872,7 @@
             painting=true; draw(e); 
         }
         function endPos(){ 
-            if(painting) {
-                painting=false; ctx.beginPath(); 
-                pushHistory();
-            }
+            if(painting) { painting=false; ctx.beginPath(); pushHistory(); wbSaveCurrentBoard(); }
         }
         function draw(e){ if(!painting)return; const p=getCoords(e); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
         
@@ -646,49 +884,78 @@
         function setPenColor(c){ wTxt=false; ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=c; wCol=c; }
         function activateEraser() { wTxt=false; ctx.globalCompositeOperation='destination-out'; }
         function activateTextTool(){ wTxt=true; }
-        
         document.getElementById('wb-size').addEventListener('input', (e) => ctx.lineWidth = e.target.value);
-
-        function confirmWbText(){ const t=document.getElementById('wb-text-input').value, x=document.getElementById('wb-text-input').dataset.x, y=document.getElementById('wb-text-input').dataset.y; if(t){ ctx.globalCompositeOperation='source-over'; ctx.fillStyle=wCol; ctx.font="16px Inter"; ctx.fillText(t,x,y); pushHistory(); } document.getElementById('wb-text-input').value=''; closeModals(); wTxt=false; }
-        function clearCanvas(){ ctx.clearRect(0,0,cvs.width,cvs.height); pushHistory(); }
+        function confirmWbText(){ const tx=document.getElementById('wb-text-input').value, x=document.getElementById('wb-text-input').dataset.x, y=document.getElementById('wb-text-input').dataset.y; if(tx){ ctx.globalCompositeOperation='source-over'; ctx.fillStyle=wCol; ctx.font='16px Inter'; ctx.fillText(tx,x,y); pushHistory(); wbSaveCurrentBoard(); } document.getElementById('wb-text-input').value=''; closeModals(); wTxt=false; }
+        function clearCanvas(){ ctx.clearRect(0,0,cvs.width,cvs.height); pushHistory(); wbSaveCurrentBoard(); }
         function downloadWhiteboard(){ const l=document.createElement('a'); l.download='whiteboard.png'; l.href=cvs.toDataURL(); l.click(); }
-        
-        function pushHistory() {
-            wbStep++;
-            if(wbStep < wbHistory.length) wbHistory.length = wbStep;
-            wbHistory.push(cvs.toDataURL());
-        }
+        function pushHistory() { wbStep++; if(wbStep < wbHistory.length) wbHistory.length = wbStep; wbHistory.push(cvs.toDataURL()); }
         function wbUndo() {
-            if(wbStep > 0) {
-                wbStep--;
-                const img = new Image();
-                img.src = wbHistory[wbStep];
-                img.onload = () => { ctx.clearRect(0,0,cvs.width,cvs.height); ctx.drawImage(img,0,0); }
-            }
+            if(wbStep > 0) { wbStep--; const img = new Image(); img.src = wbHistory[wbStep]; img.onload = () => { ctx.clearRect(0,0,cvs.width,cvs.height); ctx.drawImage(img,0,0); wbSaveCurrentBoard(); } }
         }
-        
+        function wbInsertImage(inp) {
+            var f=inp.files[0]; if(!f) return;
+            var r=new FileReader();
+            r.onload=function(e){ var img=new Image(); img.src=e.target.result; img.onload=function(){ var scale=Math.min(cvs.width/img.width, cvs.height/img.height, 1); ctx.drawImage(img, 0, 0, img.width*scale, img.height*scale); pushHistory(); wbSaveCurrentBoard(); }; };
+            r.readAsDataURL(f); inp.value='';
+        }
+        var wbFull = false;
+        function wbToggleFullscreen() {
+            var el = document.getElementById('view-whiteboard');
+            if(!wbFull){ if(el.requestFullscreen)el.requestFullscreen(); else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen(); document.getElementById('wb-fs-icon').className='ph-bold ph-arrows-in'; }
+            else{ if(document.exitFullscreen)document.exitFullscreen(); else if(document.webkitExitFullscreen)document.webkitExitFullscreen(); document.getElementById('wb-fs-icon').className='ph-bold ph-arrows-out'; }
+            wbFull=!wbFull; setTimeout(resizeCanvas,200);
+        }
+        document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement){ wbFull=false; var ic=document.getElementById('wb-fs-icon'); if(ic)ic.className='ph-bold ph-arrows-out'; setTimeout(resizeCanvas,200); } });
         window.addEventListener('resize', ()=>{ if(!document.getElementById('view-whiteboard').classList.contains('hidden')) resizeCanvas(); });
+        // Init board
+        setTimeout(function(){
+            resizeCanvas();
+            var b=boards.find(function(x){return x.id===activeBoardId;});
+            if(b&&b.data){ var img=new Image(); img.src=b.data; img.onload=function(){ ctx.drawImage(img,0,0); pushHistory(); }; } else { pushHistory(); }
+            renderWbTabs();
+        },100);
 
+        // ===== CALCULATOR =====
         let cExp='', cHist='';
         function calcAppend(v){ cExp+=v; document.getElementById('calc-result').innerText=cExp; }
         function calcClear(){ cExp=''; cHist=''; document.getElementById('calc-result').innerText='0'; document.getElementById('calc-history').innerText=''; }
         function calcBackspace(){ cExp=cExp.toString().slice(0,-1); document.getElementById('calc-result').innerText=cExp||'0'; }
         function calcSolve(){ try{ cHist=cExp+' ='; document.getElementById('calc-history').innerText=cHist; cExp=String(eval(cExp)); document.getElementById('calc-result').innerText=cExp; }catch(e){document.getElementById('calc-result').innerText='Err';} }
 
+        // ===== FOCUS TIMER =====
         let tTime=25*60, tLeft=tTime, tInt, tRun=false;
-        function updateTimer(){ const m=Math.floor(tLeft/60), s=tLeft%60; document.getElementById('timer-display').innerText=`${m}:${s<10?'0':''}${s}`; }
+        function updateTimer(){ const m=Math.floor(tLeft/60), s=tLeft%60; document.getElementById('timer-display').innerText=m+':'+(s<10?'0':'')+s; }
         function toggleTimer(){ if(tRun){ clearInterval(tInt); document.getElementById('icon-play').classList.replace('ph-pause','ph-play'); } else { tInt=setInterval(()=>{ if(tLeft>0){tLeft--;updateTimer();}else{resetTimer();openModal('modal-timer-done');} },1000); document.getElementById('icon-play').classList.replace('ph-play','ph-pause'); } tRun=!tRun; }
         function resetTimer(){ clearInterval(tInt); tRun=false; tLeft=tTime; document.getElementById('icon-play').classList.replace('ph-pause','ph-play'); updateTimer(); }
         function setMode(m,l){ resetTimer(); tTime=m*60; tLeft=tTime; document.getElementById('timer-label').innerText=l; updateTimer(); }
         updateTimer();
 
+        // ===== NOTES (delete, size, checkboxes) =====
         let notes=DB.get('os_notes',[{id:1, title:'Ideas', body:''}]); let activeNote=notes[0]?.id;
-        function renderNotes(){ const c=document.getElementById('notes-sidebar'); c.innerHTML=''; notes.forEach(n=>{ c.innerHTML+=`<button onclick="loadNote(${n.id})" class="w-full text-left p-3 rounded-lg text-sm mb-1 text-[var(--text-main)] hover:bg-[var(--glass-hover)] ${n.id===activeNote?'bg-[var(--glass-panel)] font-bold':''}">${n.title||'Untitled'}</button>`; }); }
+        function renderNotes(){
+            const c=document.getElementById('notes-sidebar'); c.innerHTML='';
+            notes.forEach(n=>{
+                const isActive = n.id===activeNote;
+                c.innerHTML += '<div class="flex items-center group rounded-lg '+(isActive?'bg-[var(--glass-panel)]':'')+' pr-1"><button onclick="loadNote('+n.id+')" class="flex-1 text-left p-3 text-sm text-[var(--text-main)] hover:bg-[var(--glass-hover)] rounded-lg '+(isActive?'font-bold':'')+'">'+( n.title||'Untitled')+'</button><button onclick="confirmDeleteNote('+n.id+')" class="opacity-0 group-hover:opacity-100 p-1 text-[var(--text-muted)] hover:text-red-400 transition rounded"><i class="ph-bold ph-trash text-xs"></i></button></div>';
+            });
+        }
         function loadNote(id){ activeNote=id; const n=notes.find(x=>x.id===id); document.getElementById('note-title').value=n.title; document.getElementById('note-editor').innerHTML=n.body; renderNotes(); updateNoteCount(); }
-        function saveNote(){ const n=notes.find(x=>x.id===activeNote); n.title=document.getElementById('note-title').value; n.body=document.getElementById('note-editor').innerHTML; DB.set('os_notes', notes); renderNotes(); updateNoteCount(); }
+        function saveNote(){ const n=notes.find(x=>x.id===activeNote); if(!n)return; n.title=document.getElementById('note-title').value; n.body=document.getElementById('note-editor').innerHTML; DB.set('os_notes', notes); renderNotes(); updateNoteCount(); }
         function createNewNote(){ notes.unshift({id:Date.now(), title:'', body:''}); loadNote(notes[0].id); DB.set('os_notes', notes); }
+        function confirmDeleteNote(id){ showConfirm('Delete Note','This cannot be undone.', function(){ deleteNote(id); }); }
+        function deleteCurrentNote(){ if(activeNote) confirmDeleteNote(activeNote); }
+        function deleteNote(id){
+            notes=notes.filter(x=>x.id!==id);
+            if(!notes.length) notes=[{id:Date.now(),title:'New Note',body:''}];
+            DB.set('os_notes',notes); activeNote=notes[0].id; loadNote(activeNote);
+        }
         function formatDoc(cmd, value=null) { document.execCommand(cmd, false, value); document.getElementById('note-editor').focus(); saveNote(); }
-        function updateNoteCount(){ const t=document.getElementById('note-editor').innerText; const w=t.trim()?t.trim().split(/\s+/).length:0; document.getElementById('note-stats').innerText=`${w} words, ${t.length} chars`; }
+        function noteInsertCheckbox() {
+            document.getElementById('note-editor').focus();
+            document.execCommand('insertHTML', false, '<label style="display:flex;align-items:center;gap:8px;margin:4px 0;user-select:none;"><input type="checkbox" onchange="this.nextElementSibling.style.textDecoration=this.checked?\'line-through\':\'none\'"> <span>Task item</span></label>');
+            saveNote();
+        }
+        function updateNoteCount(){ const tx=document.getElementById('note-editor').innerText; const w=tx.trim()?tx.trim().split(/\s+/).length:0; document.getElementById('note-stats').innerText=w+' words, '+tx.length+' chars'; }
         document.getElementById('note-title').addEventListener('input', saveNote); document.getElementById('note-editor').addEventListener('input', saveNote); renderNotes(); loadNote(notes[0].id);
 
         updateInterfaceText(); // Init Translation
