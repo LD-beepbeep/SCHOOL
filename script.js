@@ -1802,155 +1802,291 @@ if (notes[0]) loadNote(notes[0].id);
 // ===== WHITEBOARD =====
 var canvas = document.getElementById('wb-canvas');
 var ctx = canvas.getContext('2d');
-var wbTool = 'pen', wbPenColor = '#ffffff', wbPenSize = 3;
-var wbDrawing = false, wbStartX = 0, wbStartY = 0;
-var wbHistory = [], wbHistoryIndex = -1;
-var boards = DB.get('os_boards', [{ id: Date.now(), name: 'Board 1', data: null }]);
-var activeBoardId = boards[0].id;
+
+// State
+var wbTool = 'pen';
+var wbPenColor = '#ffffff';
+var wbDrawing = false;
+var wbStartX = 0, wbStartY = 0;
+var wbLastX = 0, wbLastY = 0;
+var wbHistory = [];
+var wbHistoryIndex = -1;
 var wbGridOn = false;
 var wbFull = false;
-var wbSelectStart = null, wbSelectRect = null, wbImageData = null;
-var wbSnapshot = null;
+var wbSnapshot = null;          // ImageData snapshot for shape preview
+var wbSelectStart = null;       // {x,y} of selection drag start
+var wbSelectRect  = null;       // {x,y,w,h} of committed selection
+var wbPreSelectData = null;     // full-canvas ImageData captured before selection drag
+var wbBoards = DB.get('os_boards', [{ id: 1, name: 'Board 1', data: null }]);
+var wbActiveBoardId = wbBoards[0].id;
 
-function resizeCanvas() {
-    var con = document.getElementById('wb-container');
-    if (!con) return;
-    var W = con.clientWidth, H = con.clientHeight;
-    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    canvas.width = W; canvas.height = H;
-    fillWbBg();
-    try { ctx.putImageData(img, 0, 0); } catch(e) {}
+// ── helpers ──────────────────────────────────────────────
+function wbGetBg() {
+    return DB.get('os_wb_bg_' + wbActiveBoardId, '#1a1a1a');
 }
-window.addEventListener('resize', resizeCanvas);
-
-function fillWbBg() {
-    var bg = DB.get('os_wb_bg_' + activeBoardId, '#09090b');
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (wbGridOn) drawGrid();
+function wbFillBg() {
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = wbGetBg();
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+    if (wbGridOn) wbDrawGrid();
 }
-function pushHistory() {
+function wbDrawGrid() {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 0.5;
+    for (var x = 0; x < canvas.width; x += 30) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for (var y = 0; y < canvas.height; y += 30) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+    ctx.restore();
+}
+function wbPushHistory() {
     wbHistory = wbHistory.slice(0, wbHistoryIndex + 1);
     wbHistory.push(canvas.toDataURL());
-    if (wbHistory.length > 40) wbHistory.shift();
+    if (wbHistory.length > 50) { wbHistory.shift(); }
     wbHistoryIndex = wbHistory.length - 1;
 }
+function wbRestoreFromDataUrl(dataUrl, cb) {
+    var img = new Image();
+    img.onload = function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        if (cb) cb();
+    };
+    img.src = dataUrl;
+}
+
+// ── resize ───────────────────────────────────────────────
+function wbResizeCanvas() {
+    var con = document.getElementById('wb-container');
+    if (!con || con.clientWidth === 0) return;
+    // Save current drawing as data URL before resize
+    var saved = (canvas.width > 0 && canvas.height > 0) ? canvas.toDataURL() : null;
+    canvas.width  = con.clientWidth;
+    canvas.height = con.clientHeight;
+    wbFillBg();
+    if (saved) {
+        var img = new Image();
+        img.onload = function() { ctx.drawImage(img, 0, 0); };
+        img.src = saved;
+    }
+}
+window.addEventListener('resize', function() {
+    // Only resize if whiteboard tab is visible
+    if (!document.getElementById('view-whiteboard').classList.contains('hidden')) {
+        wbResizeCanvas();
+    }
+});
+
+// ── tool switching ────────────────────────────────────────
+function wbSetTool(t) {
+    wbTool = t;
+    document.querySelectorAll('[id^="wb-tool-"]').forEach(function(b) {
+        b.classList.remove('active-tool');
+    });
+    var btn = document.getElementById('wb-tool-' + t);
+    if (btn) btn.classList.add('active-tool');
+    var cursors = { pen: 'crosshair', eraser: 'cell', select: 'crosshair',
+                    line: 'crosshair', rect: 'crosshair', circle: 'crosshair',
+                    arrow: 'crosshair', text: 'text' };
+    canvas.style.cursor = cursors[t] || 'crosshair';
+    // Dismiss selection UI when switching away
+    if (t !== 'select') wbClearSelection();
+}
+function setPenColor(c) { wbPenColor = c; }
+function setWbBg(c) {
+    DB.set('os_wb_bg_' + wbActiveBoardId, c);
+    // Redraw: fill new bg then replay last history frame on top
+    wbFillBg();
+    if (wbHistoryIndex >= 0) {
+        wbRestoreFromDataUrl(wbHistory[wbHistoryIndex]);
+    }
+    wbPushHistory();
+    wbSaveBoard();
+}
+
+// ── undo / redo ───────────────────────────────────────────
 function wbUndo() {
     if (wbHistoryIndex <= 0) return;
     wbHistoryIndex--;
-    var img = new Image(); img.src = wbHistory[wbHistoryIndex];
-    img.onload = function() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); };
+    wbRestoreFromDataUrl(wbHistory[wbHistoryIndex]);
+    wbSaveBoard();
 }
 function wbRedo() {
     if (wbHistoryIndex >= wbHistory.length - 1) return;
     wbHistoryIndex++;
-    var img = new Image(); img.src = wbHistory[wbHistoryIndex];
-    img.onload = function() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); };
+    wbRestoreFromDataUrl(wbHistory[wbHistoryIndex]);
+    wbSaveBoard();
 }
-function wbSetTool(t) {
-    wbTool = t;
-    document.querySelectorAll('.wb-tool[id^="wb-tool-"]').forEach(function(b) { b.classList.remove('active-tool'); });
-    var btn = document.getElementById('wb-tool-' + t);
-    if (btn) btn.classList.add('active-tool');
-    canvas.style.cursor = t === 'select' ? 'crosshair' : t === 'eraser' ? 'cell' : t === 'text' ? 'text' : 'crosshair';
-    if (t !== 'select') {
-        document.getElementById('wb-select-overlay').style.display = 'none';
-        document.getElementById('wb-select-toolbar').style.display = 'none';
-        wbSelectRect = null;
-    }
-}
-function setPenColor(c) { wbPenColor = c; }
-function setWbBg(c) {
-    DB.set('os_wb_bg_' + activeBoardId, c); fillWbBg();
-    pushHistory();
-}
-function drawGrid() {
-    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 0.5;
-    var step = 30;
-    for (var x = 0; x < canvas.width; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
-    for (var y = 0; y < canvas.height; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
-    ctx.restore();
-}
+
+// ── grid ──────────────────────────────────────────────────
 function wbToggleGrid() {
     wbGridOn = !wbGridOn;
     var btn = document.getElementById('wb-grid-btn');
     if (btn) btn.classList.toggle('active-tool', wbGridOn);
-    fillWbBg();
-    if (wbHistoryIndex >= 0) {
-        var img = new Image(); img.src = wbHistory[wbHistoryIndex];
-        img.onload = function() { ctx.drawImage(img, 0, 0); if (wbGridOn) drawGrid(); };
+    // Redraw bg (which calls drawGrid if on) then replay drawing
+    var saved = (wbHistoryIndex >= 0) ? wbHistory[wbHistoryIndex] : null;
+    wbFillBg();
+    if (saved) {
+        var img = new Image();
+        img.onload = function() { ctx.drawImage(img, 0, 0); };
+        img.src = saved;
     }
 }
 
-// Pointer events
-canvas.addEventListener('pointerdown', function(e) {
+// ── pointer events ────────────────────────────────────────
+function wbGetXY(e) {
     var rect = canvas.getBoundingClientRect();
-    var x = e.clientX - rect.left, y = e.clientY - rect.top;
+    var scaleX = canvas.width  / rect.width;
+    var scaleY = canvas.height / rect.height;
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top)  * scaleY
+    };
+}
+
+canvas.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    var p = wbGetXY(e);
+
     if (wbTool === 'text') {
-        wbStartX = x; wbStartY = y;
+        wbStartX = p.x; wbStartY = p.y;
         document.getElementById('wb-text-size').oninput = function() {
             document.getElementById('wb-text-size-disp').innerText = this.value + 'px';
         };
-        openModal('modal-wb-text'); return;
+        openModal('modal-wb-text');
+        return;
     }
+
     if (wbTool === 'select') {
-        wbSelectStart = { x: x, y: y };
-        wbImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        wbDrawing = true; return;
+        wbClearSelection();
+        wbSelectStart = { x: p.x, y: p.y };
+        wbPreSelectData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        wbDrawing = true;
+        return;
     }
-    wbDrawing = true; wbStartX = x; wbStartY = y;
-    wbSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    if (wbTool === 'pen' || wbTool === 'eraser') {
-        ctx.moveTo(x, y);
-        ctx.globalCompositeOperation = wbTool === 'eraser' ? 'destination-out' : 'source-over';
-    } else { ctx.globalCompositeOperation = 'source-over'; }
-    document.getElementById('wb-size-display').innerText = document.getElementById('wb-size').value + 'px';
+
+    wbDrawing = true;
+    wbStartX = p.x; wbStartY = p.y;
+    wbLastX  = p.x; wbLastY  = p.y;
+
+    // For shapes, grab snapshot now so we can redraw clean each frame
+    if (wbTool !== 'pen' && wbTool !== 'eraser') {
+        wbSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+
+    if (wbTool === 'pen') {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        // Put a dot for single clicks
+        ctx.arc(p.x, p.y, wbGetSize() / 2, 0, Math.PI * 2);
+        ctx.fillStyle = wbPenColor;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+    }
 });
 
 canvas.addEventListener('pointermove', function(e) {
     if (!wbDrawing) return;
-    var rect = canvas.getBoundingClientRect();
-    var x = e.clientX - rect.left, y = e.clientY - rect.top;
+    e.preventDefault();
+    var p = wbGetXY(e);
+    var size = wbGetSize();
+
+    // ── selection drag ──
     if (wbTool === 'select' && wbSelectStart) {
-        var overlay = document.getElementById('wb-select-overlay');
-        var sx = Math.min(x, wbSelectStart.x), sy = Math.min(y, wbSelectStart.y);
-        var sw = Math.abs(x - wbSelectStart.x), sh = Math.abs(y - wbSelectStart.y);
+        var sx = Math.min(p.x, wbSelectStart.x);
+        var sy = Math.min(p.y, wbSelectStart.y);
+        var sw = Math.abs(p.x - wbSelectStart.x);
+        var sh = Math.abs(p.y - wbSelectStart.y);
+        // Show overlay div
+        var ov = document.getElementById('wb-select-overlay');
+        var con = document.getElementById('wb-container');
+        var cRect = con.getBoundingClientRect();
+        var scale = canvas.width / cRect.width;
+        ov.style.display = 'block';
+        ov.style.left   = (sx / scale) + 'px';
+        ov.style.top    = (sy / scale) + 'px';
+        ov.style.width  = (sw / scale) + 'px';
+        ov.style.height = (sh / scale) + 'px';
         wbSelectRect = { x: sx, y: sy, w: sw, h: sh };
-        var canRect = canvas.getBoundingClientRect();
-        overlay.style.display = 'block';
-        overlay.style.left = sx + 'px'; overlay.style.top = sy + 'px';
-        overlay.style.width = sw + 'px'; overlay.style.height = sh + 'px';
         return;
     }
-    var size = parseInt(document.getElementById('wb-size').value) || 3;
-    ctx.lineWidth = wbTool === 'eraser' ? size * 3 : size;
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.strokeStyle = wbPenColor;
-    if (wbTool === 'pen' || wbTool === 'eraser') {
-        ctx.lineTo(x, y); ctx.stroke();
-    } else if (wbSnapshot) {
-        ctx.putImageData(wbSnapshot, 0, 0);
-        ctx.strokeStyle = wbPenColor; ctx.lineWidth = size;
+
+    // ── pen ──
+    if (wbTool === 'pen') {
+        ctx.lineWidth   = size;
+        ctx.lineCap     = 'round';
+        ctx.lineJoin    = 'round';
+        ctx.strokeStyle = wbPenColor;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
         ctx.beginPath();
-        if (wbTool === 'line') {
-            ctx.moveTo(wbStartX, wbStartY); ctx.lineTo(x, y); ctx.stroke();
-        } else if (wbTool === 'rect') {
-            ctx.strokeRect(wbStartX, wbStartY, x - wbStartX, y - wbStartY);
-        } else if (wbTool === 'circle') {
-            var rx = (x - wbStartX) / 2, ry = (y - wbStartY) / 2;
-            var cx = wbStartX + rx, cy = wbStartY + ry;
-            ctx.save(); ctx.scale(1, ry / (Math.abs(rx) || 1));
-            ctx.beginPath(); ctx.arc(cx, cy / (ry / (Math.abs(rx) || 1)), Math.abs(rx), 0, 2 * Math.PI);
-            ctx.restore(); ctx.stroke();
-        } else if (wbTool === 'arrow') {
-            ctx.moveTo(wbStartX, wbStartY); ctx.lineTo(x, y); ctx.stroke();
-            var angle = Math.atan2(y - wbStartY, x - wbStartX);
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - 15 * Math.cos(angle - 0.4), y - 15 * Math.sin(angle - 0.4));
-            ctx.lineTo(x - 15 * Math.cos(angle + 0.4), y - 15 * Math.sin(angle + 0.4));
-            ctx.closePath(); ctx.fillStyle = wbPenColor; ctx.fill();
-        }
+        ctx.moveTo(p.x, p.y);
+        wbLastX = p.x; wbLastY = p.y;
+        return;
+    }
+
+    // ── eraser – paint bg color, never transparent ──
+    if (wbTool === 'eraser') {
+        ctx.lineWidth   = size * 4;
+        ctx.lineCap     = 'round';
+        ctx.lineJoin    = 'round';
+        ctx.strokeStyle = wbGetBg();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.beginPath();
+        ctx.moveTo(wbLastX, wbLastY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        wbLastX = p.x; wbLastY = p.y;
+        return;
+    }
+
+    // ── shapes – restore snapshot each frame ──
+    if (!wbSnapshot) return;
+    ctx.putImageData(wbSnapshot, 0, 0);
+    ctx.strokeStyle = wbPenColor;
+    ctx.fillStyle   = wbPenColor;
+    ctx.lineWidth   = size;
+    ctx.lineCap     = 'round';
+    ctx.globalCompositeOperation = 'source-over';
+
+    ctx.beginPath();
+    if (wbTool === 'line') {
+        ctx.moveTo(wbStartX, wbStartY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    } else if (wbTool === 'rect') {
+        ctx.strokeRect(wbStartX, wbStartY, p.x - wbStartX, p.y - wbStartY);
+    } else if (wbTool === 'circle') {
+        var rx = (p.x - wbStartX) / 2;
+        var ry = (p.y - wbStartY) / 2;
+        var cx = wbStartX + rx;
+        var cy = wbStartY + ry;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1, Math.abs(ry / (rx || 1)));
+        ctx.arc(0, 0, Math.abs(rx), 0, Math.PI * 2);
+        ctx.restore();
+        ctx.stroke();
+    } else if (wbTool === 'arrow') {
+        var angle = Math.atan2(p.y - wbStartY, p.x - wbStartX);
+        var headLen = Math.max(12, size * 4);
+        ctx.moveTo(wbStartX, wbStartY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - headLen * Math.cos(angle - 0.4), p.y - headLen * Math.sin(angle - 0.4));
+        ctx.lineTo(p.x - headLen * Math.cos(angle + 0.4), p.y - headLen * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
     }
 });
 
@@ -1958,148 +2094,232 @@ canvas.addEventListener('pointerup', function(e) {
     if (!wbDrawing) return;
     wbDrawing = false;
     ctx.globalCompositeOperation = 'source-over';
-    if (wbTool === 'select' && wbSelectRect) {
+    wbSnapshot = null;
+
+    if (wbTool === 'select' && wbSelectRect && wbSelectRect.w > 4 && wbSelectRect.h > 4) {
+        // Show selection toolbar
         var tb = document.getElementById('wb-select-toolbar');
-        if (tb) { tb.style.display = 'flex'; tb.style.left = wbSelectRect.x + 'px'; tb.style.top = (wbSelectRect.y + wbSelectRect.h + 8) + 'px'; }
-    } else { pushHistory(); saveBoard(); }
+        var con = document.getElementById('wb-container');
+        var cRect = con.getBoundingClientRect();
+        var scale = canvas.width / cRect.width;
+        if (tb) {
+            tb.style.display = 'flex';
+            tb.style.left = (wbSelectRect.x / scale) + 'px';
+            tb.style.top  = ((wbSelectRect.y + wbSelectRect.h) / scale + 6) + 'px';
+        }
+        return; // don't push history yet
+    }
+
+    wbPushHistory();
+    wbSaveBoard();
 });
 
+canvas.addEventListener('pointercancel', function() {
+    wbDrawing = false;
+    wbSnapshot = null;
+    ctx.globalCompositeOperation = 'source-over';
+});
+
+// ── selection helpers ─────────────────────────────────────
+function wbClearSelection() {
+    wbSelectRect = null; wbSelectStart = null; wbPreSelectData = null;
+    var ov = document.getElementById('wb-select-overlay');
+    if (ov) ov.style.display = 'none';
+    var tb = document.getElementById('wb-select-toolbar');
+    if (tb) tb.style.display = 'none';
+}
 function wbDeleteSelection() {
-    if (!wbSelectRect) return;
-    ctx.clearRect(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
-    fillWbBg();
-    if (wbImageData) ctx.putImageData(wbImageData, 0, 0);
-    ctx.clearRect(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
-    wbClearSelection(); pushHistory(); saveBoard();
+    if (!wbSelectRect || !wbPreSelectData) return;
+    // Restore canvas to pre-drag state, then erase the selected region with bg color
+    ctx.putImageData(wbPreSelectData, 0, 0);
+    ctx.fillStyle = wbGetBg();
+    ctx.fillRect(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
+    wbClearSelection();
+    wbPushHistory();
+    wbSaveBoard();
 }
 function wbMoveSelection() {
-    if (!wbSelectRect || !wbImageData) return;
+    if (!wbSelectRect || !wbPreSelectData) return;
+    // Copy the selected pixels
     var selData = ctx.getImageData(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
-    ctx.putImageData(wbImageData, 0, 0);
-    ctx.clearRect(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
-    var newX = wbSelectRect.x + 20, newY = wbSelectRect.y + 20;
-    ctx.putImageData(selData, newX, newY);
-    wbClearSelection(); pushHistory(); saveBoard();
-}
-function wbClearSelection() {
-    wbSelectRect = null; wbSelectStart = null;
-    document.getElementById('wb-select-overlay').style.display = 'none';
-    document.getElementById('wb-select-toolbar').style.display = 'none';
+    // Restore pre-drag state
+    ctx.putImageData(wbPreSelectData, 0, 0);
+    // Erase source area
+    ctx.fillStyle = wbGetBg();
+    ctx.fillRect(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
+    // Paste 20px offset
+    ctx.putImageData(selData, wbSelectRect.x + 20, wbSelectRect.y + 20);
+    wbClearSelection();
+    wbPushHistory();
+    wbSaveBoard();
 }
 
+// ── text ──────────────────────────────────────────────────
 function confirmWbText() {
-    var txt = document.getElementById('wb-text-input').value;
-    var sz = parseInt(document.getElementById('wb-text-size').value) || 18;
+    var txt = document.getElementById('wb-text-input').value.trim();
+    var sz  = parseInt(document.getElementById('wb-text-size').value) || 18;
     if (!txt) { closeModals(); return; }
-    ctx.font = sz + 'px ' + getComputedStyle(document.body).fontFamily;
+    ctx.font      = sz + 'px ' + getComputedStyle(document.body).fontFamily;
     ctx.fillStyle = wbPenColor;
-    ctx.fillText(txt, wbStartX, wbStartY);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillText(txt, wbStartX, wbStartY + sz); // +sz so text appears below click point
     document.getElementById('wb-text-input').value = '';
-    closeModals(); pushHistory(); saveBoard();
+    closeModals();
+    wbPushHistory();
+    wbSaveBoard();
 }
 
+// ── image insert ──────────────────────────────────────────
 function wbInsertImage(inp) {
     var f = inp.files[0]; if (!f) return;
     var r = new FileReader();
     r.onload = function(e) {
         var img = new Image();
         img.onload = function() {
-            var maxW = canvas.width * 0.5, maxH = canvas.height * 0.5;
-            var ratio = Math.min(maxW / img.width, maxH / img.height);
-            var w = img.width * ratio, h = img.height * ratio;
-            ctx.drawImage(img, 20, 20, w, h);
-            pushHistory(); saveBoard();
+            var maxW = canvas.width  * 0.6;
+            var maxH = canvas.height * 0.6;
+            var ratio = Math.min(maxW / img.width, maxH / img.height, 1);
+            ctx.drawImage(img, 20, 20, img.width * ratio, img.height * ratio);
+            wbPushHistory();
+            wbSaveBoard();
         };
         img.src = e.target.result;
     };
-    r.readAsDataURL(f); inp.value = '';
+    r.readAsDataURL(f);
+    inp.value = '';
 }
 
+// ── misc ──────────────────────────────────────────────────
+function wbGetSize() {
+    return parseInt(document.getElementById('wb-size').value) || 3;
+}
 function clearCanvas() {
     showConfirm('Clear Canvas', 'Erase everything on this board?', function() {
-        fillWbBg(); pushHistory(); saveBoard();
+        wbFillBg();
+        wbPushHistory();
+        wbSaveBoard();
     });
 }
 function downloadWhiteboard() {
-    var a = document.createElement('a'); a.href = canvas.toDataURL('image/png');
-    a.download = 'whiteboard.png'; a.click();
+    var a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'whiteboard.png';
+    a.click();
 }
 function wbToggleFullscreen() {
     wbFull = !wbFull;
     var view = document.getElementById('view-whiteboard');
     var icon = document.getElementById('wb-fs-icon');
     if (wbFull) {
-        view.style.position = 'fixed'; view.style.inset = '0'; view.style.zIndex = '200'; view.style.padding = '12px'; view.style.background = 'var(--bg-color)';
+        view.style.cssText = 'position:fixed;inset:0;z-index:200;padding:12px;background:var(--bg-color);';
         if (icon) icon.className = 'ph-bold ph-arrows-in';
     } else {
-        view.style.position = ''; view.style.inset = ''; view.style.zIndex = ''; view.style.padding = ''; view.style.background = '';
+        view.style.cssText = '';
         if (icon) icon.className = 'ph-bold ph-arrows-out';
     }
-    setTimeout(resizeCanvas, 100);
+    setTimeout(wbResizeCanvas, 80);
 }
 
-function saveBoard() {
-    var b = boards.find(function(x) { return x.id === activeBoardId; });
-    if (b) { b.data = canvas.toDataURL(); DB.set('os_boards', boards); }
+// ── boards ────────────────────────────────────────────────
+function wbSaveBoard() {
+    var b = wbBoards.find(function(x) { return x.id === wbActiveBoardId; });
+    if (b) {
+        b.data = canvas.toDataURL();
+        DB.set('os_boards', wbBoards);
+    }
 }
-function renderWbTabs() {
+function wbRenderTabs() {
     var tc = document.getElementById('wb-tabs');
     if (!tc) return;
     tc.innerHTML = '';
-    boards.forEach(function(b) {
+    wbBoards.forEach(function(b) {
         var btn = document.createElement('button');
-        btn.className = 'wb-tab' + (b.id === activeBoardId ? ' active-tab' : '');
+        btn.className = 'wb-tab' + (b.id === wbActiveBoardId ? ' active-tab' : '');
         btn.innerText = b.name;
-        btn.onclick = function() { switchBoard(b.id); };
+        btn.onclick = (function(id) { return function() { wbSwitchBoard(id); }; })(b.id);
         tc.appendChild(btn);
     });
 }
-function switchBoard(id) {
-    saveBoard();
-    activeBoardId = id;
-    var b = boards.find(function(x) { return x.id === id; });
-    fillWbBg();
+function wbSwitchBoard(id) {
+    wbSaveBoard();
+    wbActiveBoardId = id;
+    wbHistory = []; wbHistoryIndex = -1;
+    var b = wbBoards.find(function(x) { return x.id === id; });
+    wbFillBg();
     if (b && b.data) {
-        var img = new Image(); img.src = b.data;
-        img.onload = function() { ctx.drawImage(img, 0, 0); pushHistory(); };
-    } else { pushHistory(); }
-    renderWbTabs();
+        wbRestoreFromDataUrl(b.data, function() { wbPushHistory(); });
+    } else {
+        wbPushHistory();
+    }
+    wbRenderTabs();
 }
 function wbNewBoard() {
-    saveBoard();
-    var name = 'Board ' + (boards.length + 1);
-    boards.push({ id: Date.now(), name: name, data: null });
-    DB.set('os_boards', boards);
-    activeBoardId = boards[boards.length - 1].id;
-    fillWbBg(); pushHistory(); renderWbTabs();
+    wbSaveBoard();
+    var b = { id: Date.now(), name: 'Board ' + (wbBoards.length + 1), data: null };
+    wbBoards.push(b);
+    DB.set('os_boards', wbBoards);
+    wbActiveBoardId = b.id;
+    wbHistory = []; wbHistoryIndex = -1;
+    wbFillBg();
+    wbPushHistory();
+    wbRenderTabs();
 }
 function wbDeleteBoard() {
-    if (boards.length <= 1) { showAlert('Cannot Delete', 'You need at least one board.'); return; }
+    if (wbBoards.length <= 1) { showAlert('Cannot Delete', 'You need at least one board.'); return; }
     showConfirm('Delete Board', 'Remove this board?', function() {
-        boards = boards.filter(function(b) { return b.id !== activeBoardId; });
-        DB.set('os_boards', boards); activeBoardId = boards[0].id;
-        var b = boards[0]; fillWbBg();
-        if (b.data) { var img = new Image(); img.src = b.data; img.onload = function() { ctx.drawImage(img, 0, 0); pushHistory(); }; }
-        else pushHistory();
-        renderWbTabs();
+        wbBoards = wbBoards.filter(function(b) { return b.id !== wbActiveBoardId; });
+        DB.set('os_boards', wbBoards);
+        wbActiveBoardId = wbBoards[0].id;
+        wbHistory = []; wbHistoryIndex = -1;
+        var b = wbBoards[0];
+        wbFillBg();
+        if (b.data) {
+            wbRestoreFromDataUrl(b.data, function() { wbPushHistory(); });
+        } else {
+            wbPushHistory();
+        }
+        wbRenderTabs();
     });
 }
 
-// Size slider
+// Alias old function names used in HTML onclick attributes
+var boards          = wbBoards;          // keep compat
+function renderWbTabs()    { wbRenderTabs(); }
+function switchBoard(id)   { wbSwitchBoard(id); }
+function saveBoard()       { wbSaveBoard(); }
+
+// Size slider live display
 document.getElementById('wb-size').addEventListener('input', function() {
     document.getElementById('wb-size-display').innerText = this.value + 'px';
 });
 
-// Init whiteboard
-setTimeout(function() {
-    resizeCanvas();
-    var b = boards.find(function(x) { return x.id === activeBoardId; });
+// ── initialise when whiteboard tab is first opened ────────
+// We hook into switchTab to init the canvas at the right time
+var _wbInitDone = false;
+function wbInit() {
+    if (_wbInitDone) return;
+    _wbInitDone = true;
+    wbResizeCanvas();
+    var b = wbBoards.find(function(x) { return x.id === wbActiveBoardId; });
     if (b && b.data) {
-        var img = new Image(); img.src = b.data;
-        img.onload = function() { ctx.drawImage(img, 0, 0); pushHistory(); };
-    } else { fillWbBg(); pushHistory(); }
-    renderWbTabs();
-}, 100);
+        wbRestoreFromDataUrl(b.data, function() { wbPushHistory(); });
+    } else {
+        wbFillBg();
+        wbPushHistory();
+    }
+    wbRenderTabs();
+    // Set default tool active in toolbar
+    wbSetTool('pen');
+}
+
+// Patch switchTab to call wbInit when whiteboard is opened
+(function() {
+    var _origSwitchTab = switchTab;
+    switchTab = function(name) {
+        _origSwitchTab(name);
+        if (name === 'whiteboard') { setTimeout(wbInit, 30); }
+    };
+})();
 
 // ===== CALCULATOR =====
 var cExp = '';
