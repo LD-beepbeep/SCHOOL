@@ -197,8 +197,8 @@ function switchTab(name) {
     if (name === 'cards') { showDeckList(); }
     if (name === 'dashboard') { updateDashWidgets(); }
     if (name === 'calendar') { renderCalendar(); }
+    if (name === 'focus') { populateFocusTasks(); }
 }
-// Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
     if (e.altKey) {
         var idx = parseInt(e.key);
@@ -257,13 +257,64 @@ function playBeep() {
     } catch(e) {}
 }
 
-// ===== FOCUS TIMER =====
-var tTime = 25 * 60, tLeft = tTime, tInt, tRun = false;
+// ===== POMODORO FOCUS TIMER =====
+var pomodoroMode = 'focus'; // 'focus' | 'short' | 'long'
+var pomodoroTimes = DB.get('os_pomo_times', { focus: 25, short: 5, long: 15 });
+var pomodoroAutoBreak = DB.get('os_pomo_autobreak', false);
+var pomodoroSession = DB.get('os_pomo_session', 1); // 1-4
+var pomodoroSessionsToday = DB.get('os_pomo_today', { date: '', count: 0 });
+
+// Legacy compat vars
+var tTime = pomodoroTimes.focus * 60;
+var tLeft = tTime;
+var tInt = null;
+var tRun = false;
+
+function initPomoTimer() {
+    // Sync inputs
+    var pw = document.getElementById('pomo-custom-work');
+    var ps = document.getElementById('pomo-custom-short');
+    var pl = document.getElementById('pomo-custom-long');
+    if (pw) pw.value = pomodoroTimes.focus;
+    if (ps) ps.value = pomodoroTimes.short;
+    if (pl) pl.value = pomodoroTimes.long;
+
+    // Check sessions today reset
+    var today = new Date().toDateString();
+    if (pomodoroSessionsToday.date !== today) {
+        pomodoroSessionsToday = { date: today, count: 0 };
+        DB.set('os_pomo_today', pomodoroSessionsToday);
+    }
+
+    renderSessionDots();
+    updatePomoModeButtons();
+    updatePomoSessionInfo();
+    updatePomoAutoBreakBtn();
+
+    var abLabel = document.getElementById('pomo-autobreak-label');
+    if (abLabel) abLabel.innerText = pomodoroAutoBreak ? 'ON' : 'OFF';
+
+    var stToday = document.getElementById('pomo-sessions-today');
+    if (stToday) stToday.innerText = pomodoroSessionsToday.count;
+
+    // Set time based on current mode
+    tTime = pomodoroTimes[pomodoroMode] * 60;
+    tLeft = tTime;
+    updateTimer();
+}
+
 function updateTimer() {
     var m = Math.floor(tLeft / 60), s = tLeft % 60;
     var el = document.getElementById('timer-display');
     if (el) el.innerText = m + ':' + (s < 10 ? '0' : '') + s;
+    // Update top bar
+    var bar = document.getElementById('pomo-top-bar');
+    if (bar) {
+        var pct = tTime > 0 ? ((tTime - tLeft) / tTime * 100) : 0;
+        bar.style.width = pct + '%';
+    }
 }
+
 function toggleTimer() {
     if (tRun) {
         clearInterval(tInt);
@@ -271,19 +322,178 @@ function toggleTimer() {
         if (ico) ico.className = 'ph-fill ph-play';
     } else {
         tInt = setInterval(function() {
-            if (tLeft > 0) { tLeft--; updateTimer(); } else { resetTimer(); playBeep(); openModal('modal-timer-done'); }
+            if (tLeft > 0) { tLeft--; updateTimer(); } else {
+                clearInterval(tInt); tRun = false;
+                var ico = document.getElementById('icon-play');
+                if (ico) ico.className = 'ph-fill ph-play';
+                onPomodoroComplete();
+            }
         }, 1000);
         var ico = document.getElementById('icon-play');
         if (ico) ico.className = 'ph-fill ph-pause';
     }
     tRun = !tRun;
 }
+
 function resetTimer() {
-    clearInterval(tInt); tRun = false; tLeft = tTime;
+    clearInterval(tInt); tRun = false;
+    tTime = pomodoroTimes[pomodoroMode] * 60;
+    tLeft = tTime;
     var ico = document.getElementById('icon-play');
     if (ico) ico.className = 'ph-fill ph-play';
     updateTimer();
 }
+
+function skipPomodoroSession() {
+    clearInterval(tInt); tRun = false;
+    var ico = document.getElementById('icon-play');
+    if (ico) ico.className = 'ph-fill ph-play';
+    onPomodoroComplete();
+}
+
+function onPomodoroComplete() {
+    playBeep();
+    // Count completed focus sessions
+    if (pomodoroMode === 'focus') {
+        pomodoroSession = (pomodoroSession % 4) + 1;
+        DB.set('os_pomo_session', pomodoroSession);
+        var today = new Date().toDateString();
+        if (pomodoroSessionsToday.date !== today) {
+            pomodoroSessionsToday = { date: today, count: 0 };
+        }
+        pomodoroSessionsToday.count++;
+        DB.set('os_pomo_today', pomodoroSessionsToday);
+        var stToday = document.getElementById('pomo-sessions-today');
+        if (stToday) stToday.innerText = pomodoroSessionsToday.count;
+        renderSessionDots();
+    }
+
+    // Determine next mode
+    var nextMode = 'focus';
+    if (pomodoroMode === 'focus') {
+        nextMode = (pomodoroSession === 1) ? 'long' : 'short'; // after 4 sessions → long
+        // Actually: after completing session 4 (which just became 1 after mod), do long
+        // Simple logic: every 4 focus sessions, suggest long break
+        if (pomodoroSessionsToday.count > 0 && pomodoroSessionsToday.count % 4 === 0) {
+            nextMode = 'long';
+        } else {
+            nextMode = 'short';
+        }
+    } else {
+        nextMode = 'focus';
+    }
+
+    var nextLabels = { focus: '🍅 Focus', short: '☕ Short Break', long: '🌿 Long Break' };
+    var doneTitle = document.getElementById('timer-done-title');
+    var doneMsg = document.getElementById('timer-done-msg');
+    var doneNext = document.getElementById('timer-done-next');
+    var doneAction = document.getElementById('timer-done-action');
+
+    if (doneTitle) doneTitle.innerText = pomodoroMode === 'focus' ? 'Focus Done! 🎉' : 'Break Over!';
+    if (doneMsg) doneMsg.innerText = pomodoroMode === 'focus' ? 'Great work! Take a breather.' : 'Ready to focus again?';
+    if (doneNext) doneNext.innerText = 'Up next: ' + nextLabels[nextMode];
+    if (doneAction) {
+        doneAction.innerText = pomodoroAutoBreak ? 'Starting ' + nextLabels[nextMode] + '…' : 'Start ' + nextLabels[nextMode];
+        doneAction.onclick = function() {
+            closeModals();
+            setPomoMode(nextMode);
+            if (pomodoroAutoBreak) { setTimeout(toggleTimer, 300); }
+        };
+    }
+
+    openModal('modal-timer-done');
+
+    if (pomodoroAutoBreak) {
+        setTimeout(function() {
+            closeModals();
+            setPomoMode(nextMode);
+            setTimeout(toggleTimer, 200);
+        }, 3000);
+    }
+}
+
+function autoStartBreak() {
+    // Called from modal button fallback
+}
+
+function setPomoMode(mode) {
+    pomodoroMode = mode;
+    resetTimer();
+    updatePomoModeButtons();
+    updatePomoSessionInfo();
+    var lbl = document.getElementById('timer-label');
+    var labels = { focus: 'FOCUS SESSION', short: 'SHORT BREAK', long: 'LONG BREAK' };
+    if (lbl) lbl.innerText = labels[mode] || 'FOCUS SESSION';
+}
+
+function updatePomoModeButtons() {
+    ['focus','short','long'].forEach(function(m) {
+        var btn = document.getElementById('pomo-btn-' + m);
+        if (btn) btn.classList.toggle('active', m === pomodoroMode);
+    });
+}
+
+function updatePomoTimes() {
+    var pw = document.getElementById('pomo-custom-work');
+    var ps = document.getElementById('pomo-custom-short');
+    var pl = document.getElementById('pomo-custom-long');
+    if (pw) pomodoroTimes.focus = parseInt(pw.value) || 25;
+    if (ps) pomodoroTimes.short = parseInt(ps.value) || 5;
+    if (pl) pomodoroTimes.long = parseInt(pl.value) || 15;
+    DB.set('os_pomo_times', pomodoroTimes);
+    if (!tRun) resetTimer();
+}
+
+function toggleAutoBreak() {
+    pomodoroAutoBreak = !pomodoroAutoBreak;
+    DB.set('os_pomo_autobreak', pomodoroAutoBreak);
+    var lbl = document.getElementById('pomo-autobreak-label');
+    if (lbl) lbl.innerText = pomodoroAutoBreak ? 'ON' : 'OFF';
+    updatePomoAutoBreakBtn();
+}
+
+function updatePomoAutoBreakBtn() {
+    var btn = document.getElementById('pomo-autobreak');
+    if (btn) btn.classList.toggle('active', pomodoroAutoBreak);
+}
+
+function renderSessionDots() {
+    var c = document.getElementById('session-dots');
+    if (!c) return;
+    c.innerHTML = '';
+    for (var i = 1; i <= 4; i++) {
+        var dot = document.createElement('div');
+        var today = new Date().toDateString();
+        var todayCount = (pomodoroSessionsToday.date === today) ? pomodoroSessionsToday.count : 0;
+        var filled = todayCount >= i;
+        var isCurrent = (pomodoroMode === 'focus') && ((todayCount % 4) + 1 === i) && !filled;
+        dot.className = 'session-dot' + (filled ? ' filled' : '') + (isCurrent ? ' current' : '');
+        c.appendChild(dot);
+    }
+}
+
+function updatePomoSessionInfo() {
+    var el = document.getElementById('pomo-session-info');
+    if (!el) return;
+    var today = new Date().toDateString();
+    var count = (pomodoroSessionsToday.date === today) ? pomodoroSessionsToday.count : 0;
+    var next = (count % 4) + 1;
+    el.innerText = 'Session ' + next + ' of 4';
+}
+
+function populateFocusTasks() {
+    var sel = document.getElementById('focus-task-select');
+    if (!sel) return;
+    var pending = (DB.get('os_tasks', [])).filter(function(t) { return !t.done; });
+    sel.innerHTML = '<option value="">Select a Task to Focus On</option>';
+    pending.forEach(function(t) {
+        var opt = document.createElement('option');
+        opt.value = t.id; opt.innerText = t.text;
+        sel.appendChild(opt);
+    });
+}
+
+// Legacy setMode / setCustomPomodoro compat
 function setMode(m, l) {
     resetTimer(); tTime = m * 60; tLeft = tTime;
     var lbl = document.getElementById('timer-label');
@@ -292,9 +502,98 @@ function setMode(m, l) {
 }
 function setCustomPomodoro(val) {
     var mins = parseInt(val) || 25;
-    setMode(mins, 'FOCUS');
+    pomodoroTimes.focus = mins;
+    DB.set('os_pomo_times', pomodoroTimes);
+    if (pomodoroMode === 'focus' && !tRun) resetTimer();
 }
-updateTimer();
+
+// ===== NOTIFICATIONS =====
+function requestCalNotifications() {
+    if (!('Notification' in window)) { showAlert('Not Supported', 'Notifications are not supported in this browser.'); return; }
+    Notification.requestPermission().then(function(perm) {
+        DB.set('os_notif_cal', perm === 'granted');
+        updateNotifButtons();
+        if (perm === 'granted') {
+            showAlert('Notifications Enabled', 'You\'ll be notified before calendar events.');
+        } else {
+            showAlert('Permission Denied', 'Enable notifications in your browser settings.');
+        }
+    });
+}
+
+function requestTaskNotifications() {
+    if (!('Notification' in window)) { showAlert('Not Supported', 'Notifications are not supported in this browser.'); return; }
+    Notification.requestPermission().then(function(perm) {
+        DB.set('os_notif_tasks', perm === 'granted');
+        updateNotifButtons();
+        if (perm === 'granted') {
+            showAlert('Reminders Enabled', 'You\'ll be reminded about due tasks.');
+        } else {
+            showAlert('Permission Denied', 'Enable notifications in your browser settings.');
+        }
+    });
+}
+
+function updateNotifButtons() {
+    var calBtn = document.getElementById('cal-notif-btn');
+    var taskBtn = document.getElementById('tasks-notif-btn');
+    var perm = (typeof Notification !== 'undefined') ? Notification.permission : 'default';
+    if (calBtn) {
+        calBtn.classList.toggle('granted', perm === 'granted');
+        calBtn.classList.toggle('denied', perm === 'denied');
+    }
+    if (taskBtn) {
+        taskBtn.classList.toggle('granted', perm === 'granted');
+        taskBtn.classList.toggle('denied', perm === 'denied');
+    }
+}
+
+function sendSystemNotification(title, body, icon) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+        new Notification(title, { body: body || '', icon: icon || '' });
+    } catch(e) {}
+}
+
+function scheduleNotification(title, body, atTime) {
+    var delay = atTime - Date.now();
+    if (delay < 0) return;
+    setTimeout(function() { sendSystemNotification(title, body); }, delay);
+}
+
+function checkEventNotifications() {
+    if (!DB.get('os_notif_cal', false)) return;
+    var events = DB.get('os_events', {});
+    var now = new Date();
+    var todayKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    var todayEvs = events[todayKey] || [];
+    todayEvs.forEach(function(ev) {
+        if (ev.time) {
+            var parts = ev.time.split(':');
+            var evTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]));
+            var reminderTime = new Date(evTime.getTime() - 15 * 60000); // 15 min before
+            if (reminderTime > now) {
+                scheduleNotification('Upcoming: ' + ev.title, 'Starts at ' + ev.time + ' (15 min reminder)', '');
+            }
+        }
+    });
+}
+
+function checkTaskNotifications() {
+    if (!DB.get('os_notif_tasks', false)) return;
+    var tasks = DB.get('os_tasks', []);
+    var today = new Date().toISOString().split('T')[0];
+    tasks.filter(function(t) { return !t.done && t.date === today; }).forEach(function(t) {
+        sendSystemNotification('Task Due Today', t.text);
+    });
+}
+
+// Run checks on load
+(function() {
+    updateNotifButtons();
+    checkEventNotifications();
+    checkTaskNotifications();
+})();
 
 // ===== WIDGETS =====
 var widgetConfig = DB.get('os_widgets', {
@@ -361,9 +660,25 @@ function saveQuickNote() {
     var qn = document.getElementById('dash-quick-note');
     if (qn) { quickNote = qn.value; DB.set('os_quick_note', quickNote); }
 }
+function quickNoteToNotes() {
+    var qn = document.getElementById('dash-quick-note');
+    if (!qn || !qn.value.trim()) { showAlert('Empty Note', 'Write something first.'); return; }
+    var text = qn.value.trim();
+    var newNote = {
+        id: Date.now(),
+        title: text.split('\n')[0].slice(0, 40) || 'Quick Note',
+        body: '<p>' + text.replace(/\n/g, '</p><p>') + '</p>'
+    };
+    notes.unshift(newNote);
+    DB.set('os_notes', notes);
+    qn.value = ''; quickNote = '';
+    DB.set('os_quick_note', '');
+    switchTab('notes');
+    loadNote(newNote.id);
+    showAlert('Sent to Notes ✅', 'Your note was saved!');
+}
 
 function updateDashWidgets() {
-    // Study stats
     var decks = DB.get('os_decks', []);
     var statDecks = document.getElementById('stat-decks');
     if (statDecks) statDecks.innerText = decks.length;
@@ -373,7 +688,6 @@ function updateDashWidgets() {
     var sbs = document.getElementById('stat-best-streak');
     if (sbs) sbs.innerText = studyStats.bestStreak || streak.count;
 
-    // Grades overview
     var subjects = DB.get('os_subjects', []);
     var allTests = [];
     subjects.forEach(function(s) { (s.tests || []).filter(function(t) { return !t.practice; }).forEach(function(t) { allTests.push(t); }); });
@@ -389,7 +703,6 @@ function updateDashWidgets() {
         if (lblEl) lblEl.innerText = 'No data';
     }
 
-    // Upcoming events
     var calEvents = DB.get('os_events', {});
     var upcoming = document.getElementById('dash-upcoming-events');
     if (upcoming) {
@@ -413,7 +726,6 @@ function updateDashWidgets() {
         }
     }
 
-    // Up next task
     var tasks = DB.get('os_tasks', []);
     var pending = tasks.filter(function(t) { return !t.done; }).sort(function(a, b) {
         var pa = { high: 0, med: 1, low: 2 }[a.priority] || 2;
@@ -518,8 +830,15 @@ function addTask() {
     var date = document.getElementById('task-date');
     var v = inp ? inp.value.trim() : '';
     if (!v) return;
-    tasks.push({ id: Date.now(), text: v, priority: prio ? prio.value : 'low', date: date ? date.value : '', done: false, color: taskColorValue, subtasks: [] });
+    var task = { id: Date.now(), text: v, priority: prio ? prio.value : 'low', date: date ? date.value : '', done: false, color: taskColorValue, subtasks: [] };
+    tasks.push(task);
     DB.set('os_tasks', tasks);
+    // Schedule notification if date is today
+    if (task.date && task.date === new Date().toISOString().split('T')[0]) {
+        if (DB.get('os_notif_tasks', false)) {
+            sendSystemNotification('Task Added for Today', task.text);
+        }
+    }
     if (inp) inp.value = '';
     renderTasks(); updateDashWidgets();
 }
@@ -545,7 +864,6 @@ function clearCompletedTasks() {
     });
 }
 
-// Task edit
 function startEditTask(id) {
     var t = tasks.find(function(x) { return x.id === id; });
     if (!t) return;
@@ -584,7 +902,6 @@ function cancelTaskEdit(id) {
     if (ef) ef.remove();
 }
 
-// Subtasks
 function addSubtask(taskId) {
     var inp = document.getElementById('subtask-input-' + taskId);
     if (!inp) return;
@@ -714,6 +1031,35 @@ var cardFlipped = false;
 var studyCorrect = 0, studyWrong = 0;
 var cardStats = DB.get('os_card_stats', {});
 var editingCardIndex = null;
+var selectedDeckEmoji = '📖';
+
+var deckEmojiList = ['📖','🔬','🌍','🎭','🏛️','💡','⚗️','🗺️','🧮','🎵',
+                     '🧬','🔭','📐','📊','🎨','🏆','🚀','🧩','📝','🌱',
+                     '⚡','🦋','🐉','🌙','🔥','💎','🎯','🎸','🌺','🧠'];
+
+function initDeckEmojiPicker() {
+    var grid = document.getElementById('deck-emoji-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    deckEmojiList.forEach(function(em) {
+        var span = document.createElement('span');
+        span.className = 'deck-emoji-opt' + (em === selectedDeckEmoji ? ' selected' : '');
+        span.innerText = em;
+        span.onclick = function() { setDeckEmoji(em); };
+        grid.appendChild(span);
+    });
+    var custom = document.getElementById('deck-emoji-custom');
+    if (custom) custom.value = '';
+}
+
+function setDeckEmoji(em) {
+    selectedDeckEmoji = em;
+    document.querySelectorAll('.deck-emoji-opt').forEach(function(o) {
+        o.classList.toggle('selected', o.innerText === em);
+    });
+    var custom = document.getElementById('deck-emoji-custom');
+    if (custom && !deckEmojiList.includes(em)) custom.value = em;
+}
 
 function showDeckList() {
     document.getElementById('cards-deck-view').classList.remove('hidden');
@@ -800,10 +1146,10 @@ function saveDeck() {
     var name = document.getElementById('deck-name').value.trim();
     if (!name) return;
     var groupId = document.getElementById('deck-group-select').value;
-    var emojis = ['📖','🔬','🌍','🎭','🏛️','💡','⚗️','🗺️','🧮','🎵'];
-    decks.push({ id: Date.now(), name: name, groupId: groupId ? parseInt(groupId) : null, emoji: emojis[Math.floor(Math.random() * emojis.length)], cards: [] });
+    decks.push({ id: Date.now(), name: name, groupId: groupId ? parseInt(groupId) : null, emoji: selectedDeckEmoji || '📖', cards: [] });
     DB.set('os_decks', decks);
     document.getElementById('deck-name').value = '';
+    selectedDeckEmoji = '📖';
     closeModals(); renderDecks();
 }
 function deleteDeck(id) {
@@ -865,10 +1211,27 @@ function renderCardList() {
         return;
     }
     deck.cards.forEach(function(card, i) {
+        var statKey = activeDeckId + '_' + card.id;
+        var hardCount = cardStats[statKey] || 0;
+        var diffBadge = '';
+        if (hardCount >= 3) {
+            diffBadge = '<span class="card-diff-badge hard">Hard</span>';
+        } else if (hardCount === 0 && i > 0) {
+            // Only show Easy if card has been studied (not brand new)
+            // We skip showing Easy badge for unseen cards
+        }
+        // Show hard badge if failed 2+ times
+        if (hardCount >= 2) {
+            diffBadge = '<span class="card-diff-badge hard">Hard</span>';
+        }
+
         var div = document.createElement('div');
         div.className = 'flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-[var(--glass-hover)] group transition';
         div.innerHTML = '<div class="flex-1 min-w-0">'
+            + '<div class="flex items-center gap-2">'
             + '<div class="text-sm font-medium truncate">' + card.q + '</div>'
+            + diffBadge
+            + '</div>'
             + '<div class="text-xs text-[var(--text-muted)] truncate">' + card.a + '</div>'
             + (card.tip ? '<div class="text-[10px] text-yellow-400/70 truncate">💡 ' + card.tip + '</div>' : '')
             + '</div>'
@@ -951,14 +1314,13 @@ function flipCard() {
 function rateCard(rating) {
     var card = studyQueue[studyIdx];
     if (!card) return;
+    var key = activeDeckId + '_' + card.id;
     if (rating === 'hard') {
         studyWrong++;
-        var key = activeDeckId + '_' + card.id;
         cardStats[key] = (cardStats[key] || 0) + 1;
         DB.set('os_card_stats', cardStats);
     } else {
         studyCorrect++;
-        var key = activeDeckId + '_' + card.id;
         if (cardStats[key] > 0) cardStats[key]--;
         DB.set('os_card_stats', cardStats);
     }
@@ -986,7 +1348,7 @@ function checkWriteAnswer() {
     var userAnswer = wai ? wai.value.trim().toLowerCase() : '';
     var isReverse = studyMode === 'reverse';
     var correctAnswer = (isReverse ? card.q : card.a).toLowerCase().trim();
-    var correct = userAnswer === correctAnswer || correctAnswer.includes(userAnswer) && userAnswer.length > 2;
+    var correct = userAnswer === correctAnswer || (correctAnswer.includes(userAnswer) && userAnswer.length > 2);
     var wf = document.getElementById('write-feedback');
     if (wf) {
         wf.className = 'write-feedback ' + (correct ? 'correct' : 'wrong');
@@ -1015,7 +1377,6 @@ function updateStudyProgress() {
     if (sc) sc.innerText = studyCorrect + ' ✓';
     var sw = document.getElementById('study-wrong');
     if (sw) sw.innerText = studyWrong + ' ✗';
-    // Update study stats
     var ss = DB.get('os_study_stats', { today: 0, todayDate: '', bestStreak: 0 });
     var todayStr = new Date().toDateString();
     if (ss.todayDate !== todayStr) { ss.today = 0; ss.todayDate = todayStr; }
@@ -1219,11 +1580,9 @@ function handleWSClick(r, c) {
         checkWSSelection(start.r, start.c, r, c);
     }
 }
-
 function getWSCell(r, c) {
     return document.querySelector('.ws-cell[data-r="' + r + '"][data-c="' + c + '"]');
 }
-
 function checkWSSelection(r1, c1, r2, c2) {
     var dr = Math.sign(r2 - r1), dc = Math.sign(c2 - c1);
     if (dr === 0 && dc === 0) return;
@@ -1238,16 +1597,11 @@ function checkWSSelection(r1, c1, r2, c2) {
         cr += dr; cc += dc;
     }
     var match = wsPlacements.find(function(p) {
-        var pLetters = '';
-        for (var i = 0; i < p.word.length; i++) pLetters += wsGrid[p.r + p.dr * i][p.c + p.dc * i];
-        return pLetters === letters && p.r === r1 && p.c === c1 && p.dr === dr && p.dc === dc
-            || pLetters === letters && p.r === r2 && p.c === c2 && p.dr === -dr && p.dc === -dc
-            || (letters === p.word && cells.length === p.word.length && cells[0].r === p.r && cells[0].c === p.c && dr === p.dr && dc === p.dc)
+        return (letters === p.word && cells.length === p.word.length && cells[0].r === p.r && cells[0].c === p.c && dr === p.dr && dc === p.dc)
             || (letters === p.word && cells.length === p.word.length);
     });
     if (match && wsFound.indexOf(match.word) < 0) {
         wsFound.push(match.word);
-        // Mark found cells
         for (var i = 0; i < match.word.length; i++) {
             var fc = getWSCell(match.r + match.dr * i, match.c + match.dc * i);
             if (fc) { fc.classList.remove('selected'); fc.classList.add('found'); }
@@ -1323,7 +1677,6 @@ function deleteTest(subId, testId) {
     sub.tests = sub.tests.filter(function(t) { return t.id !== testId; });
     DB.set('os_subjects', subjects); renderGrades(); updateDashWidgets();
 }
-
 function calcSubjectAvg(tests, practiceOnly) {
     var filtered = tests.filter(function(t) { return practiceOnly ? t.practice : !t.practice; });
     if (filtered.length === 0) return null;
@@ -1332,7 +1685,6 @@ function calcSubjectAvg(tests, practiceOnly) {
 }
 
 function renderGrades() {
-    // Global averages
     var allRealTests = [];
     var allPracticeTests = [];
     subjects.forEach(function(s) {
@@ -1340,22 +1692,18 @@ function renderGrades() {
             if (t.practice) allPracticeTests.push(t); else allRealTests.push(t);
         });
     });
-
     function computeAvg(tests) {
         if (!tests.length) return null;
         return tests.reduce(function(a, t) { return a + (t.score / t.max * 20); }, 0) / tests.length;
     }
-
     var globalAvg = computeAvg(allRealTests);
     var practiceAvg = computeAvg(allPracticeTests);
-
     var gaEl = document.getElementById('global-average');
     var galEl = document.getElementById('global-avg-label');
     var gbEl = document.getElementById('global-bar');
     var gletEl = document.getElementById('global-letter');
     var gbeEl = document.getElementById('global-be-label');
     var gpEl = document.getElementById('global-practice-avg');
-
     if (gaEl) gaEl.innerText = globalAvg !== null ? globalAvg.toFixed(2) + '/20' : '--';
     if (galEl) galEl.innerText = globalAvg !== null ? getBeLabel(globalAvg) : 'No tests yet';
     if (gbEl) gbEl.style.width = (globalAvg !== null ? (globalAvg / 20 * 100) : 0) + '%';
@@ -1370,18 +1718,13 @@ function renderGrades() {
         c.innerHTML = '<div class="col-span-2 text-center py-20 text-[var(--text-muted)]"><i class="ph ph-chart-bar text-4xl mb-3 block"></i><p class="text-sm">No subjects yet. Add your first subject!</p></div>';
         return;
     }
-
     subjects.forEach(function(sub) {
-        var realTests = (sub.tests || []).filter(function(t) { return !t.practice; });
-        var practTests = (sub.tests || []).filter(function(t) { return t.practice; });
         var avg = calcSubjectAvg(sub.tests || [], false);
         var pAvg = calcSubjectAvg(sub.tests || [], true);
         var pct = avg !== null ? (avg / 20 * 100) : 0;
         var color = avg !== null ? getBeColor(avg) : 'var(--accent)';
-
         var card = document.createElement('div');
         card.className = 'min-card p-5';
-
         var testsHTML = '';
         (sub.tests || []).forEach(function(t) {
             var sc20 = (t.score / t.max * 20).toFixed(2);
@@ -1393,11 +1736,9 @@ function renderGrades() {
                 + '<button onclick="deleteTest(' + sub.id + ',' + t.id + ')" class="text-[var(--text-muted)] hover:text-red-400 text-xs"><i class="ph ph-trash"></i></button>'
                 + '</div></div>';
         });
-
         var practiceRow = pAvg !== null
             ? '<div class="practice-avg-row mt-3 flex justify-between items-center"><span>Practice Avg</span><span class="font-bold">' + pAvg.toFixed(2) + '/20</span></div>'
             : '';
-
         card.innerHTML = '<div class="flex justify-between items-start mb-4">'
             + '<div>'
             + '<h3 class="font-semibold text-base">' + sub.name + '</h3>'
@@ -1406,8 +1747,7 @@ function renderGrades() {
             + '<div class="text-right">'
             + '<div class="text-3xl font-light" style="color:' + color + '">' + (avg !== null ? avg.toFixed(2) : '--') + '</div>'
             + '<div class="text-xs text-[var(--text-muted)]">/ 20</div>'
-            + '</div>'
-            + '</div>'
+            + '</div></div>'
             + '<div class="h-2 bg-[var(--glass-hover)] rounded-full overflow-hidden mb-4">'
             + '<div style="width:' + pct + '%;background:' + color + ';height:100%;border-radius:2px;transition:width .7s;"></div>'
             + '</div>'
@@ -1415,7 +1755,6 @@ function renderGrades() {
             + (sub.tests && sub.tests.length ? '<div class="mt-3 max-h-40 overflow-y-auto">' + testsHTML + '</div>' : '')
             + '<button onclick="openAddTestModal(' + sub.id + ')" class="mt-3 w-full py-2 bg-[var(--glass-hover)] rounded-xl text-xs font-medium hover:bg-[var(--accent)] hover:text-white transition">+ Add Result</button>'
             + '<button onclick="deleteSubject(' + sub.id + ')" class="mt-1 w-full py-1 text-[var(--text-muted)] hover:text-red-400 transition text-xs">Delete subject</button>';
-
         c.appendChild(card);
     });
 }
@@ -1426,7 +1765,6 @@ var calEvents = DB.get('os_events', {});
 var curM = new Date().getMonth(), curY = new Date().getFullYear();
 var curCalView = 'month';
 var weekStartDate = new Date();
-// Set to Monday of current week
 (function() {
     var d = new Date();
     var day = d.getDay();
@@ -1444,7 +1782,6 @@ function switchCalView(view) {
     });
     renderCalendar();
 }
-
 function calGoToday() {
     var now = new Date();
     curM = now.getMonth(); curY = now.getFullYear();
@@ -1453,13 +1790,11 @@ function calGoToday() {
     weekStartDate = new Date(new Date().setDate(diff));
     renderCalendar();
 }
-
 function renderCalendar() {
     if (curCalView === 'month') renderMonthView();
     else if (curCalView === 'week') renderWeekView();
     else renderAgendaView();
 }
-
 function changeMonth(d) {
     curM += d;
     if (curM > 11) { curM = 0; curY++; }
@@ -1470,7 +1805,6 @@ function changeWeek(d) {
     weekStartDate = new Date(weekStartDate.getTime() + d * 7 * 86400000);
     renderWeekView();
 }
-
 function renderMonthView() {
     var g = document.getElementById('calendar-grid');
     if (!g) return;
@@ -1497,7 +1831,6 @@ function renderMonthView() {
         g.appendChild(el);
     }
 }
-
 function renderWeekView() {
     var con = document.getElementById('cal-week-container');
     if (!con) return;
@@ -1534,7 +1867,6 @@ function renderWeekView() {
     html += '</div>';
     con.innerHTML = html;
 }
-
 function renderAgendaView() {
     var list = document.getElementById('cal-agenda-list');
     if (!list) return;
@@ -1568,7 +1900,6 @@ function renderAgendaView() {
     });
     list.innerHTML = html;
 }
-
 function openEventModal(k) {
     document.getElementById('event-modal-date').innerText = k;
     var l = document.getElementById('event-list-day');
@@ -1584,11 +1915,23 @@ function saveCalEvent() {
     var v = document.getElementById('event-input').value.trim();
     var ti = document.getElementById('event-time').value;
     var rp = document.getElementById('event-repeat').value;
+    var notifyChk = document.getElementById('event-notify');
+    var shouldNotify = notifyChk ? notifyChk.checked : false;
     var c = document.querySelector('input[name="eventColor"]:checked');
     var col = c ? c.value : '#3b82f6';
     if (!v || !k) return;
     if (!calEvents[k]) calEvents[k] = [];
-    calEvents[k].push({ title: v, time: ti, color: col });
+    var evObj = { title: v, time: ti, color: col };
+    calEvents[k].push(evObj);
+    // Schedule notification if requested
+    if (shouldNotify && ti && DB.get('os_notif_cal', false)) {
+        var parts = ti.split(':');
+        var evDate = new Date(k + 'T' + ti);
+        var reminderTime = new Date(evDate.getTime() - 15 * 60000);
+        if (reminderTime > Date.now()) {
+            scheduleNotification('Upcoming: ' + v, 'In 15 minutes at ' + ti, '');
+        }
+    }
     if (rp === 'daily') {
         for (var i = 1; i <= 30; i++) {
             var d = new Date(k); d.setDate(d.getDate() + i);
@@ -1618,7 +1961,6 @@ function saveCalendarImport() {
     if (u) {
         DB.set('os_cal_url', u);
         document.getElementById('cal-frame').src = u;
-        document.getElementById('calendar-grid-view') && document.getElementById('calendar-grid-view').classList.add('hidden');
         document.getElementById('calendar-iframe-container').classList.remove('hidden');
         closeModals();
     }
@@ -1641,20 +1983,58 @@ switchCalView('month');
 var notes = DB.get('os_notes', [{ id: 1, title: 'Ideas', body: '' }]);
 var activeNote = notes[0] ? notes[0].id : null;
 var noteFontActive = 'font-sans';
+var noteGroups = DB.get('os_note_groups', []);
+var selectedNoteGroupColor = '#3b82f6';
+var notesSidebarHidden = false;
 
 function renderNotes() {
     var c = document.getElementById('notes-sidebar');
     if (!c) return;
     c.innerHTML = '';
-    notes.forEach(function(n) {
-        var isActive = n.id === activeNote;
-        var div = document.createElement('div');
-        div.className = 'flex items-center group rounded-lg ' + (isActive ? 'bg-[var(--glass-panel)]' : '') + ' pr-1';
-        div.innerHTML = '<button onclick="loadNote(' + n.id + ')" class="flex-1 text-left p-3 text-sm hover:bg-[var(--glass-hover)] rounded-lg truncate ' + (isActive ? 'font-semibold' : '') + '">' + (n.title || 'Untitled') + '</button>'
-            + '<button onclick="confirmDeleteNote(' + n.id + ')" class="opacity-0 group-hover:opacity-100 p-1 text-[var(--text-muted)] hover:text-red-400 transition rounded flex-shrink-0"><i class="ph-bold ph-trash text-xs"></i></button>';
-        c.appendChild(div);
+
+    // Render groups
+    noteGroups.forEach(function(g) {
+        var groupNotes = notes.filter(function(n) { return n.groupId === g.id; });
+        var groupDiv = document.createElement('div');
+        groupDiv.className = 'mb-1';
+        var header = document.createElement('div');
+        header.className = 'flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-[var(--glass-hover)] cursor-pointer group';
+        header.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:' + (g.color || 'var(--accent)') + ';flex-shrink:0;"></div>'
+            + '<span class="note-group-name text-xs font-bold flex-1">' + g.name + '</span>'
+            + '<span class="text-[10px] text-[var(--text-muted)]">' + groupNotes.length + '</span>'
+            + '<i class="ph ph-caret-right text-[10px] text-[var(--text-muted)]' + (g.open !== false ? ' rotate-90' : '') + '"></i>'
+            + '<button onclick="event.stopPropagation();deleteNoteGroup(' + g.id + ')" class="opacity-0 group-hover:opacity-100 text-[var(--text-muted)] hover:text-red-400 text-xs px-1">\u00d7</button>';
+        header.onclick = function() {
+            g.open = (g.open === false) ? true : false;
+            DB.set('os_note_groups', noteGroups);
+            renderNotes();
+        };
+        var children = document.createElement('div');
+        children.className = 'note-group-children pl-3' + (g.open === false ? ' hidden' : '');
+        groupNotes.forEach(function(n) {
+            children.appendChild(noteItem(n));
+        });
+        groupDiv.appendChild(header);
+        groupDiv.appendChild(children);
+        c.appendChild(groupDiv);
+    });
+
+    // Render ungrouped notes
+    var ungrouped = notes.filter(function(n) { return !n.groupId; });
+    ungrouped.forEach(function(n) {
+        c.appendChild(noteItem(n));
     });
 }
+
+function noteItem(n) {
+    var isActive = n.id === activeNote;
+    var div = document.createElement('div');
+    div.className = 'flex items-center group rounded-lg ' + (isActive ? 'bg-[var(--glass-panel)]' : '') + ' pr-1';
+    div.innerHTML = '<button onclick="loadNote(' + n.id + ')" class="flex-1 text-left p-3 text-sm hover:bg-[var(--glass-hover)] rounded-lg truncate ' + (isActive ? 'font-semibold' : '') + '">' + (n.title || 'Untitled') + '</button>'
+        + '<button onclick="confirmDeleteNote(' + n.id + ')" class="opacity-0 group-hover:opacity-100 p-1 text-[var(--text-muted)] hover:text-red-400 transition rounded flex-shrink-0"><i class="ph-bold ph-trash text-xs"></i></button>';
+    return div;
+}
+
 function loadNote(id) {
     activeNote = id;
     var n = notes.find(function(x) { return x.id === id; });
@@ -1711,7 +2091,6 @@ function noteTextColor(c) {
     document.execCommand('foreColor', false, c); saveNote();
 }
 function setNoteFont(font, cls, silent) {
-    // Apply font to whole note editor
     document.getElementById('note-editor').style.fontFamily = font;
     noteFontActive = cls;
     document.querySelectorAll('.font-opt').forEach(function(b) { b.classList.remove('active-font'); });
@@ -1720,14 +2099,125 @@ function setNoteFont(font, cls, silent) {
     if (!silent) { saveNote(); }
 }
 
+function noteIndent() {
+    document.getElementById('note-editor').focus();
+    document.execCommand('indent', false, null);
+    saveNote();
+}
+function noteOutdent() {
+    document.getElementById('note-editor').focus();
+    document.execCommand('outdent', false, null);
+    saveNote();
+}
+
+function toggleNotesSidebar() {
+    notesSidebarHidden = !notesSidebarHidden;
+    var layout = document.getElementById('notes-layout');
+    var btn = document.getElementById('notes-sidebar-toggle-btn');
+    if (layout) layout.classList.toggle('sidebar-hidden', notesSidebarHidden);
+    if (btn) btn.classList.toggle('active-tool', notesSidebarHidden);
+}
+
+// Table Picker
+var tablePickerHoverRow = 0, tablePickerHoverCol = 0;
+function initTablePicker() {
+    var grid = document.getElementById('table-picker-grid');
+    if (!grid || grid.children.length > 0) return;
+    grid.style.gridTemplateColumns = 'repeat(6,1fr)';
+    for (var r = 1; r <= 6; r++) {
+        for (var c = 1; c <= 6; c++) {
+            (function(row, col) {
+                var cell = document.createElement('div');
+                cell.className = 'table-picker-cell';
+                cell.dataset.r = row; cell.dataset.c = col;
+                cell.addEventListener('mouseenter', function() {
+                    tablePickerHoverRow = row; tablePickerHoverCol = col;
+                    document.querySelectorAll('.table-picker-cell').forEach(function(x) {
+                        x.classList.toggle('hover', parseInt(x.dataset.r) <= row && parseInt(x.dataset.c) <= col);
+                    });
+                    var lbl = document.getElementById('table-picker-label');
+                    if (lbl) lbl.innerText = row + ' × ' + col;
+                });
+                cell.addEventListener('click', function() {
+                    noteInsertTable(row, col);
+                    var popup = document.getElementById('table-picker-popup');
+                    if (popup) popup.classList.remove('open');
+                });
+                grid.appendChild(cell);
+            })(r, c);
+        }
+    }
+}
+function toggleTablePicker(btn) {
+    initTablePicker();
+    var popup = document.getElementById('table-picker-popup');
+    if (!popup) return;
+    popup.classList.toggle('open');
+    document.addEventListener('click', function closeTP(e) {
+        if (!popup.contains(e.target) && e.target !== btn) {
+            popup.classList.remove('open');
+            document.removeEventListener('click', closeTP);
+        }
+    });
+}
+function noteInsertTable(rows, cols) {
+    document.getElementById('note-editor').focus();
+    var html = '<table style="border-collapse:collapse;width:100%;margin:8px 0;">';
+    html += '<thead><tr>';
+    for (var c = 0; c < cols; c++) {
+        html += '<th style="border:1px solid var(--glass-border);padding:6px 10px;background:var(--glass-hover);text-align:left;font-size:.85em;">Header</th>';
+    }
+    html += '</tr></thead><tbody>';
+    for (var r = 0; r < rows - 1; r++) {
+        html += '<tr>';
+        for (var c = 0; c < cols; c++) {
+            html += '<td style="border:1px solid var(--glass-border);padding:6px 10px;font-size:.85em;" contenteditable="true"></td>';
+        }
+        html += '</tr>';
+    }
+    html += '</tbody></table><p><br></p>';
+    document.execCommand('insertHTML', false, html);
+    saveNote();
+}
+
+// Note Groups
+function saveNoteGroup() {
+    var inp = document.getElementById('note-group-name');
+    var v = inp ? inp.value.trim() : '';
+    if (!v) return;
+    noteGroups.push({ id: Date.now(), name: v, color: selectedNoteGroupColor, open: true });
+    DB.set('os_note_groups', noteGroups);
+    if (inp) inp.value = '';
+    closeModals(); renderNotes();
+}
+function setNoteGroupColor(c) {
+    selectedNoteGroupColor = c;
+    document.querySelectorAll('[id^="ngc-"]').forEach(function(btn) {
+        btn.style.outline = 'none';
+    });
+    var ids = { '#3b82f6': 'ngc-blue', '#22c55e': 'ngc-green', '#ef4444': 'ngc-red', '#8b5cf6': 'ngc-purple', '#f59e0b': 'ngc-amber', '#ec4899': 'ngc-pink' };
+    var btnId = ids[c];
+    if (btnId) {
+        var b = document.getElementById(btnId);
+        if (b) b.style.outline = '2px solid white';
+    }
+}
+function deleteNoteGroup(id) {
+    showConfirm('Delete Group', 'Notes inside will become ungrouped.', function() {
+        noteGroups = noteGroups.filter(function(g) { return g.id !== id; });
+        notes.forEach(function(n) { if (n.groupId === id) n.groupId = null; });
+        DB.set('os_note_groups', noteGroups);
+        DB.set('os_notes', notes);
+        renderNotes();
+    });
+}
+
 // Prevent Enter from creating new checkbox inside label
 document.getElementById('note-editor').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         var sel = window.getSelection();
         if (sel && sel.focusNode) {
-            var node = sel.focusNode;
-            // Walk up to see if we're inside a label (checkbox row)
-            var p = node;
+            var p = sel.focusNode;
             while (p && p !== this) {
                 if (p.nodeName === 'LABEL') {
                     e.preventDefault();
@@ -1803,7 +2293,6 @@ if (notes[0]) loadNote(notes[0].id);
 var canvas = document.getElementById('wb-canvas');
 var ctx = canvas.getContext('2d');
 
-// State
 var wbTool = 'pen';
 var wbPenColor = '#ffffff';
 var wbDrawing = false;
@@ -1813,14 +2302,21 @@ var wbHistory = [];
 var wbHistoryIndex = -1;
 var wbGridOn = false;
 var wbFull = false;
-var wbSnapshot = null;          // ImageData snapshot for shape preview
-var wbSelectStart = null;       // {x,y} of selection drag start
-var wbSelectRect  = null;       // {x,y,w,h} of committed selection
-var wbPreSelectData = null;     // full-canvas ImageData captured before selection drag
+var wbSnapshot = null;
+var wbSelectStart = null;
+var wbSelectRect  = null;
+var wbPreSelectData = null;
 var wbBoards = DB.get('os_boards', [{ id: 1, name: 'Board 1', data: null }]);
 var wbActiveBoardId = wbBoards[0].id;
 
-// ── helpers ──────────────────────────────────────────────
+// Mind map state
+var wbMindMapMode = false;
+var wbMindMapNodes = [];  // loaded per board
+var wbMindMapEdges = [];
+var wbMindMapSelected = null;  // id of selected node
+var wbMmPendingColor = '#3b82f6';
+var wbMmDragging = null;  // {nodeId, offsetX, offsetY}
+
 function wbGetBg() {
     return DB.get('os_wb_bg_' + wbActiveBoardId, '#1a1a1a');
 }
@@ -1860,11 +2356,9 @@ function wbRestoreFromDataUrl(dataUrl, cb) {
     img.src = dataUrl;
 }
 
-// ── resize ───────────────────────────────────────────────
 function wbResizeCanvas() {
     var con = document.getElementById('wb-container');
     if (!con || con.clientWidth === 0) return;
-    // Save current drawing as data URL before resize
     var saved = (canvas.width > 0 && canvas.height > 0) ? canvas.toDataURL() : null;
     canvas.width  = con.clientWidth;
     canvas.height = con.clientHeight;
@@ -1874,15 +2368,19 @@ function wbResizeCanvas() {
         img.onload = function() { ctx.drawImage(img, 0, 0); };
         img.src = saved;
     }
+    // Resize mind map SVG
+    var svg = document.getElementById('wb-mindmap-svg');
+    if (svg) {
+        svg.setAttribute('width', canvas.width);
+        svg.setAttribute('height', canvas.height);
+    }
 }
 window.addEventListener('resize', function() {
-    // Only resize if whiteboard tab is visible
     if (!document.getElementById('view-whiteboard').classList.contains('hidden')) {
         wbResizeCanvas();
     }
 });
 
-// ── tool switching ────────────────────────────────────────
 function wbSetTool(t) {
     wbTool = t;
     document.querySelectorAll('[id^="wb-tool-"]').forEach(function(b) {
@@ -1892,15 +2390,13 @@ function wbSetTool(t) {
     if (btn) btn.classList.add('active-tool');
     var cursors = { pen: 'crosshair', eraser: 'cell', select: 'crosshair',
                     line: 'crosshair', rect: 'crosshair', circle: 'crosshair',
-                    arrow: 'crosshair', text: 'text' };
+                    arrow: 'crosshair', text: 'text', highlighter: 'crosshair' };
     canvas.style.cursor = cursors[t] || 'crosshair';
-    // Dismiss selection UI when switching away
     if (t !== 'select') wbClearSelection();
 }
 function setPenColor(c) { wbPenColor = c; }
 function setWbBg(c) {
     DB.set('os_wb_bg_' + wbActiveBoardId, c);
-    // Redraw: fill new bg then replay last history frame on top
     wbFillBg();
     if (wbHistoryIndex >= 0) {
         wbRestoreFromDataUrl(wbHistory[wbHistoryIndex]);
@@ -1909,7 +2405,6 @@ function setWbBg(c) {
     wbSaveBoard();
 }
 
-// ── undo / redo ───────────────────────────────────────────
 function wbUndo() {
     if (wbHistoryIndex <= 0) return;
     wbHistoryIndex--;
@@ -1923,12 +2418,10 @@ function wbRedo() {
     wbSaveBoard();
 }
 
-// ── grid ──────────────────────────────────────────────────
 function wbToggleGrid() {
     wbGridOn = !wbGridOn;
     var btn = document.getElementById('wb-grid-btn');
     if (btn) btn.classList.toggle('active-tool', wbGridOn);
-    // Redraw bg (which calls drawGrid if on) then replay drawing
     var saved = (wbHistoryIndex >= 0) ? wbHistory[wbHistoryIndex] : null;
     wbFillBg();
     if (saved) {
@@ -1938,7 +2431,6 @@ function wbToggleGrid() {
     }
 }
 
-// ── pointer events ────────────────────────────────────────
 function wbGetXY(e) {
     var rect = canvas.getBoundingClientRect();
     var scaleX = canvas.width  / rect.width;
@@ -1956,13 +2448,9 @@ canvas.addEventListener('pointerdown', function(e) {
 
     if (wbTool === 'text') {
         wbStartX = p.x; wbStartY = p.y;
-        document.getElementById('wb-text-size').oninput = function() {
-            document.getElementById('wb-text-size-disp').innerText = this.value + 'px';
-        };
         openModal('modal-wb-text');
         return;
     }
-
     if (wbTool === 'select') {
         wbClearSelection();
         wbSelectStart = { x: p.x, y: p.y };
@@ -1975,20 +2463,31 @@ canvas.addEventListener('pointerdown', function(e) {
     wbStartX = p.x; wbStartY = p.y;
     wbLastX  = p.x; wbLastY  = p.y;
 
-    // For shapes, grab snapshot now so we can redraw clean each frame
-    if (wbTool !== 'pen' && wbTool !== 'eraser') {
+    if (wbTool !== 'pen' && wbTool !== 'eraser' && wbTool !== 'highlighter') {
         wbSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
     }
 
     if (wbTool === 'pen') {
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
-        // Put a dot for single clicks
         ctx.arc(p.x, p.y, wbGetSize() / 2, 0, Math.PI * 2);
         ctx.fillStyle = wbPenColor;
         ctx.fill();
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
+    }
+
+    if (wbTool === 'highlighter') {
+        ctx.save();
+        ctx.globalAlpha = 0.35;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, wbGetSize() * 5, 0, Math.PI * 2);
+        ctx.fillStyle = wbPenColor;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.restore();
     }
 });
 
@@ -1998,13 +2497,11 @@ canvas.addEventListener('pointermove', function(e) {
     var p = wbGetXY(e);
     var size = wbGetSize();
 
-    // ── selection drag ──
     if (wbTool === 'select' && wbSelectStart) {
         var sx = Math.min(p.x, wbSelectStart.x);
         var sy = Math.min(p.y, wbSelectStart.y);
         var sw = Math.abs(p.x - wbSelectStart.x);
         var sh = Math.abs(p.y - wbSelectStart.y);
-        // Show overlay div
         var ov = document.getElementById('wb-select-overlay');
         var con = document.getElementById('wb-container');
         var cRect = con.getBoundingClientRect();
@@ -2018,13 +2515,13 @@ canvas.addEventListener('pointermove', function(e) {
         return;
     }
 
-    // ── pen ──
     if (wbTool === 'pen') {
         ctx.lineWidth   = size;
         ctx.lineCap     = 'round';
         ctx.lineJoin    = 'round';
         ctx.strokeStyle = wbPenColor;
         ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
         ctx.beginPath();
@@ -2033,13 +2530,30 @@ canvas.addEventListener('pointermove', function(e) {
         return;
     }
 
-    // ── eraser – paint bg color, never transparent ──
+    if (wbTool === 'highlighter') {
+        ctx.save();
+        ctx.globalAlpha = 0.25;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.lineWidth   = size * 10;
+        ctx.lineCap     = 'round';
+        ctx.lineJoin    = 'round';
+        ctx.strokeStyle = wbPenColor;
+        ctx.beginPath();
+        ctx.moveTo(wbLastX, wbLastY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        ctx.restore();
+        wbLastX = p.x; wbLastY = p.y;
+        return;
+    }
+
     if (wbTool === 'eraser') {
         ctx.lineWidth   = size * 4;
         ctx.lineCap     = 'round';
         ctx.lineJoin    = 'round';
         ctx.strokeStyle = wbGetBg();
         ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
         ctx.beginPath();
         ctx.moveTo(wbLastX, wbLastY);
         ctx.lineTo(p.x, p.y);
@@ -2048,7 +2562,6 @@ canvas.addEventListener('pointermove', function(e) {
         return;
     }
 
-    // ── shapes – restore snapshot each frame ──
     if (!wbSnapshot) return;
     ctx.putImageData(wbSnapshot, 0, 0);
     ctx.strokeStyle = wbPenColor;
@@ -2056,6 +2569,7 @@ canvas.addEventListener('pointermove', function(e) {
     ctx.lineWidth   = size;
     ctx.lineCap     = 'round';
     ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
 
     ctx.beginPath();
     if (wbTool === 'line') {
@@ -2094,10 +2608,10 @@ canvas.addEventListener('pointerup', function(e) {
     if (!wbDrawing) return;
     wbDrawing = false;
     ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
     wbSnapshot = null;
 
     if (wbTool === 'select' && wbSelectRect && wbSelectRect.w > 4 && wbSelectRect.h > 4) {
-        // Show selection toolbar
         var tb = document.getElementById('wb-select-toolbar');
         var con = document.getElementById('wb-container');
         var cRect = con.getBoundingClientRect();
@@ -2107,7 +2621,7 @@ canvas.addEventListener('pointerup', function(e) {
             tb.style.left = (wbSelectRect.x / scale) + 'px';
             tb.style.top  = ((wbSelectRect.y + wbSelectRect.h) / scale + 6) + 'px';
         }
-        return; // don't push history yet
+        return;
     }
 
     wbPushHistory();
@@ -2118,9 +2632,9 @@ canvas.addEventListener('pointercancel', function() {
     wbDrawing = false;
     wbSnapshot = null;
     ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
 });
 
-// ── selection helpers ─────────────────────────────────────
 function wbClearSelection() {
     wbSelectRect = null; wbSelectStart = null; wbPreSelectData = null;
     var ov = document.getElementById('wb-select-overlay');
@@ -2130,7 +2644,6 @@ function wbClearSelection() {
 }
 function wbDeleteSelection() {
     if (!wbSelectRect || !wbPreSelectData) return;
-    // Restore canvas to pre-drag state, then erase the selected region with bg color
     ctx.putImageData(wbPreSelectData, 0, 0);
     ctx.fillStyle = wbGetBg();
     ctx.fillRect(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
@@ -2140,21 +2653,16 @@ function wbDeleteSelection() {
 }
 function wbMoveSelection() {
     if (!wbSelectRect || !wbPreSelectData) return;
-    // Copy the selected pixels
     var selData = ctx.getImageData(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
-    // Restore pre-drag state
     ctx.putImageData(wbPreSelectData, 0, 0);
-    // Erase source area
     ctx.fillStyle = wbGetBg();
     ctx.fillRect(wbSelectRect.x, wbSelectRect.y, wbSelectRect.w, wbSelectRect.h);
-    // Paste 20px offset
     ctx.putImageData(selData, wbSelectRect.x + 20, wbSelectRect.y + 20);
     wbClearSelection();
     wbPushHistory();
     wbSaveBoard();
 }
 
-// ── text ──────────────────────────────────────────────────
 function confirmWbText() {
     var txt = document.getElementById('wb-text-input').value.trim();
     var sz  = parseInt(document.getElementById('wb-text-size').value) || 18;
@@ -2162,14 +2670,14 @@ function confirmWbText() {
     ctx.font      = sz + 'px ' + getComputedStyle(document.body).fontFamily;
     ctx.fillStyle = wbPenColor;
     ctx.globalCompositeOperation = 'source-over';
-    ctx.fillText(txt, wbStartX, wbStartY + sz); // +sz so text appears below click point
+    ctx.globalAlpha = 1;
+    ctx.fillText(txt, wbStartX, wbStartY + sz);
     document.getElementById('wb-text-input').value = '';
     closeModals();
     wbPushHistory();
     wbSaveBoard();
 }
 
-// ── image insert ──────────────────────────────────────────
 function wbInsertImage(inp) {
     var f = inp.files[0]; if (!f) return;
     var r = new FileReader();
@@ -2189,7 +2697,6 @@ function wbInsertImage(inp) {
     inp.value = '';
 }
 
-// ── misc ──────────────────────────────────────────────────
 function wbGetSize() {
     return parseInt(document.getElementById('wb-size').value) || 3;
 }
@@ -2220,13 +2727,14 @@ function wbToggleFullscreen() {
     setTimeout(wbResizeCanvas, 80);
 }
 
-// ── boards ────────────────────────────────────────────────
+// Boards
 function wbSaveBoard() {
     var b = wbBoards.find(function(x) { return x.id === wbActiveBoardId; });
     if (b) {
         b.data = canvas.toDataURL();
         DB.set('os_boards', wbBoards);
     }
+    wbMmSave();
 }
 function wbRenderTabs() {
     var tc = document.getElementById('wb-tabs');
@@ -2244,6 +2752,7 @@ function wbSwitchBoard(id) {
     wbSaveBoard();
     wbActiveBoardId = id;
     wbHistory = []; wbHistoryIndex = -1;
+    wbMmLoad();
     var b = wbBoards.find(function(x) { return x.id === id; });
     wbFillBg();
     if (b && b.data) {
@@ -2252,6 +2761,7 @@ function wbSwitchBoard(id) {
         wbPushHistory();
     }
     wbRenderTabs();
+    if (wbMindMapMode) wbMmRender();
 }
 function wbNewBoard() {
     wbSaveBoard();
@@ -2260,6 +2770,7 @@ function wbNewBoard() {
     DB.set('os_boards', wbBoards);
     wbActiveBoardId = b.id;
     wbHistory = []; wbHistoryIndex = -1;
+    wbMindMapNodes = []; wbMindMapEdges = [];
     wbFillBg();
     wbPushHistory();
     wbRenderTabs();
@@ -2271,6 +2782,7 @@ function wbDeleteBoard() {
         DB.set('os_boards', wbBoards);
         wbActiveBoardId = wbBoards[0].id;
         wbHistory = []; wbHistoryIndex = -1;
+        wbMmLoad();
         var b = wbBoards[0];
         wbFillBg();
         if (b.data) {
@@ -2282,44 +2794,464 @@ function wbDeleteBoard() {
     });
 }
 
-// Alias old function names used in HTML onclick attributes
-var boards          = wbBoards;          // keep compat
-function renderWbTabs()    { wbRenderTabs(); }
-function switchBoard(id)   { wbSwitchBoard(id); }
-function saveBoard()       { wbSaveBoard(); }
+// Aliases for backward compat
+var boards = wbBoards;
+function renderWbTabs() { wbRenderTabs(); }
+function switchBoard(id) { wbSwitchBoard(id); }
+function saveBoard() { wbSaveBoard(); }
 
-// Size slider live display
 document.getElementById('wb-size').addEventListener('input', function() {
     document.getElementById('wb-size-display').innerText = this.value + 'px';
 });
 
-// ── initialise when whiteboard tab is first opened ────────
-// We hook into switchTab to init the canvas at the right time
-var _wbInitDone = false;
-function wbInit() {
-    if (_wbInitDone) return;
-    _wbInitDone = true;
-    wbResizeCanvas();
-    var b = wbBoards.find(function(x) { return x.id === wbActiveBoardId; });
-    if (b && b.data) {
-        wbRestoreFromDataUrl(b.data, function() { wbPushHistory(); });
+// ===== MIND MAP =====
+function wbToggleMindMap() {
+    wbMindMapMode = !wbMindMapMode;
+    var svg = document.getElementById('wb-mindmap-svg');
+    var statusBar = document.getElementById('mm-status');
+    var mmBtn = document.getElementById('wb-tool-mindmap');
+
+    if (wbMindMapMode) {
+        wbMmLoad();
+        if (svg) svg.style.display = 'block';
+        if (statusBar) statusBar.style.display = 'flex';
+        if (mmBtn) mmBtn.classList.add('active-tool');
     } else {
-        wbFillBg();
-        wbPushHistory();
+        if (svg) svg.style.display = 'none';
+        if (statusBar) statusBar.style.display = 'none';
+        if (mmBtn) mmBtn.classList.remove('active-tool');
+        wbMindMapSelected = null;
     }
-    wbRenderTabs();
-    // Set default tool active in toolbar
-    wbSetTool('pen');
 }
 
-// Patch switchTab to call wbInit when whiteboard is opened
-(function() {
-    var _origSwitchTab = switchTab;
-    switchTab = function(name) {
-        _origSwitchTab(name);
-        if (name === 'whiteboard') { setTimeout(wbInit, 30); }
+function wbMmLoad() {
+    var saved = DB.get('os_mm_' + wbActiveBoardId, { nodes: [], edges: [] });
+    wbMindMapNodes = saved.nodes || [];
+    wbMindMapEdges = saved.edges || [];
+    if (wbMindMapMode) wbMmRender();
+}
+
+function wbMmSave() {
+    DB.set('os_mm_' + wbActiveBoardId, { nodes: wbMindMapNodes, edges: wbMindMapEdges });
+}
+
+function wbMmRender() {
+    var svg = document.getElementById('wb-mindmap-svg');
+    if (!svg) return;
+    svg.innerHTML = '';
+
+    // Set SVG size to canvas size
+    var con = document.getElementById('wb-container');
+    if (con) {
+        svg.setAttribute('width', con.clientWidth);
+        svg.setAttribute('height', con.clientHeight);
+    }
+
+    // Draw edges first
+    wbMindMapEdges.forEach(function(edge) {
+        var from = wbMindMapNodes.find(function(n) { return n.id === edge.from; });
+        var to   = wbMindMapNodes.find(function(n) { return n.id === edge.to; });
+        if (!from || !to) return;
+        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
+        line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
+        line.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+        line.setAttribute('stroke-width', '2');
+        svg.appendChild(line);
+    });
+
+    // Draw nodes
+    wbMindMapNodes.forEach(function(node) {
+        var isSelected = node.id === wbMindMapSelected;
+        var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('transform', 'translate(' + node.x + ',' + node.y + ')');
+        g.style.cursor = 'pointer';
+
+        var w = Math.max(80, node.text.length * 8 + 20);
+        var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', -(w/2)); rect.setAttribute('y', '-18');
+        rect.setAttribute('width', w); rect.setAttribute('height', '36');
+        rect.setAttribute('rx', '10');
+        rect.setAttribute('fill', node.color || '#3b82f6');
+        rect.setAttribute('stroke', isSelected ? '#fff' : 'none');
+        rect.setAttribute('stroke-width', isSelected ? '2' : '0');
+
+        var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('fill', '#fff');
+        text.setAttribute('font-size', '13');
+        text.setAttribute('font-family', 'Inter, sans-serif');
+        text.textContent = node.text;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+
+        // Click handler
+        (function(n) {
+            g.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (wbMindMapSelected === n.id) {
+                    // Double-click-like: deselect
+                    wbMindMapSelected = null;
+                } else {
+                    wbMindMapSelected = n.id;
+                }
+                wbMmRender();
+            });
+            // Context menu / long press for delete
+            g.addEventListener('dblclick', function(e) {
+                e.stopPropagation();
+                wbMmDeleteNode(n.id);
+            });
+            // Drag
+            var isDragging = false, dragStartX = 0, dragStartY = 0, nodeStartX = 0, nodeStartY = 0;
+            g.addEventListener('pointerdown', function(e) {
+                e.stopPropagation();
+                isDragging = true;
+                dragStartX = e.clientX; dragStartY = e.clientY;
+                nodeStartX = n.x; nodeStartY = n.y;
+                g.setPointerCapture(e.pointerId);
+            });
+            g.addEventListener('pointermove', function(e) {
+                if (!isDragging) return;
+                var dx = e.clientX - dragStartX;
+                var dy = e.clientY - dragStartY;
+                n.x = nodeStartX + dx;
+                n.y = nodeStartY + dy;
+                wbMmRender();
+            });
+            g.addEventListener('pointerup', function(e) {
+                if (isDragging) {
+                    isDragging = false;
+                    wbMmSave();
+                }
+            });
+        })(node);
+
+        svg.appendChild(g);
+    });
+
+    // SVG click on empty area
+    svg.onclick = function(e) {
+        if (e.target === svg) {
+            var rect2 = svg.getBoundingClientRect();
+            var clickX = e.clientX - rect2.left;
+            var clickY = e.clientY - rect2.top;
+            wbMmAddNode(clickX, clickY);
+        }
     };
-})();
+}
+
+function wbMmAddNode(x, y) {
+    // Store pending position and open modal
+    wbMindMapMode_pendingX = x;
+    wbMindMapMode_pendingY = y;
+    wbMmPendingColor = '#3b82f6';
+    var inp = document.getElementById('mm-node-text-input');
+    if (inp) inp.value = '';
+    // Reset color highlights
+    document.querySelectorAll('[id^="mm-color-"]').forEach(function(b) { b.style.borderColor = 'transparent'; });
+    var blueBtn = document.getElementById('mm-color-blue');
+    if (blueBtn) blueBtn.style.borderColor = '#fff';
+    openModal('modal-mm-node');
+}
+
+var wbMindMapMode_pendingX = 0, wbMindMapMode_pendingY = 0;
+
+function confirmMmNode() {
+    var inp = document.getElementById('mm-node-text-input');
+    var text = inp ? inp.value.trim() : '';
+    if (!text) { closeModals(); return; }
+
+    var newNode = {
+        id: Date.now(),
+        x: wbMindMapMode_pendingX,
+        y: wbMindMapMode_pendingY,
+        text: text,
+        color: wbMmPendingColor || '#3b82f6',
+        parentId: wbMindMapSelected
+    };
+    wbMindMapNodes.push(newNode);
+
+    // Create edge if there's a selected parent
+    if (wbMindMapSelected) {
+        wbMindMapEdges.push({ from: wbMindMapSelected, to: newNode.id });
+    }
+
+    wbMindMapSelected = newNode.id;
+    wbMmSave();
+    closeModals();
+    wbMmRender();
+}
+
+function setMmNodeColor(c) {
+    wbMmPendingColor = c;
+    document.querySelectorAll('[id^="mm-color-"]').forEach(function(b) { b.style.borderColor = 'transparent'; });
+    var colorMap = { '#3b82f6': 'blue', '#22c55e': 'green', '#ef4444': 'red', '#8b5cf6': 'purple', '#f59e0b': 'amber' };
+    var name = colorMap[c];
+    if (name) {
+        var btn = document.getElementById('mm-color-' + name);
+        if (btn) btn.style.borderColor = '#fff';
+    }
+}
+
+function wbMmDeleteNode(id) {
+    showConfirm('Delete Node', 'Remove this node?', function() {
+        wbMindMapNodes = wbMindMapNodes.filter(function(n) { return n.id !== id; });
+        wbMindMapEdges = wbMindMapEdges.filter(function(e) { return e.from !== id && e.to !== id; });
+        if (wbMindMapSelected === id) wbMindMapSelected = null;
+        wbMmSave();
+        wbMmRender();
+    });
+}
+
+function wbMindMapExport() {
+    // Stamp mind map SVG onto canvas
+    var svg = document.getElementById('wb-mindmap-svg');
+    if (!svg) return;
+    var svgData = new XMLSerializer().serializeToString(svg);
+    var img = new Image();
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0);
+        wbPushHistory();
+        wbSaveBoard();
+        showAlert('Stamped!', 'Mind map exported to canvas.');
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+}
+
+// ===== PDF ANNOTATION =====
+var pdfState = {
+    doc: null,
+    currentPage: 1,
+    totalPages: 0,
+    tool: 'highlight',
+    color: '#fde04788',
+    penSize: 10,
+    annotations: [],   // array of {page, tool, color, size, points[]}
+    currentStroke: null,
+    noteId: null       // which note opened this
+};
+
+function openPdfAnnotator() {
+    pdfState.noteId = activeNote;
+    document.getElementById('pdf-annotator-overlay').style.display = 'flex';
+    document.getElementById('pdf-upload-prompt').style.display = 'flex';
+    document.getElementById('pdf-render-container').classList.add('hidden');
+}
+function closePdfAnnotator() {
+    document.getElementById('pdf-annotator-overlay').style.display = 'none';
+    pdfState.doc = null;
+    pdfState.annotations = [];
+    pdfState.currentPage = 1;
+    pdfState.totalPages = 0;
+}
+function setPdfTool(t) {
+    pdfState.tool = t;
+    document.querySelectorAll('.pdf-tool-btn').forEach(function(b) { b.classList.remove('active-pdf-tool'); });
+    var btn = document.getElementById('pdf-tool-' + t);
+    if (btn) btn.classList.add('active-pdf-tool');
+}
+function setPdfColor(c) {
+    pdfState.color = c;
+}
+function pdfUndo() {
+    if (pdfState.annotations.length === 0) return;
+    pdfState.annotations.pop();
+    pdfRenderCurrentPage();
+}
+
+function loadPdfForAnnotation(inp) {
+    var f = inp.files[0]; if (!f) return;
+    if (!window.pdfjsLib) {
+        showAlert('PDF.js not loaded', 'Please check your internet connection.'); return;
+    }
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    var r = new FileReader();
+    r.onload = function(e) {
+        var typedArray = new Uint8Array(e.target.result);
+        window.pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
+            pdfState.doc = pdf;
+            pdfState.totalPages = pdf.numPages;
+            pdfState.currentPage = 1;
+            pdfState.annotations = [];
+            document.getElementById('pdf-upload-prompt').style.display = 'none';
+            document.getElementById('pdf-render-container').classList.remove('hidden');
+            pdfRenderCurrentPage();
+        }).catch(function(err) {
+            showAlert('PDF Error', 'Could not load this PDF.');
+        });
+    };
+    r.readAsArrayBuffer(f);
+    inp.value = '';
+}
+
+function pdfRenderCurrentPage() {
+    if (!pdfState.doc) return;
+    var container = document.getElementById('pdf-render-container');
+    container.innerHTML = '';
+
+    var pageInfo = document.getElementById('pdf-page-info');
+    if (pageInfo) pageInfo.innerText = 'Page ' + pdfState.currentPage + '/' + pdfState.totalPages;
+
+    for (var pg = 1; pg <= pdfState.totalPages; pg++) {
+        (function(pageNum) {
+            pdfState.doc.getPage(pageNum).then(function(page) {
+                var viewport = page.getViewport({ scale: 1.4 });
+                var wrapper = document.createElement('div');
+                wrapper.className = 'pdf-page-wrapper';
+                wrapper.id = 'pdf-page-wrapper-' + pageNum;
+
+                var renderCanvas = document.createElement('canvas');
+                renderCanvas.className = 'pdf-page-canvas';
+                renderCanvas.width = viewport.width;
+                renderCanvas.height = viewport.height;
+
+                var annotCanvas = document.createElement('canvas');
+                annotCanvas.className = 'pdf-annot-canvas';
+                annotCanvas.width = viewport.width;
+                annotCanvas.height = viewport.height;
+                annotCanvas.style.position = 'absolute';
+                annotCanvas.style.top = '0'; annotCanvas.style.left = '0';
+                annotCanvas.style.cursor = 'crosshair';
+
+                wrapper.style.position = 'relative';
+                wrapper.style.width = viewport.width + 'px';
+                wrapper.appendChild(renderCanvas);
+                wrapper.appendChild(annotCanvas);
+                container.appendChild(wrapper);
+
+                page.render({ canvasContext: renderCanvas.getContext('2d'), viewport: viewport });
+
+                // Redraw saved annotations for this page
+                pdfRedrawAnnotations(annotCanvas, pageNum);
+
+                // Drawing events
+                var isDrawing = false;
+                var stroke = null;
+
+                annotCanvas.addEventListener('pointerdown', function(e) {
+                    isDrawing = true;
+                    annotCanvas.setPointerCapture(e.pointerId);
+                    var rect = annotCanvas.getBoundingClientRect();
+                    var x = (e.clientX - rect.left) * (annotCanvas.width / rect.width);
+                    var y = (e.clientY - rect.top) * (annotCanvas.height / rect.height);
+                    stroke = { page: pageNum, tool: pdfState.tool, color: pdfState.color, size: parseInt(document.getElementById('pdf-pen-size').value) || 10, points: [[x, y]] };
+                });
+
+                annotCanvas.addEventListener('pointermove', function(e) {
+                    if (!isDrawing || !stroke) return;
+                    var rect = annotCanvas.getBoundingClientRect();
+                    var x = (e.clientX - rect.left) * (annotCanvas.width / rect.width);
+                    var y = (e.clientY - rect.top) * (annotCanvas.height / rect.height);
+                    stroke.points.push([x, y]);
+                    pdfDrawStroke(annotCanvas.getContext('2d'), stroke);
+                });
+
+                annotCanvas.addEventListener('pointerup', function() {
+                    if (!isDrawing || !stroke) return;
+                    isDrawing = false;
+                    if (stroke.points.length > 0) {
+                        pdfState.annotations.push(stroke);
+                    }
+                    stroke = null;
+                    pdfRedrawAnnotations(annotCanvas, pageNum);
+                });
+            });
+        })(pg);
+    }
+}
+
+function pdfDrawStroke(actx, stroke) {
+    actx.save();
+    actx.lineCap = 'round';
+    actx.lineJoin = 'round';
+    if (stroke.tool === 'highlight') {
+        actx.globalAlpha = 0.4;
+        actx.strokeStyle = stroke.color;
+        actx.lineWidth = stroke.size * 2;
+    } else if (stroke.tool === 'pen') {
+        actx.globalAlpha = 1;
+        actx.strokeStyle = stroke.color;
+        actx.lineWidth = stroke.size / 2;
+    } else if (stroke.tool === 'erase') {
+        actx.globalCompositeOperation = 'destination-out';
+        actx.globalAlpha = 1;
+        actx.strokeStyle = 'rgba(0,0,0,1)';
+        actx.lineWidth = stroke.size;
+    } else if (stroke.tool === 'text') {
+        // Text annotations are handled separately
+        actx.restore();
+        return;
+    }
+    actx.beginPath();
+    var pts = stroke.points;
+    if (pts.length === 1) {
+        actx.arc(pts[0][0], pts[0][1], actx.lineWidth / 2, 0, Math.PI * 2);
+        actx.fill();
+    } else {
+        actx.moveTo(pts[0][0], pts[0][1]);
+        for (var i = 1; i < pts.length; i++) {
+            actx.lineTo(pts[i][0], pts[i][1]);
+        }
+        actx.stroke();
+    }
+    actx.restore();
+}
+
+function pdfRedrawAnnotations(annotCanvas, pageNum) {
+    var actx = annotCanvas.getContext('2d');
+    actx.clearRect(0, 0, annotCanvas.width, annotCanvas.height);
+    pdfState.annotations.filter(function(s) { return s.page === pageNum; }).forEach(function(s) {
+        pdfDrawStroke(actx, s);
+    });
+}
+
+function savePdfAnnotations() {
+    if (!pdfState.doc) return;
+    // Stamp all pages as images into the current note
+    var container = document.getElementById('pdf-render-container');
+    var pages = container.querySelectorAll('.pdf-page-wrapper');
+    var htmlParts = [];
+    var processed = 0;
+
+    if (pages.length === 0) {
+        closePdfAnnotator();
+        return;
+    }
+
+    pages.forEach(function(wrapper, idx) {
+        var renderCanvas = wrapper.querySelector('.pdf-page-canvas');
+        var annotCanvas = wrapper.querySelector('.pdf-annot-canvas');
+        if (!renderCanvas || !annotCanvas) { processed++; return; }
+
+        // Composite: draw render canvas then annotation canvas
+        var merged = document.createElement('canvas');
+        merged.width = renderCanvas.width;
+        merged.height = renderCanvas.height;
+        var mctx = merged.getContext('2d');
+        mctx.drawImage(renderCanvas, 0, 0);
+        mctx.drawImage(annotCanvas, 0, 0);
+
+        var dataUrl = merged.toDataURL('image/jpeg', 0.85);
+        htmlParts[idx] = '<img src="' + dataUrl + '" style="max-width:100%;border-radius:8px;margin:8px 0;display:block;" alt="PDF page ' + (idx + 1) + '">';
+        processed++;
+
+        if (processed === pages.length) {
+            var n = notes.find(function(x) { return x.id === pdfState.noteId; });
+            if (n) {
+                n.body = (n.body || '') + '<hr style="margin:16px 0;opacity:.3;"><div style="font-size:.75rem;color:var(--text-muted);margin-bottom:8px;">📄 PDF Annotation</div>' + htmlParts.join('');
+                DB.set('os_notes', notes);
+                if (pdfState.noteId === activeNote) {
+                    document.getElementById('note-editor').innerHTML = n.body;
+                }
+            }
+            closePdfAnnotator();
+            showAlert('Saved ✅', 'Annotated PDF added to note.');
+        }
+    });
+}
 
 // ===== CALCULATOR =====
 var cExp = '';
@@ -2340,7 +3272,6 @@ function calcBackspace() {
 function calcSolve() {
     try {
         document.getElementById('calc-history').innerText = cExp + ' =';
-        // Replace math constants and functions
         var expr = cExp
             .replace(/π/g, 'Math.PI')
             .replace(/e(?!\d)/g, 'Math.E')
@@ -2394,6 +3325,7 @@ function exportAllData() {
         os_links: DB.get('os_links', []),
         os_card_stats: DB.get('os_card_stats', {}),
         os_deck_groups: DB.get('os_deck_groups', []),
+        os_note_groups: DB.get('os_note_groups', []),
         os_streak: DB.get('os_streak', {}),
         os_quick_note: DB.get('os_quick_note', ''),
         exported: new Date().toISOString()
@@ -2426,13 +3358,50 @@ updateInterfaceText();
 renderDecks();
 populateGroupSelect();
 
+// Init pomodoro display
+initPomoTimer();
+
+// Patch switchTab to init whiteboard when opened
+(function() {
+    var _origSwitchTab = switchTab;
+    switchTab = function(name) {
+        _origSwitchTab(name);
+        if (name === 'whiteboard') { setTimeout(wbInit, 30); }
+    };
+})();
+
+// Whiteboard init (called when tab is first opened)
+var _wbInitDone = false;
+function wbInit() {
+    if (_wbInitDone) return;
+    _wbInitDone = true;
+    wbResizeCanvas();
+    wbMmLoad();
+    var b = wbBoards.find(function(x) { return x.id === wbActiveBoardId; });
+    if (b && b.data) {
+        wbRestoreFromDataUrl(b.data, function() { wbPushHistory(); });
+    } else {
+        wbFillBg();
+        wbPushHistory();
+    }
+    wbRenderTabs();
+    wbSetTool('pen');
+}
+
 // Open deck modal: populate groups
-var origOpenDeckModal = window.openModal;
-// When opening modal-add-deck, also populate the group select
 (function() {
     var origOpenModal = openModal;
     window.openModal = function(id) {
         origOpenModal(id);
-        if (id === 'modal-add-deck') populateGroupSelect();
+        if (id === 'modal-add-deck') {
+            populateGroupSelect();
+            initDeckEmojiPicker();
+        }
+        if (id === 'modal-mm-node') {
+            setTimeout(function() {
+                var inp = document.getElementById('mm-node-text-input');
+                if (inp) inp.focus();
+            }, 100);
+        }
     };
 })();
