@@ -1,14 +1,524 @@
-/* ===== StudentOS — script.js ===== */
+// ===== FIREBASE IMPORTS =====
+import { initializeApp }                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider,
+         signInWithPopup, signInWithRedirect, getRedirectResult,
+         signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         sendPasswordResetEmail, sendEmailVerification,
+         onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ===== DATABASE =====
-var DB = {
-    get: function(key, def) {
-        try { var v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; } catch(e) { return def; }
-    },
-    set: function(key, val) {
-        try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
-    }
+const firebaseConfig = {
+    apiKey: "AIzaSyCN79mExeAMLpL6XTgGzyN9LUAgTEdZOUg",
+    authDomain: "student-os-e0962.firebaseapp.com",
+    projectId: "student-os-e0962",
+    storageBucket: "student-os-e0962.firebasestorage.app",
+    messagingSenderId: "1074050160438",
+    appId: "1:1074050160438:web:0ba8fd5ebd3ab0c5a64597"
 };
+const _fbApp  = initializeApp(firebaseConfig);
+const _auth   = getAuth(_fbApp);
+const _db     = getFirestore(_fbApp);
+let   _uid    = null;
+
+// ===== DATABASE (cache-backed, Firestore-synced) =====
+// All DB.get/set calls in the rest of the file stay synchronous.
+// The cache is populated from Firestore once on login, then every
+// DB.set also schedules a debounced write back to Firestore.
+var DB = (function() {
+    var _cache = {};
+    var _saveTimer = null;
+
+    function _persistToFirestore() {
+        if (!_uid) return;
+        clearTimeout(_saveTimer);
+        _saveTimer = setTimeout(async function() {
+            try {
+                await setDoc(doc(_db, 'users', _uid), _cache, { merge: true });
+            } catch(e) {
+                console.error('Firestore write failed:', e);
+            }
+        }, 800); // debounce: batch rapid saves into one write
+    }
+
+    return {
+        // Called once after Firestore data is fetched — seeds the cache
+        _hydrate: function(data) {
+            _cache = data || {};
+        },
+
+        get: function(key, def) {
+            return (key in _cache) ? _cache[key] : def;
+        },
+
+        set: function(key, val) {
+            _cache[key] = val;
+            _persistToFirestore();
+        }
+    };
+})();
+
+
+
+// ===== AUTH FUNCTIONS =====
+
+async function signInWithGoogle() {
+    _setLoginLoading(true);
+    try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(_auth, provider);
+        // onAuthStateChanged fires next and boots the app
+    } catch(e) {
+        _setLoginLoading(false);
+        if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+            showLoginError(_friendlyAuthError(e.code));
+        }
+    }
+}
+
+onAuthStateChanged(_auth, async function(user) {
+    const overlay = document.getElementById('login-overlay');
+
+// ✅ REPLACE WITH
+if (!user) {
+    _uid = null;
+    if (overlay) overlay.classList.remove('hidden');
+    _setLoginLoading(false);
+    return;
+}
+
+_uid = user.uid;
+
+    // Show loading spinner
+    if (overlay) overlay.innerHTML = `
+        <div class="absolute inset-0" style="background:var(--bg-color);"></div>
+        <div class="relative z-10 flex flex-col items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center"
+                 style="background:var(--accent);box-shadow:0 8px 24px rgba(59,130,246,0.4);">
+                <i class="ph-bold ph-student text-3xl text-white"></i>
+            </div>
+            <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"
+                 stroke="var(--accent)" stroke-width="2.5">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+            </svg>
+            <p class="text-sm" style="color:var(--text-muted);">Loading your workspace…</p>
+        </div>`;
+
+    try {
+        const userRef = doc(_db, 'users', _uid);
+        // ✅ ONE getDoc — reused everywhere below, no second fetch
+        const snap = await getDoc(userRef);
+
+        if (!snap.exists()) {
+            // New user — try to migrate localStorage, else write defaults
+            const localData = _collectLocalStorage();
+            if (localData) {
+                localData._migratedFromLocal = true;
+                localData._migratedAt = new Date().toISOString();
+                await setDoc(userRef, localData);
+                DB._hydrate(localData);           // ✅ hydrate from memory, no 3rd fetch
+                _clearLocalStorage();
+                console.log('✅ Migrated localStorage → Firestore');
+            } else {
+                const defaults = _defaultUserDoc();
+                await setDoc(userRef, defaults);
+                DB._hydrate(defaults);            // ✅ hydrate from memory, no 3rd fetch
+            }
+        } else {
+            const data = snap.data();
+            // Returning user who hasn't been migrated yet
+            if (!data._migratedFromLocal) {
+                const localData = _collectLocalStorage();
+                if (localData) {
+                    // Merge local into existing cloud data (cloud wins on conflict)
+                    const merged = Object.assign({}, localData, data);
+                    merged._migratedFromLocal = true;
+                    merged._migratedAt = new Date().toISOString();
+                    await setDoc(userRef, merged, { merge: true });
+                    DB._hydrate(merged);          // ✅ hydrate from memory, no 3rd fetch
+                    _clearLocalStorage();
+                    console.log('✅ Merged localStorage into existing Firestore doc');
+                } else {
+                    // No local data, just mark as checked so we never run this branch again
+                    await setDoc(userRef, { _migratedFromLocal: true }, { merge: true });
+                    DB._hydrate(Object.assign({}, data, { _migratedFromLocal: true }));
+                }
+            } else {
+                // ✅ Happy path — returning user, already migrated: just hydrate
+                DB._hydrate(data);
+            }
+        }
+
+    } catch(e) {
+        console.error('Firestore bootstrap failed:', e);
+        DB._hydrate({});
+    }
+
+    if (overlay) overlay.classList.add('hidden');
+    initApp();
+});
+
+async function signInWithEmail() {
+    const email    = document.getElementById('login-email')?.value.trim();
+    const password = document.getElementById('login-password')?.value;
+    if (!email || !password) return showLoginError('Please enter your email and password.');
+    _setLoginLoading(true);
+    try {
+        await signInWithEmailAndPassword(_auth, email, password);
+    } catch(e) {
+        _setLoginLoading(false);
+        showLoginError(_friendlyAuthError(e.code));
+    }
+}
+
+async function signUpWithEmail() {
+    const email    = document.getElementById('login-email')?.value.trim();
+    const password = document.getElementById('login-password')?.value;
+    if (!email || !password) return showLoginError('Please enter your email and password.');
+    if (password.length < 6)  return showLoginError('Password must be at least 6 characters.');
+    _setLoginLoading(true);
+    try {
+        const cred = await createUserWithEmailAndPassword(_auth, email, password);
+        // Send verification email immediately after sign-up
+        await sendEmailVerification(cred.user);
+        showLoginSuccess('Account created! Check your inbox to verify your email.');
+    } catch(e) {
+        _setLoginLoading(false);
+        showLoginError(_friendlyAuthError(e.code));
+    }
+}
+
+async function resetPassword() {
+    const email = document.getElementById('login-email')?.value.trim();
+    if (!email) return showLoginError('Enter your email address above first.');
+    try {
+        await sendPasswordResetEmail(_auth, email);
+        showLoginSuccess('Password reset email sent! Check your inbox.');
+    } catch(e) {
+        showLoginError(_friendlyAuthError(e.code));
+    }
+}
+
+async function resendVerificationEmail() {
+    const user = _auth.currentUser;
+    if (!user) return;
+    try {
+        await sendEmailVerification(user);
+        showLoginSuccess('Verification email sent!');
+    } catch(e) {
+        showLoginError(_friendlyAuthError(e.code));
+    }
+}
+
+function showLoginError(msg) {
+    const el = document.getElementById('login-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = '#f87171';
+    el.classList.remove('hidden');
+}
+
+function showLoginSuccess(msg) {
+    const el = document.getElementById('login-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = '#4ade80';
+    el.classList.remove('hidden');
+}
+
+function _setLoginLoading(on) {
+    const btn     = document.getElementById('btn-google-signin');
+    const spinner = document.getElementById('login-spinner');
+    if (btn) btn.disabled = on;
+    if (spinner) spinner.classList.toggle('hidden', !on);
+}
+
+function _friendlyAuthError(code) {
+    const map = {
+        'auth/user-not-found':         'No account found with that email.',
+        'auth/wrong-password':         'Incorrect password.',
+        'auth/invalid-credential':     'Incorrect email or password.',
+        'auth/email-already-in-use':   'An account with this email already exists. Try signing in.',
+        'auth/invalid-email':          'Please enter a valid email address.',
+        'auth/weak-password':          'Password must be at least 6 characters.',
+        'auth/popup-closed-by-user':   'Sign-in cancelled.',
+        'auth/network-request-failed': 'Network error. Check your connection.',
+        'auth/too-many-requests':      'Too many attempts. Try again later.',
+    };
+    return map[code] || 'Something went wrong. Please try again.';
+}
+// ===== DEFAULT USER DOCUMENT =====
+function _defaultUserDoc() {
+    return {
+        os_tasks:       [],
+        os_notes:       [],
+        os_decks:       [],
+        os_goals:       [],
+        os_events:      {},
+        os_subjects:    [],
+        os_links:       [],
+        os_note_groups: [],
+        os_deck_groups: [],
+        os_card_stats:  {},
+        os_streak:      { count: 0, lastDate: '' },
+        os_quick_note:  '',
+        os_theme:       'dark',
+        os_lang:        'en',
+        os_accent:      '#3b82f6',
+        os_font_scale:  1,
+        _createdAt:     new Date().toISOString()
+    };
+}
+// Collects all localStorage keys into one object. Returns null if nothing found.
+function _collectLocalStorage() {
+    const keys = [
+        'os_tasks','os_notes','os_decks','os_goals','os_events','os_subjects',
+        'os_links','os_note_groups','os_deck_groups','os_card_stats','os_streak',
+        'os_quick_note','os_study_stats','os_theme','os_lang','os_accent',
+        'os_font_scale','os_clock_color','os_bg_color','os_name','os_profile',
+        'os_widgets','os_wb_boards','os_wb_active','os_boards','os_cal_url',
+        'os_pomo_times','os_pomo_autobreak','os_pomo_session','os_pomo_today',
+        'os_timer_sound','os_notif_cal','os_notif_tasks'
+    ];
+    const data = {};
+    let found = false;
+    keys.forEach(function(k) {
+        const raw = localStorage.getItem(k);
+        if (raw !== null) {
+            try { data[k] = JSON.parse(raw); } catch(e) { data[k] = raw; }
+            found = true;
+        }
+    });
+    // Also grab dynamic whiteboard keys
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('os_wb_bg_') || k.startsWith('os_mm_'))) {
+            try { data[k] = JSON.parse(localStorage.getItem(k)); }
+            catch(e) { data[k] = localStorage.getItem(k); }
+            found = true;
+        }
+    }
+    return found ? data : null;
+}
+
+function _clearLocalStorage() {
+    const keys = [
+        'os_tasks','os_notes','os_decks','os_goals','os_events','os_subjects',
+        'os_links','os_note_groups','os_deck_groups','os_card_stats','os_streak',
+        'os_quick_note','os_study_stats','os_theme','os_lang','os_accent',
+        'os_font_scale','os_clock_color','os_bg_color','os_name','os_profile',
+        'os_widgets','os_wb_boards','os_wb_active','os_boards','os_cal_url',
+        'os_pomo_times','os_pomo_autobreak','os_pomo_session','os_pomo_today',
+        'os_timer_sound','os_notif_cal','os_notif_tasks'
+    ];
+    keys.forEach(k => localStorage.removeItem(k));
+}
+
+// Handle Google redirect result on page load
+(async function() {
+    try {
+        await getRedirectResult(_auth);
+        // If successful, onAuthStateChanged fires automatically
+    } catch(e) {
+        showLoginError(_friendlyAuthError(e.code));
+    }
+})();
+
+onAuthStateChanged(_auth, async function(user) {
+    const overlay = document.getElementById('login-overlay');
+
+    if (!user) {
+        _uid = null;
+        if (overlay) overlay.classList.remove('hidden');
+        _setLoginLoading(false);
+        return;
+    }
+
+    // User is signed in — show loading state
+    _uid = user.uid;
+    if (overlay) overlay.innerHTML = `
+        <div class="absolute inset-0" style="background:var(--bg-color);"></div>
+        <div class="relative z-10 flex flex-col items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center"
+                 style="background:var(--accent);box-shadow:0 8px 24px rgba(59,130,246,0.4);">
+                <i class="ph-bold ph-student text-3xl text-white"></i>
+            </div>
+            <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"
+                 stroke="var(--accent)" stroke-width="2.5">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+            </svg>
+            <p class="text-sm" style="color:var(--text-muted);">Loading your workspace…</p>
+        </div>`;
+
+    try {
+        const userRef = doc(_db, 'users', _uid);
+        const snap    = await getDoc(userRef);
+
+        if (!snap.exists()) {
+            // Brand new user — check for localStorage data to migrate first
+            console.log('New user detected.');
+            const didMigrate = await migrateLocalToCloud(_uid);
+            if (!didMigrate) {
+                // No local data either — create blank defaults
+                const defaults = _defaultUserDoc();
+                await setDoc(userRef, defaults);
+                DB._hydrate(defaults);
+            } else {
+                // Migration wrote the data — re-fetch it
+                const fresh = await getDoc(userRef);
+                DB._hydrate(fresh.exists() ? fresh.data() : {});
+            }
+        } else {
+            // Returning user — but still check for unsynced local data
+            if (!snap.data()._migratedFromLocal) {
+                await migrateLocalToCloud(_uid);
+                const fresh = await getDoc(userRef);
+                DB._hydrate(fresh.exists() ? fresh.data() : snap.data());
+            } else {
+                DB._hydrate(snap.data());
+            }
+        }
+
+    } catch(e) {
+        console.error('Firestore bootstrap failed:', e);
+        DB._hydrate({});
+    }
+
+    if (overlay) overlay.classList.add('hidden');
+    initApp();
+});
+
+async function logOut() {
+    try {
+        await signOut(_auth);
+        // onAuthStateChanged will fire with user=null and show the overlay
+    } catch(e) {
+        console.error('Sign out failed:', e);
+    }
+}
+
+// The single entry point — runs after Firestore data is loaded
+function initApp() {
+    // Re-read all top-level variables that depend on DB now that the
+    // cache is hydrated (mirrors what used to run at parse time).
+    currentLang   = DB.get('os_lang',         'en');
+    studentName   = DB.get('os_name',         '');
+    currentTheme  = DB.get('os_theme',        'dark');
+    streak        = DB.get('os_streak',       { count: 0, lastDate: '' });
+    profileData   = DB.get('os_profile',      { type: 'emoji', emoji: '🎓', bg: '#3b82f6' });
+    quickLinks    = DB.get('os_links',        []);
+    goals         = DB.get('os_goals',        []);
+    tasks         = DB.get('os_tasks',        []);
+    notes         = DB.get('os_notes',        []);
+    noteGroups    = DB.get('os_note_groups',  []);
+    decks         = DB.get('os_decks',        []);
+    deckGroups    = DB.get('os_deck_groups',  []);
+    calEvents     = DB.get('os_events',       {});
+    subjects      = DB.get('os_subjects',     []);
+    widgetConfig  = DB.get('os_widgets', {
+        links: { visible: true, color: '#3b82f6' },
+        goals: { visible: true, color: '#22c55e' },
+        upnext: { visible: true, color: '#f59e0b' },
+        studystats: { visible: true },
+        grades: { visible: true },
+        minicalendar: { visible: true },
+        quicknote: { visible: true }
+    });
+    pomodoroTimes       = DB.get('os_pomo_times',    { focus: 25, short: 5, long: 15 });
+    pomodoroAutoBreak   = DB.get('os_pomo_autobreak', false);
+    pomodoroSession     = DB.get('os_pomo_session',  1);
+    pomodoroSessionsToday = DB.get('os_pomo_today',  { date: '', count: 0 });
+    timerSoundOn        = DB.get('os_timer_sound',   true);
+    quickNote           = DB.get('os_quick_note',    '');
+    wbBoards            = DB.get('os_wb_boards',     []);
+    wbActiveBoardId     = DB.get('os_wb_active',     null);
+
+    // Apply accent / font / clock / bg that were previously self-invoking
+    var accent = DB.get('os_accent', '#3b82f6');
+    if (accent) setAccent(accent);
+    var fs = DB.get('os_font_scale', 1);
+    if (fs) setFontScale(fs);
+    var cc = DB.get('os_clock_color', '');
+    if (cc) { setClockColor(cc); var cp = document.getElementById('clock-color-picker'); if (cp) cp.value = cc; }
+    var bg = DB.get('os_bg_color', '');
+    if (bg) setBg(bg);
+
+    // --- Run all inits that previously scattered at parse-time ---
+    updateInterfaceText();
+    applyTheme();
+    applyWidgetConfig();
+    renderProfileDisplay();
+    updateGreeting();
+    updateDashWidgets();
+    renderLinks();
+    renderGoals();
+    renderTasks();
+    renderDecks();
+    populateGroupSelect();
+    renderNotes();
+    renderCalendar();
+    renderGrades();
+    initPomoTimer();
+    updateNotifButtons();
+    checkEventNotifications();
+    checkTaskNotifications();
+
+    // Streak update
+    (function() {
+        var today = new Date().toDateString();
+        var yesterday = new Date(Date.now() - 86400000).toDateString();
+        if (streak.lastDate === today) {
+            // already counted
+        } else if (streak.lastDate === yesterday) {
+            streak.count++; streak.lastDate = today; DB.set('os_streak', streak);
+        } else {
+            streak.count = 1; streak.lastDate = today; DB.set('os_streak', streak);
+        }
+        var el = document.getElementById('dash-streak');
+        if (el) el.innerText = streak.count;
+    })();
+
+    // Profile name inputs
+    var ni = document.getElementById('student-name-input');
+    var pi = document.getElementById('profile-name-input');
+    if (ni) ni.value = studentName;
+    if (pi) pi.value = studentName;
+
+    // Quick note
+    var qn = document.getElementById('dash-quick-note');
+    if (qn) qn.value = quickNote;
+
+    // Timer sound dot
+    var dot = document.getElementById('timer-sound-dot');
+    if (dot) dot.style.transform = timerSoundOn ? 'translateX(24px)' : '';
+}
+
+
+// ===== FORWARD-DECLARED DATA VARS =====
+// initApp() will re-assign these from the Firestore cache.
+var currentLang   = 'en';
+var studentName   = '';
+var currentTheme  = 'dark';
+var streak        = { count: 0, lastDate: '' };
+var profileData   = { type: 'emoji', emoji: '🎓', bg: '#3b82f6' };
+var quickLinks    = [];
+var goals         = [];
+var tasks         = [];
+var notes         = [];
+var noteGroups    = [];
+var decks         = [];
+var deckGroups    = [];
+var calEvents     = {};
+var subjects      = [];
+var widgetConfig  = {};
+var pomodoroTimes = { focus: 25, short: 5, long: 15 };
+var pomodoroAutoBreak      = false;
+var pomodoroSession        = 1;
+var pomodoroSessionsToday  = { date: '', count: 0 };
+var timerSoundOn  = true;
+var quickNote     = '';
+var wbBoards      = [];
+var wbActiveBoardId = null;
 
 // ===== ALERT / CONFIRM =====
 function showAlert(title, msg) {
@@ -3347,21 +3857,21 @@ function importAllData(inp) {
     };
     r.readAsText(f); inp.value = '';
 }
+
 function resetAllData() {
     showConfirm('Reset All Data', 'This will erase EVERYTHING permanently. Are you sure?', function() {
-        localStorage.clear(); location.reload();
+        if (_uid) {
+            deleteDoc(doc(_db, 'users', _uid))
+                .then(function() { location.reload(); })
+                .catch(function() { location.reload(); });
+        } else {
+            location.reload();
+        }
     });
 }
 
-// ===== FINAL INITS =====
-updateInterfaceText();
-renderDecks();
-populateGroupSelect();
-
-// Init pomodoro display
-initPomoTimer();
-
-// Patch switchTab to init whiteboard when opened
+// ✅ KEEP this one
+// switchTab whiteboard patch — safe to run immediately
 (function() {
     var _origSwitchTab = switchTab;
     switchTab = function(name) {
@@ -3370,7 +3880,6 @@ initPomoTimer();
     };
 })();
 
-// Whiteboard init (called when tab is first opened)
 var _wbInitDone = false;
 function wbInit() {
     if (_wbInitDone) return;
@@ -3388,11 +3897,219 @@ function wbInit() {
     wbSetTool('pen');
 }
 
-// Open deck modal: populate groups
+// ===== GLOBAL EXPORTS =====
+// Auth
+window.initApp                  = initApp;
+window.logOut                   = logOut;
+window.signInWithGoogle         = signInWithGoogle;
+window.signInWithEmail          = signInWithEmail;
+window.signUpWithEmail          = signUpWithEmail;
+window.showLoginError           = showLoginError;
+
+// Navigation
+window.switchTab                = switchTab;
+window.openModal                = openModal;
+window.closeModals              = closeModals;
+
+// Tasks
+window.addTask                  = addTask;
+window.dashAddTask              = dashAddTask;
+window.toggleTask               = toggleTask;
+window.deleteTask               = deleteTask;
+window.startEditTask            = startEditTask;
+window.saveTaskEdit             = saveTaskEdit;
+window.cancelTaskEdit           = cancelTaskEdit;
+window.clearCompletedTasks      = clearCompletedTasks;
+window.taskColorOff             = taskColorOff;
+window.addSubtask               = addSubtask;
+window.toggleSubtask            = toggleSubtask;
+window.deleteSubtask            = deleteSubtask;
+window.toggleSubtaskInput       = toggleSubtaskInput;
+
+// Goals
+window.addGoal                  = addGoal;
+window.toggleGoal               = toggleGoal;
+window.deleteGoal               = deleteGoal;
+
+// Quick links
+window.saveQuickLink            = saveQuickLink;
+window.openAddLinkModal         = openAddLinkModal;
+window.deleteLink               = deleteLink;
+
+// Dashboard
+window.saveQuickNote            = saveQuickNote;
+window.quickNoteToNotes         = quickNoteToNotes;
+window.updateDashWidgets        = updateDashWidgets;
+
+// Settings / Theme
+window.toggleTheme              = toggleTheme;
+window.setAccent                = setAccent;
+window.setFontScale             = setFontScale;
+window.setClockColor            = setClockColor;
+window.setBg                    = setBg;
+window.setLanguage              = setLanguage;
+window.setStudentName           = setStudentName;
+window.syncSettingsName         = syncSettingsName;
+
+// Profile
+window.setProfileEmoji          = setProfileEmoji;
+window.setAvatarBg              = setAvatarBg;
+window.handleProfileImage       = handleProfileImage;
+
+// Data
+window.exportAllData            = exportAllData;
+window.importAllData            = importAllData;
+window.resetAllData             = resetAllData;
+
+// Decks / Flashcards
+window.renderDecks              = renderDecks;
+window.populateGroupSelect      = populateGroupSelect;
+window.showDeckList             = showDeckList;
+window.showEditView             = showEditView;
+window.openDeck                 = openDeck;
+window.saveDeck                 = saveDeck;
+window.deleteDeck               = deleteDeck;
+window.saveGroup                = saveGroup;
+window.deleteGroup              = deleteGroup;
+window.toggleGroupOpen          = toggleGroupOpen;
+window.setDeckEmoji             = setDeckEmoji;
+window.openAddCardModal         = openAddCardModal;
+window.saveFlashcard            = saveFlashcard;
+window.startCardEdit            = startCardEdit;
+window.deleteCard               = deleteCard;
+window.triggerImportDeck        = triggerImportDeck;
+window.exportDeck               = exportDeck;
+window.handleImportDeck         = handleImportDeck;
+
+// Study
+window.startStudy               = startStudy;
+window.flipCard                 = flipCard;
+window.rateCard                 = rateCard;
+window.showHint                 = showHint;
+window.showWriteHint            = showWriteHint;
+window.checkWriteAnswer         = checkWriteAnswer;
+window.startMatchGame           = startMatchGame;
+window.matchClick               = matchClick;
+window.startWordSearch          = startWordSearch;
+
+// Grades
+window.renderGrades             = renderGrades;          // ✅ was renderSubjects
+window.saveSubject              = saveSubject;
+window.deleteSubject            = deleteSubject;
+window.openAddTestModal         = openAddTestModal;
+window.saveTest                 = saveTest;
+window.deleteTest               = deleteTest;
+
+// Calendar
+window.renderCalendar           = renderCalendar;
+window.switchCalView            = switchCalView;
+window.calGoToday               = calGoToday;
+window.changeMonth              = changeMonth;
+window.changeWeek               = changeWeek;
+window.openEventModal           = openEventModal;
+window.saveCalEvent             = saveCalEvent;
+window.delEv                    = delEv;
+window.saveCalendarImport       = saveCalendarImport;
+window.clearCalendar            = clearCalendar;
+window.openCalNewTab            = openCalNewTab;
+window.requestCalNotifications  = requestCalNotifications;
+window.requestTaskNotifications = requestTaskNotifications;
+
+// Notes
+window.renderNotes              = renderNotes;           // ✅ was renderNoteGroups
+window.createNewNote            = createNewNote;
+window.loadNote                 = loadNote;
+window.saveNote                 = saveNote;
+window.deleteNote               = deleteNote;
+window.deleteCurrentNote        = deleteCurrentNote;
+window.confirmDeleteNote        = confirmDeleteNote;
+window.formatDoc                = formatDoc;
+window.noteInsertCheckbox       = noteInsertCheckbox;
+window.noteHighlight            = noteHighlight;
+window.noteTextColor            = noteTextColor;
+window.setNoteFont              = setNoteFont;
+window.noteIndent               = noteIndent;
+window.noteOutdent              = noteOutdent;
+window.noteInsertImage          = noteInsertImage;
+window.noteInsertTable          = noteInsertTable;
+window.toggleNotesSidebar       = toggleNotesSidebar;
+window.toggleTablePicker        = toggleTablePicker;
+window.toggleStickerPanel       = toggleStickerPanel;
+window.insertSticker            = insertSticker;
+window.saveNoteGroup            = saveNoteGroup;
+window.setNoteGroupColor        = setNoteGroupColor;
+window.deleteNoteGroup          = deleteNoteGroup;
+window.openPdfAnnotator         = openPdfAnnotator;
+
+// Whiteboard
+window.wbSetTool                = wbSetTool;
+window.wbSetColor               = setPenColor;           // ✅ was wbSetColor (doesn't exist)
+window.setPenColor              = setPenColor;
+window.setWbBg                  = setWbBg;
+window.wbClear                  = clearCanvas;           // ✅ was wbClear (doesn't exist)
+window.clearCanvas              = clearCanvas;
+window.wbUndo                   = wbUndo;
+window.wbRedo                   = wbRedo;
+window.wbInsertImage            = wbInsertImage;
+window.wbSaveBoard              = wbSaveBoard;
+window.wbAddBoard               = wbNewBoard;            // ✅ was wbAddBoard (doesn't exist)
+window.wbNewBoard               = wbNewBoard;
+window.wbDeleteBoard            = wbDeleteBoard;
+window.wbSwitchBoard            = wbSwitchBoard;
+window.wbToggleGrid             = wbToggleGrid;
+window.wbToggleFullscreen       = wbToggleFullscreen;
+window.wbToggleMindMap          = wbToggleMindMap;
+window.wbClearSelection         = wbClearSelection;
+window.wbDeleteSelection        = wbDeleteSelection;
+window.wbMoveSelection          = wbMoveSelection;
+window.confirmWbText            = confirmWbText;
+window.downloadWhiteboard       = downloadWhiteboard;
+window.wbMmLoad                 = wbMmLoad;
+window.wbMindMapExport          = wbMindMapExport;
+window.confirmMmNode            = confirmMmNode;
+window.setMmNodeColor           = setMmNodeColor;
+
+// Focus / Pomodoro
+window.toggleTimer              = toggleTimer;
+window.resetTimer               = resetTimer;
+window.setPomoMode              = setPomoMode;
+window.toggleAutoBreak          = toggleAutoBreak;
+window.updatePomoTimes          = updatePomoTimes;
+window.skipPomodoroSession      = skipPomodoroSession;
+window.toggleTimerSound         = toggleTimerSound;
+window.autoStartBreak           = autoStartBreak;
+window.setCustomPomodoro        = setCustomPomodoro;
+
+// Widgets
+window.setWidgetVisible         = setWidgetVisible;
+window.setWidgetColor           = setWidgetColor;
+
+// Calculator
+window.calcAppend               = calcAppend;
+window.calcClear                = calcClear;
+window.calcBackspace            = calcBackspace;
+window.calcSolve                = calcSolve;
+window.calcSciFunc              = calcSciFunc;
+window.calcToggleSci            = calcToggleSci;
+
+// PDF
+window.setPdfTool               = setPdfTool;
+window.setPdfColor              = setPdfColor;
+window.closePdfAnnotator        = closePdfAnnotator;
+window.savePdfAnnotations       = savePdfAnnotations;
+window.pdfUndo                  = pdfUndo;
+window.loadPdfForAnnotation     = loadPdfForAnnotation;
+
+// Password reset / verification
+window.resetPassword            = resetPassword;
+window.resendVerificationEmail  = resendVerificationEmail;
+window.showLoginSuccess         = showLoginSuccess;
+
+// ===== openModal PATCH — populates deck groups when modal opens =====
 (function() {
-    var origOpenModal = openModal;
+    var _origOpenModal = openModal;
     window.openModal = function(id) {
-        origOpenModal(id);
+        _origOpenModal(id);
         if (id === 'modal-add-deck') {
             populateGroupSelect();
             initDeckEmojiPicker();
