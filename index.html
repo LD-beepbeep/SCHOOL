@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="flex h-screen w-screen">
@@ -19,6 +20,42 @@
 <input type="file" id="wb-img-input" class="hidden" accept="image/*" onchange="wbInsertImage(this)">
 <input type="file" id="import-all-input" class="hidden" accept=".json" onchange="importAllData(this)">
 <input type="file" id="note-img-input" class="hidden" accept="image/*" onchange="noteInsertImage(this)">
+<input type="file" id="pdf-upload-input" class="hidden" accept="application/pdf" onchange="loadPdfForAnnotation(this)">
+
+<!-- ===== PDF ANNOTATOR OVERLAY ===== -->
+<div id="pdf-annotator-overlay">
+    <div class="pdf-toolbar">
+        <button onclick="closePdfAnnotator()" class="pdf-tool-btn"><i class="ph-bold ph-arrow-left"></i> Back to Notes</button>
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <button onclick="setPdfTool('highlight')" id="pdf-tool-highlight" class="pdf-tool-btn active-pdf-tool"><i class="ph-bold ph-highlighter"></i> Highlight</button>
+        <button onclick="setPdfTool('pen')" id="pdf-tool-pen" class="pdf-tool-btn"><i class="ph-bold ph-pencil-simple"></i> Draw</button>
+        <button onclick="setPdfTool('text')" id="pdf-tool-text" class="pdf-tool-btn"><i class="ph-bold ph-text-t"></i> Annotate</button>
+        <button onclick="setPdfTool('erase')" id="pdf-tool-erase" class="pdf-tool-btn"><i class="ph-bold ph-eraser"></i> Erase</button>
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <span class="text-xs text-[var(--text-muted)]">Color:</span>
+        <button onclick="setPdfColor('#fde04788')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#fde047;"></button>
+        <button onclick="setPdfColor('#86efac88')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#86efac;"></button>
+        <button onclick="setPdfColor('#f9a8d488')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#f9a8d4;"></button>
+        <button onclick="setPdfColor('#93c5fd88')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#93c5fd;"></button>
+        <button onclick="setPdfColor('#ff000099')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#ef4444;"></button>
+        <input type="color" onchange="setPdfColor(this.value+'cc')" style="width:20px;height:20px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;">
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <span class="text-xs text-[var(--text-muted)]">Size:</span>
+        <input type="range" id="pdf-pen-size" min="2" max="30" value="10" class="w-20 accent-[var(--accent)]">
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <button onclick="pdfUndo()" class="pdf-tool-btn"><i class="ph-bold ph-arrow-u-up-left"></i></button>
+        <button onclick="savePdfAnnotations()" class="pdf-tool-btn" style="background:var(--accent);color:#fff;border-radius:8px;margin-left:auto;"><i class="ph-bold ph-floppy-disk"></i> Save to Note</button>
+        <span class="text-xs text-[var(--text-muted)] ml-2" id="pdf-page-info">Page 0/0</span>
+    </div>
+    <div id="pdf-pages-area">
+        <div id="pdf-upload-prompt" class="flex flex-col items-center justify-center h-full gap-4">
+            <i class="ph ph-file-pdf text-6xl text-[var(--text-muted)]"></i>
+            <p class="text-[var(--text-muted)] text-sm">Upload a PDF to start annotating</p>
+            <button onclick="document.getElementById('pdf-upload-input').click()" class="px-6 py-3 bg-[var(--accent)] text-white rounded-xl text-sm font-medium hover:opacity-90 transition flex items-center gap-2"><i class="ph-bold ph-upload-simple"></i> Upload PDF</button>
+        </div>
+        <div id="pdf-render-container" class="hidden"></div>
+    </div>
+</div>
 
 <!-- Sidebar -->
 <nav class="w-20 h-full flex flex-col items-center py-6 border-r border-[var(--glass-border)] z-50 bg-[var(--bg-color)]/80 backdrop-blur-xl flex-shrink-0">
@@ -128,9 +165,12 @@
                 <div id="dash-upcoming-events" class="flex-1 space-y-1.5 overflow-y-auto text-xs text-[var(--text-muted)]">No events</div>
                 <button onclick="switchTab('calendar')" class="mt-2 text-xs text-[var(--accent)] hover:underline">Open calendar →</button>
             </div>
-            <!-- Quick Note widget -->
+            <!-- Quick Note widget — with "Send to Notes" button -->
             <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-quicknote" draggable="true">
-                <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">Quick Note</h3>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Quick Note</h3>
+                    <button onclick="quickNoteToNotes()" title="Send to Notes" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition text-xs flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-[var(--glass-hover)]"><i class="ph ph-arrow-square-up-right text-sm"></i> To Notes</button>
+                </div>
                 <textarea id="dash-quick-note" placeholder="Jot something down…" class="flex-1 bg-transparent text-sm outline-none resize-none text-[var(--text-main)] placeholder-[var(--text-muted)]" oninput="saveQuickNote()" style="min-height:60px;"></textarea>
             </div>
         </div>
@@ -140,7 +180,10 @@
     <div id="view-tasks" class="hidden fade-in max-w-4xl mx-auto h-full flex flex-col">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-light" data-i18n="tasks">Tasks</h1>
-            <button onclick="clearCompletedTasks()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-muted)] rounded-lg text-xs hover:text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition" data-i18n="clear_done">Clear Done</button>
+            <div class="flex gap-2 items-center">
+                <button id="tasks-notif-btn" onclick="requestTaskNotifications()" class="notif-btn" title="Enable task reminders"><i class="ph ph-bell text-sm"></i> Reminders</button>
+                <button onclick="clearCompletedTasks()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-muted)] rounded-lg text-xs hover:text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition" data-i18n="clear_done">Clear Done</button>
+            </div>
         </div>
         <div class="min-card flex-1 flex flex-col overflow-hidden p-5">
             <div class="flex gap-3 mb-5 flex-wrap items-center">
@@ -170,6 +213,7 @@
             </div>
             <div class="flex gap-2 items-center">
                 <button onclick="calGoToday()" class="px-3 py-1.5 text-xs bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-lg transition">Today</button>
+                <button id="cal-notif-btn" onclick="requestCalNotifications()" class="notif-btn" title="Enable event notifications"><i class="ph ph-bell text-sm"></i> Notifications</button>
                 <button onclick="openModal('modal-import-cal')" class="px-3 py-1.5 text-xs bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-lg transition" data-i18n="sync_url">Sync URL</button>
             </div>
         </div>
@@ -205,7 +249,7 @@
                 <div class="flex-1 overflow-y-auto" id="cal-week-container"></div>
             </div>
             <!-- AGENDA VIEW -->
-            <div id="cal-view-agenda" class="w-full h-full flex-col hidden overflow-y-auto" id="cal-agenda-container">
+            <div id="cal-view-agenda" class="w-full h-full flex-col hidden overflow-y-auto">
                 <div class="mb-3"><h2 class="text-lg font-medium">Upcoming Events</h2></div>
                 <div id="cal-agenda-list"></div>
             </div>
@@ -214,16 +258,22 @@
 
     <!-- ===== NOTES ===== -->
     <div id="view-notes" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
-        <div class="grid grid-cols-12 gap-4 h-full">
-            <div class="col-span-3 flex flex-col gap-2">
-                <button onclick="createNewNote()" class="w-full py-2.5 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition border border-[var(--glass-border)]" data-i18n="new_note">+ New Note</button>
+        <div class="notes-layout" id="notes-layout">
+            <!-- LEFT PANEL: sidebar -->
+            <div id="notes-left-panel">
+                <!-- Sidebar controls -->
+                <div class="flex gap-1">
+                    <button onclick="createNewNote()" class="flex-1 py-2.5 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition border border-[var(--glass-border)]" data-i18n="new_note">+ New Note</button>
+                    <button onclick="openModal('modal-note-group')" class="py-2.5 px-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition border border-[var(--glass-border)]" title="New Group"><i class="ph ph-folder-plus text-base"></i></button>
+                </div>
                 <div id="notes-sidebar" class="space-y-1 overflow-y-auto flex-1"></div>
             </div>
-            <div class="col-span-9 min-card p-0 flex flex-col overflow-hidden">
-                <!-- Note toolbar -->
-                <div class="flex items-center gap-1 px-3 py-2 border-b border-[var(--glass-border)] bg-[var(--glass-panel)] flex-wrap gap-y-1.5">
-                    <input type="text" id="note-title" placeholder="Untitled" class="text-lg font-bold bg-transparent outline-none placeholder-[var(--text-muted)]" style="min-width:60px;max-width:150px;">
-                    <div class="h-5 w-px bg-[var(--glass-border)] mx-1"></div>
+            <!-- RIGHT PANEL: editor -->
+            <div class="min-card p-0 flex flex-col overflow-hidden">
+                <!-- Toolbar Row 1: Title + Font + Format + Size + Sidebar toggle -->
+                <div class="note-toolbar-row">
+                    <input type="text" id="note-title" placeholder="Untitled" class="text-base font-bold bg-transparent outline-none placeholder-[var(--text-muted)]" style="min-width:60px;max-width:180px;">
+                    <div class="note-section-divider"></div>
                     <!-- Font family -->
                     <div class="flex gap-0.5">
                         <button class="font-opt active-font" id="font-sans" onclick="setNoteFont('Inter, sans-serif','font-sans')" style="font-family:'Inter',sans-serif">Sans</button>
@@ -232,45 +282,49 @@
                         <button class="font-opt" id="font-fun" onclick="setNoteFont('Nunito, sans-serif','font-fun')" style="font-family:'Nunito',sans-serif">Fun</button>
                         <button class="font-opt" id="font-handwrite" onclick="setNoteFont('Caveat, cursive','font-handwrite')" style="font-family:'Caveat',cursive">✍️</button>
                     </div>
-                    <div class="h-5 w-px bg-[var(--glass-border)] mx-1"></div>
+                    <div class="note-section-divider"></div>
                     <!-- Formatting -->
-                    <button class="nt-btn font-bold" onclick="formatDoc('bold')" title="Bold">B</button>
-                    <button class="nt-btn italic" onclick="formatDoc('italic')" title="Italic">I</button>
-                    <button class="nt-btn underline" onclick="formatDoc('underline')" title="Underline">U</button>
+                    <button class="nt-btn font-bold" onclick="formatDoc('bold')" title="Bold (Ctrl+B)">B</button>
+                    <button class="nt-btn italic" onclick="formatDoc('italic')" title="Italic (Ctrl+I)">I</button>
+                    <button class="nt-btn underline" onclick="formatDoc('underline')" title="Underline (Ctrl+U)">U</button>
                     <button class="nt-btn line-through text-xs" onclick="formatDoc('strikeThrough')" title="Strikethrough">S</button>
-                    <div class="h-5 w-px bg-[var(--glass-border)] mx-1"></div>
-                    <!-- Size -->
+                    <div class="note-section-divider"></div>
+                    <!-- Sizes -->
                     <button onclick="formatDoc('fontSize','2')" class="nsz text-[9px]">S</button>
                     <button onclick="formatDoc('fontSize','3')" class="nsz text-[11px]">M</button>
                     <button onclick="formatDoc('fontSize','5')" class="nsz text-[13px]">L</button>
                     <button onclick="formatDoc('fontSize','7')" class="nsz text-base">XL</button>
-                    <div class="h-5 w-px bg-[var(--glass-border)] mx-1"></div>
+                    <!-- Sidebar toggle (right side) -->
+                    <div class="ml-auto flex gap-1">
+                        <button onclick="toggleNotesSidebar()" id="notes-sidebar-toggle-btn" class="nt-btn" title="Toggle Sidebar"><i class="ph ph-sidebar-simple text-sm"></i></button>
+                    </div>
+                </div>
+                <!-- Toolbar Row 2: Lists + Highlights + Colors + Insert -->
+                <div class="note-toolbar-row" style="border-bottom:var(--glass-border);">
                     <!-- Lists -->
                     <button class="nt-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet list"><i class="ph-bold ph-list-bullets"></i></button>
                     <button class="nt-btn" onclick="formatDoc('insertOrderedList')" title="Numbered list"><i class="ph-bold ph-list-numbers"></i></button>
                     <button class="nt-btn" onclick="noteInsertCheckbox()" title="Checkbox"><i class="ph-bold ph-check-square"></i></button>
-                    <div class="h-5 w-px bg-[var(--glass-border)] mx-1"></div>
+                    <button class="nt-btn" onclick="noteIndent()" title="Indent (sub-bullet)"><i class="ph-bold ph-arrow-bend-right-down"></i></button>
+                    <button class="nt-btn" onclick="noteOutdent()" title="Outdent"><i class="ph-bold ph-arrow-bend-left-up"></i></button>
+                    <div class="note-section-divider"></div>
                     <!-- Highlighters -->
-                    <div class="flex gap-1 items-center" title="Highlight">
-                        <span class="text-[9px] text-[var(--text-muted)] font-bold">HL</span>
-                        <button class="hlt" style="background:#fde047" onclick="noteHighlight('#fde047')" title="Yellow"></button>
-                        <button class="hlt" style="background:#86efac" onclick="noteHighlight('#86efac')" title="Green"></button>
-                        <button class="hlt" style="background:#f9a8d4" onclick="noteHighlight('#f9a8d4')" title="Pink"></button>
-                        <button class="hlt" style="background:#93c5fd" onclick="noteHighlight('#93c5fd')" title="Blue"></button>
-                        <button class="hlt" style="background:#fdba74" onclick="noteHighlight('#fdba74')" title="Orange"></button>
-                        <button class="hlt w-[18px] h-[18px]" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteHighlight('transparent')" title="Remove highlight">✕</button>
-                    </div>
-                    <div class="h-5 w-px bg-[var(--glass-border)] mx-1"></div>
+                    <span class="text-[9px] text-[var(--text-muted)] font-bold mr-0.5">HL</span>
+                    <button class="hlt" style="background:#fde047" onclick="noteHighlight('#fde047')" title="Yellow"></button>
+                    <button class="hlt" style="background:#86efac" onclick="noteHighlight('#86efac')" title="Green"></button>
+                    <button class="hlt" style="background:#f9a8d4" onclick="noteHighlight('#f9a8d4')" title="Pink"></button>
+                    <button class="hlt" style="background:#93c5fd" onclick="noteHighlight('#93c5fd')" title="Blue"></button>
+                    <button class="hlt" style="background:#fdba74" onclick="noteHighlight('#fdba74')" title="Orange"></button>
+                    <button class="hlt w-[18px] h-[18px]" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteHighlight('transparent')" title="Remove highlight">✕</button>
+                    <div class="note-section-divider"></div>
                     <!-- Text color -->
-                    <div class="flex gap-1 items-center" title="Text color">
-                        <span class="text-[9px] text-[var(--text-muted)] font-bold">A</span>
-                        <button class="hlt" style="background:#ef4444" onclick="noteTextColor('#ef4444')"></button>
-                        <button class="hlt" style="background:#3b82f6" onclick="noteTextColor('#3b82f6')"></button>
-                        <button class="hlt" style="background:#22c55e" onclick="noteTextColor('#22c55e')"></button>
-                        <button class="hlt" style="background:#f59e0b" onclick="noteTextColor('#f59e0b')"></button>
-                        <button class="hlt w-[18px] h-[18px]" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteTextColor('inherit')" title="Default">✕</button>
-                    </div>
-                    <div class="h-5 w-px bg-[var(--glass-border)] mx-1"></div>
+                    <span class="text-[9px] text-[var(--text-muted)] font-bold mr-0.5">A</span>
+                    <button class="hlt" style="background:#ef4444" onclick="noteTextColor('#ef4444')"></button>
+                    <button class="hlt" style="background:#3b82f6" onclick="noteTextColor('#3b82f6')"></button>
+                    <button class="hlt" style="background:#22c55e" onclick="noteTextColor('#22c55e')"></button>
+                    <button class="hlt" style="background:#f59e0b" onclick="noteTextColor('#f59e0b')"></button>
+                    <button class="hlt w-[18px] h-[18px]" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteTextColor('inherit')" title="Default">✕</button>
+                    <div class="note-section-divider"></div>
                     <!-- Insert -->
                     <button class="nt-btn" onclick="document.getElementById('note-img-input').click()" title="Insert image"><i class="ph-bold ph-image text-xs"></i></button>
                     <div class="relative">
@@ -280,71 +334,118 @@
                             <div id="sticker-grid" class="flex flex-wrap gap-1"></div>
                         </div>
                     </div>
-                    <div class="ml-auto flex gap-1">
+                    <!-- Table insert -->
+                    <div class="relative nt-dropdown">
+                        <button class="nt-btn" onclick="toggleTablePicker(this)" title="Insert table"><i class="ph-bold ph-table text-xs"></i></button>
+                        <div class="nt-dropdown-content" id="table-picker-popup">
+                            <div class="text-xs text-[var(--text-muted)] mb-2 font-bold">Insert Table</div>
+                            <div class="table-picker-grid" id="table-picker-grid"></div>
+                            <div class="table-picker-label" id="table-picker-label">0 × 0</div>
+                        </div>
+                    </div>
+                    <!-- PDF Annotation -->
+                    <button class="nt-btn" onclick="openPdfAnnotator()" title="PDF Annotation" style="font-size:.7rem;font-weight:700;color:var(--accent);">PDF</button>
+                    <!-- Delete note -->
+                    <div class="ml-auto flex gap-1 items-center">
+                        <div class="text-xs text-[var(--text-muted)] font-mono" id="note-stats">0 words</div>
+                        <div class="flex gap-1" id="note-tag-row"></div>
                         <button onclick="deleteCurrentNote()" class="nt-btn hover:text-red-400" title="Delete note"><i class="ph-bold ph-trash text-xs"></i></button>
                     </div>
                 </div>
                 <div id="note-editor" contenteditable="true" class="flex-1 p-8 outline-none text-[var(--text-main)] leading-relaxed overflow-y-auto" placeholder="Start writing…" style="font-family:'Inter',sans-serif;font-size:1rem;line-height:1.8;"></div>
-                <div class="px-6 py-2 border-t border-[var(--glass-border)] flex justify-between items-center">
-                    <div class="text-xs text-[var(--text-muted)] font-mono" id="note-stats">0 words</div>
-                    <div class="flex gap-1" id="note-tag-row"></div>
-                </div>
             </div>
         </div>
     </div>
 
     <!-- ===== WHITEBOARD ===== -->
     <div id="view-whiteboard" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
-        <div class="flex justify-between items-center mb-2 gap-2 flex-wrap">
+        <!-- Row 1: Boards + Board actions -->
+        <div class="flex justify-between items-center mb-2 gap-2">
             <div class="flex items-center gap-2 flex-wrap">
                 <h1 class="text-2xl font-light" data-i18n="whiteboard">Whiteboard</h1>
                 <div class="flex gap-1 flex-wrap" id="wb-tabs"></div>
                 <button onclick="wbNewBoard()" class="w-8 h-8 rounded-lg bg-[var(--glass-panel)] border border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] flex items-center justify-center transition"><i class="ph-bold ph-plus text-sm"></i></button>
             </div>
-            <!-- Main Toolbar -->
-            <div class="flex gap-1 bg-[var(--glass-panel)] p-1.5 rounded-xl border border-[var(--glass-border)] items-center flex-wrap">
+            <div class="flex gap-2 items-center text-xs text-[var(--text-muted)]">
+                <span>Canvas bg:</span>
+                <button onclick="setWbBg('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)] hover:scale-110 transition"></button>
+                <button onclick="setWbBg('#09090b')" class="w-5 h-5 rounded-full bg-[#09090b] border border-[var(--glass-border)] hover:scale-110 transition"></button>
+                <button onclick="setWbBg('#fef3c7')" class="w-5 h-5 rounded-full bg-amber-100 hover:scale-110 transition"></button>
+                <button onclick="setWbBg('#f0fdf4')" class="w-5 h-5 rounded-full bg-green-50 hover:scale-110 transition"></button>
+                <button onclick="setWbBg('#eff6ff')" class="w-5 h-5 rounded-full bg-blue-50 hover:scale-110 transition"></button>
+                <span class="ml-1">Stroke: <span id="wb-size-display">3px</span></span>
+            </div>
+        </div>
+        <!-- Row 2: Main Toolbar — organized into logical groups -->
+        <div class="wb-toolbar-row mb-2">
+            <!-- History -->
+            <span class="wb-section-label">History</span>
+            <div class="wb-tool-group">
                 <button onclick="wbUndo()" class="wb-tool" title="Undo"><i class="ph-bold ph-arrow-u-up-left"></i></button>
                 <button onclick="wbRedo()" class="wb-tool" title="Redo"><i class="ph-bold ph-arrow-u-up-right"></i></button>
-                <div class="w-px h-5 bg-[var(--text-muted)] opacity-20 mx-0.5"></div>
+            </div>
+            <div class="wb-divider"></div>
+            <!-- Draw tools -->
+            <span class="wb-section-label">Draw</span>
+            <div class="wb-tool-group">
                 <button onclick="wbSetTool('select')" id="wb-tool-select" class="wb-tool" title="Select"><i class="ph-bold ph-cursor"></i></button>
                 <button onclick="wbSetTool('pen')" id="wb-tool-pen" class="wb-tool active-tool" title="Pen"><i class="ph-bold ph-pencil-simple"></i></button>
+                <button onclick="wbSetTool('highlighter')" id="wb-tool-highlighter" class="wb-tool" title="Fluorescent Highlighter" style="font-size:.6rem;font-weight:700;">FLUO</button>
                 <button onclick="wbSetTool('eraser')" id="wb-tool-eraser" class="wb-tool" title="Eraser"><i class="ph-bold ph-eraser"></i></button>
+            </div>
+            <div class="wb-divider"></div>
+            <!-- Shapes -->
+            <span class="wb-section-label">Shapes</span>
+            <div class="wb-tool-group">
                 <button onclick="wbSetTool('line')" id="wb-tool-line" class="wb-tool" title="Line"><i class="ph-bold ph-minus"></i></button>
                 <button onclick="wbSetTool('rect')" id="wb-tool-rect" class="wb-tool" title="Rectangle"><i class="ph-bold ph-rectangle"></i></button>
                 <button onclick="wbSetTool('circle')" id="wb-tool-circle" class="wb-tool" title="Circle"><i class="ph-bold ph-circle"></i></button>
                 <button onclick="wbSetTool('arrow')" id="wb-tool-arrow" class="wb-tool" title="Arrow"><i class="ph-bold ph-arrow-up-right"></i></button>
                 <button onclick="wbSetTool('text')" id="wb-tool-text" class="wb-tool" title="Text"><i class="ph-bold ph-text-t"></i></button>
-                <div class="w-px h-5 bg-[var(--text-muted)] opacity-20 mx-0.5"></div>
-                <button onclick="setPenColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)] flex-shrink-0" title="White"></button>
-                <button onclick="setPenColor('#1a1a1a')" class="w-5 h-5 rounded-full bg-[#1a1a1a] border border-[var(--glass-border)] flex-shrink-0" title="Black"></button>
-                <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 flex-shrink-0"></button>
-                <button onclick="setPenColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 flex-shrink-0"></button>
-                <button onclick="setPenColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 flex-shrink-0"></button>
-                <button onclick="setPenColor('#f59e0b')" class="w-5 h-5 rounded-full bg-amber-500 flex-shrink-0"></button>
-                <button onclick="setPenColor('#8b5cf6')" class="w-5 h-5 rounded-full bg-violet-500 flex-shrink-0"></button>
-                <input type="color" id="wb-custom-color" onchange="setPenColor(this.value)" title="Custom" style="width:20px;height:20px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;">
-                <div class="w-px h-5 bg-[var(--text-muted)] opacity-20 mx-0.5"></div>
-                <input type="range" id="wb-size" min="1" max="24" value="3" class="w-16 h-1 rounded-full appearance-none cursor-pointer accent-[var(--accent)]">
-                <div class="w-px h-5 bg-[var(--text-muted)] opacity-20 mx-0.5"></div>
+            </div>
+            <div class="wb-divider"></div>
+            <!-- Mind Map -->
+            <span class="wb-section-label">Map</span>
+            <div class="wb-tool-group">
+                <button onclick="wbToggleMindMap()" id="wb-tool-mindmap" class="wb-tool" title="Mind Map"><i class="ph-bold ph-graph"></i></button>
+            </div>
+            <div class="wb-divider"></div>
+            <!-- Colors -->
+            <span class="wb-section-label">Color</span>
+            <button onclick="setPenColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)] flex-shrink-0" title="White"></button>
+            <button onclick="setPenColor('#1a1a1a')" class="w-5 h-5 rounded-full bg-[#1a1a1a] border border-[var(--glass-border)] flex-shrink-0" title="Black"></button>
+            <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#f59e0b')" class="w-5 h-5 rounded-full bg-amber-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#8b5cf6')" class="w-5 h-5 rounded-full bg-violet-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#fde047')" class="w-5 h-5 rounded-full bg-yellow-300 flex-shrink-0" title="Yellow (great for FLUO)"></button>
+            <input type="color" id="wb-custom-color" onchange="setPenColor(this.value)" title="Custom" style="width:20px;height:20px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;">
+            <div class="wb-divider"></div>
+            <!-- Size -->
+            <span class="wb-section-label">Size</span>
+            <input type="range" id="wb-size" min="1" max="24" value="3" class="w-16 h-1 rounded-full appearance-none cursor-pointer accent-[var(--accent)]">
+            <div class="wb-divider"></div>
+            <!-- Actions -->
+            <span class="wb-section-label">More</span>
+            <div class="wb-tool-group">
                 <button onclick="wbToggleGrid()" id="wb-grid-btn" class="wb-tool" title="Toggle grid"><i class="ph-bold ph-grid-four"></i></button>
                 <button onclick="document.getElementById('wb-img-input').click()" class="wb-tool" title="Insert image"><i class="ph-bold ph-image"></i></button>
                 <button onclick="wbToggleFullscreen()" class="wb-tool" title="Fullscreen"><i class="ph-bold ph-arrows-out" id="wb-fs-icon"></i></button>
-                <button onclick="downloadWhiteboard()" class="wb-tool" title="Download"><i class="ph-bold ph-download-simple"></i></button>
+                <button onclick="downloadWhiteboard()" class="wb-tool" title="Download PNG"><i class="ph-bold ph-download-simple"></i></button>
                 <button onclick="wbDeleteBoard()" class="wb-tool hover:text-red-400" title="Delete board"><i class="ph-bold ph-trash"></i></button>
-                <button onclick="clearCanvas()" class="wb-tool hover:text-red-400 text-xs" data-i18n="clear">Clear</button>
+                <button onclick="clearCanvas()" class="wb-tool hover:text-red-400 text-xs px-2" data-i18n="clear">Clear</button>
             </div>
         </div>
-        <!-- Canvas bg color row + select actions -->
-        <div class="flex items-center gap-2 mb-1.5 text-xs text-[var(--text-muted)] flex-wrap">
-            <span>Canvas:</span>
-            <button onclick="setWbBg('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)] hover:scale-110 transition"></button>
-            <button onclick="setWbBg('#09090b')" class="w-5 h-5 rounded-full bg-[#09090b] border border-[var(--glass-border)] hover:scale-110 transition"></button>
-            <button onclick="setWbBg('#fef3c7')" class="w-5 h-5 rounded-full bg-amber-100 hover:scale-110 transition"></button>
-            <button onclick="setWbBg('#f0fdf4')" class="w-5 h-5 rounded-full bg-green-50 hover:scale-110 transition"></button>
-            <button onclick="setWbBg('#eff6ff')" class="w-5 h-5 rounded-full bg-blue-50 hover:scale-110 transition"></button>
-            <div class="text-[var(--text-muted)] ml-2">Stroke: <span id="wb-size-display">3px</span></div>
-            <!-- Select toolbar (shown when selection active) -->
-            <div id="wb-select-toolbar" class="flex items-center gap-2 ml-auto bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-xl px-3 py-1.5" style="display:none!important;">
+        <!-- Mind map status bar -->
+        <div id="mm-status" class="text-xs text-[var(--text-muted)] mb-1 flex gap-4 items-center">
+            <span>🗺️ <strong>Mind Map Mode</strong> — Click empty area to add node · Click node to select · Drag to move · Del to remove</span>
+            <button onclick="wbMindMapExport()" class="px-3 py-1 bg-[var(--accent)] text-white rounded-lg text-xs">Stamp to Canvas</button>
+            <button onclick="wbToggleMindMap()" class="px-3 py-1 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-lg text-xs">Exit Mind Map</button>
+        </div>
+        <!-- Select toolbar -->
+        <div class="flex items-center gap-2 mb-1.5 text-xs text-[var(--text-muted)]">
+            <div id="wb-select-toolbar" class="flex items-center gap-2 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-xl px-3 py-1.5" style="display:none!important;">
                 <span class="text-xs font-bold text-[var(--accent)]">Selection</span>
                 <button onclick="wbMoveSelection()" class="wb-tool text-xs px-2" title="Move selection"><i class="ph-bold ph-arrows-out-cardinal text-sm"></i></button>
                 <button onclick="wbDeleteSelection()" class="wb-tool text-xs px-2 hover:text-red-400" title="Delete selection"><i class="ph-bold ph-trash text-sm"></i></button>
@@ -354,6 +455,8 @@
         <div class="flex-1 min-card overflow-hidden relative border border-[var(--glass-border)]" id="wb-container">
             <canvas id="wb-canvas" class="w-full h-full"></canvas>
             <div id="wb-select-overlay"></div>
+            <!-- Mind map SVG overlay -->
+            <svg id="wb-mindmap-svg" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
     </div>
 
@@ -511,7 +614,6 @@
             <h1 class="text-3xl font-light" data-i18n="grades">Grades</h1>
             <button onclick="openModal('modal-add-subject')" class="px-5 py-2 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-lg">+ Add Subject</button>
         </div>
-        <!-- Global stats bar -->
         <div class="min-card p-5 mb-5 grid grid-cols-4 gap-5">
             <div class="col-span-2">
                 <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-1">Overall Average</div>
@@ -540,52 +642,41 @@
                 <div class="text-xs text-[var(--text-muted)] font-mono min-h-5" id="calc-history"></div>
                 <div class="text-4xl font-light tracking-tight mt-1 overflow-x-auto min-h-12 flex items-end justify-end" id="calc-result">0</div>
             </div>
-            <!-- Mode toggle -->
             <div class="flex justify-end mb-3">
                 <button onclick="calcToggleSci()" id="calc-sci-btn" class="text-xs px-3 py-1 rounded-full bg-[var(--glass-hover)] text-[var(--text-muted)] hover:text-[var(--accent)] transition">Scientific</button>
             </div>
             <div class="grid grid-cols-4 gap-1.5" id="calc-grid">
-                <!-- Scientific row (hidden by default) -->
                 <button onclick="calcSciFunc('sin')" class="calc-key sci h-10 hidden sci-btn">sin</button>
                 <button onclick="calcSciFunc('cos')" class="calc-key sci h-10 hidden sci-btn">cos</button>
                 <button onclick="calcSciFunc('tan')" class="calc-key sci h-10 hidden sci-btn">tan</button>
                 <button onclick="calcSciFunc('log')" class="calc-key sci h-10 hidden sci-btn">log</button>
-
                 <button onclick="calcSciFunc('asin')" class="calc-key sci h-10 hidden sci-btn">sin⁻¹</button>
                 <button onclick="calcSciFunc('acos')" class="calc-key sci h-10 hidden sci-btn">cos⁻¹</button>
                 <button onclick="calcSciFunc('atan')" class="calc-key sci h-10 hidden sci-btn">tan⁻¹</button>
                 <button onclick="calcSciFunc('ln')" class="calc-key sci h-10 hidden sci-btn">ln</button>
-
                 <button onclick="calcSciFunc('sqrt')" class="calc-key sci h-10 hidden sci-btn">√</button>
                 <button onclick="calcAppend('**2')" class="calc-key sci h-10 hidden sci-btn">x²</button>
                 <button onclick="calcAppend('**')" class="calc-key sci h-10 hidden sci-btn">xʸ</button>
                 <button onclick="calcSciFunc('abs')" class="calc-key sci h-10 hidden sci-btn">|x|</button>
-
                 <button onclick="calcAppend(String(Math.PI))" class="calc-key sci h-10 hidden sci-btn">π</button>
                 <button onclick="calcAppend(String(Math.E))" class="calc-key sci h-10 hidden sci-btn">e</button>
                 <button onclick="calcAppend('(')" class="calc-key sci h-10 hidden sci-btn">(</button>
                 <button onclick="calcAppend(')')" class="calc-key sci h-10 hidden sci-btn">)</button>
-
-                <!-- Standard keys -->
                 <button onclick="calcClear()" class="calc-key accent h-12 col-span-2">AC</button>
                 <button onclick="calcBackspace()" class="calc-key h-12"><i class="ph ph-backspace text-xl"></i></button>
                 <button onclick="calcAppend('/')" class="calc-key accent h-12">÷</button>
-
                 <button onclick="calcAppend('7')" class="calc-key h-12">7</button>
                 <button onclick="calcAppend('8')" class="calc-key h-12">8</button>
                 <button onclick="calcAppend('9')" class="calc-key h-12">9</button>
                 <button onclick="calcAppend('*')" class="calc-key accent h-12">×</button>
-
                 <button onclick="calcAppend('4')" class="calc-key h-12">4</button>
                 <button onclick="calcAppend('5')" class="calc-key h-12">5</button>
                 <button onclick="calcAppend('6')" class="calc-key h-12">6</button>
                 <button onclick="calcAppend('-')" class="calc-key accent h-12">−</button>
-
                 <button onclick="calcAppend('1')" class="calc-key h-12">1</button>
                 <button onclick="calcAppend('2')" class="calc-key h-12">2</button>
                 <button onclick="calcAppend('3')" class="calc-key h-12">3</button>
                 <button onclick="calcAppend('+')" class="calc-key accent h-12">+</button>
-
                 <button onclick="calcAppend('0')" class="calc-key col-span-2 h-12">0</button>
                 <button onclick="calcAppend('.')" class="calc-key h-12">.</button>
                 <button onclick="calcSolve()" class="calc-key primary h-12">=</button>
@@ -596,21 +687,45 @@
     <!-- ===== FOCUS ===== -->
     <div id="view-focus" class="hidden fade-in max-w-xl mx-auto h-full flex flex-col justify-center items-center">
         <div class="min-card p-10 w-full flex flex-col items-center shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1.5 bg-[var(--accent)]"></div>
-            <div class="w-full mb-8"><select id="focus-task-select" class="w-full bg-transparent border-b border-[var(--glass-border)] py-2 text-center outline-none text-lg appearance-none cursor-pointer hover:bg-[var(--glass-hover)] transition rounded-t-lg"><option value="">Select a Task to Focus On</option></select></div>
-            <div class="text-center mb-8">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-[var(--accent)]" id="pomo-top-bar"></div>
+            <!-- Session dots -->
+            <div class="flex gap-2 mb-6" id="session-dots"></div>
+            <!-- Task selector -->
+            <div class="w-full mb-6"><select id="focus-task-select" class="w-full bg-transparent border-b border-[var(--glass-border)] py-2 text-center outline-none text-sm appearance-none cursor-pointer hover:bg-[var(--glass-hover)] transition rounded-t-lg"><option value="">Select a Task to Focus On</option></select></div>
+            <!-- Timer display -->
+            <div class="text-center mb-6">
                 <div class="text-xs text-[var(--text-muted)] uppercase tracking-[.3em] mb-2 font-bold" id="timer-label">FOCUS SESSION</div>
-                <div id="timer-display" class="text-9xl font-bold tracking-tighter tabular-nums">25:00</div>
+                <div id="timer-display" class="text-8xl font-bold tracking-tighter tabular-nums" style="color:var(--clock-color)">25:00</div>
+                <div class="text-xs text-[var(--text-muted)] mt-2" id="pomo-session-info">Session 1 of 4</div>
             </div>
-            <div class="flex gap-8 mb-8">
+            <!-- Controls -->
+            <div class="flex gap-6 mb-6">
                 <button onclick="toggleTimer()" id="btn-timer-toggle" class="w-20 h-20 rounded-full bg-[var(--text-main)] text-[var(--bg-color)] flex items-center justify-center text-3xl hover:scale-110 transition shadow-xl"><i class="ph-fill ph-play" id="icon-play"></i></button>
                 <button onclick="resetTimer()" class="w-20 h-20 rounded-full border border-[var(--text-muted)] text-[var(--text-muted)] flex items-center justify-center text-3xl hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition"><i class="ph ph-arrow-counter-clockwise"></i></button>
+                <button onclick="skipPomodoroSession()" class="w-12 h-12 self-center rounded-full border border-[var(--glass-border)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition" title="Skip session"><i class="ph ph-skip-forward"></i></button>
             </div>
-            <div class="flex gap-2">
-                <button onclick="setMode(25,'FOCUS')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition">Pomodoro</button>
-                <button onclick="setMode(5,'BREAK')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition">Short</button>
-                <button onclick="setMode(15,'LONG')" class="px-4 py-1 rounded-full text-xs font-bold text-[var(--text-muted)] hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition">Long</button>
+            <!-- Mode presets -->
+            <div class="flex gap-2 flex-wrap justify-center mb-4">
+                <button onclick="setPomoMode('focus')" id="pomo-btn-focus" class="pomo-mode-btn focus-mode">🍅 Focus</button>
+                <button onclick="setPomoMode('short')" id="pomo-btn-short" class="pomo-mode-btn">☕ Short Break</button>
+                <button onclick="setPomoMode('long')" id="pomo-btn-long" class="pomo-mode-btn">🌿 Long Break</button>
             </div>
+            <!-- Custom times -->
+            <div class="flex gap-3 mb-4 text-xs text-[var(--text-muted)] items-center">
+                <span>Focus:</span>
+                <input type="number" id="pomo-custom-work" value="25" min="1" max="120" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                <span>min &nbsp; Short break:</span>
+                <input type="number" id="pomo-custom-short" value="5" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                <span>min &nbsp; Long break:</span>
+                <input type="number" id="pomo-custom-long" value="15" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                <span>min</span>
+            </div>
+            <!-- Auto-break toggle -->
+            <button onclick="toggleAutoBreak()" id="pomo-autobreak" class="pomo-autobreak-toggle">
+                <i class="ph ph-arrow-arc-right text-xs"></i> Auto-break: <span id="pomo-autobreak-label">OFF</span>
+            </button>
+            <!-- Sessions today log -->
+            <div class="mt-4 text-xs text-[var(--text-muted)]">Sessions today: <span id="pomo-sessions-today" class="font-bold text-[var(--accent)]">0</span></div>
         </div>
     </div>
 
@@ -619,11 +734,30 @@
 <!-- ===== MODALS OVERLAY ===== -->
 <div id="modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center fade-in">
 
-    <!-- Alert/Confirm/Timer Done -->
     <div id="modal-alert" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]"><h3 id="alert-title" class="text-lg font-bold mb-2">Alert</h3><p id="alert-msg" class="text-sm text-[var(--text-muted)] mb-6">Message</p><button onclick="closeModals()" class="w-full py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">OK</button></div>
     <div id="modal-confirm" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]"><h3 id="confirm-title" class="text-lg font-bold mb-2">Confirm</h3><p id="confirm-msg" class="text-sm text-[var(--text-muted)] mb-6">Sure?</p><div class="flex gap-3 justify-center"><button onclick="closeModals()" class="px-4 py-2 border border-[var(--glass-border)] text-[var(--text-muted)] rounded-lg text-sm">Cancel</button><button id="confirm-btn-action" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Yes</button></div></div>
-    <div id="modal-timer-done" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]"><div class="w-16 h-16 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center mx-auto mb-4 text-3xl"><i class="ph-fill ph-check"></i></div><h3 class="text-xl font-bold mb-2">Time's Up!</h3><p class="text-sm text-[var(--text-muted)] mb-6">Great work!</p><button onclick="closeModals()" class="w-full py-2 bg-[var(--text-main)] text-[var(--bg-color)] rounded-lg text-sm font-bold">Done</button></div>
+    <div id="modal-timer-done" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]">
+        <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center mx-auto mb-4 text-3xl"><i class="ph-fill ph-check"></i></div>
+        <h3 class="text-xl font-bold mb-1" id="timer-done-title">Time's Up!</h3>
+        <p class="text-sm text-[var(--text-muted)] mb-2" id="timer-done-msg">Great work!</p>
+        <p class="text-xs text-[var(--accent)] mb-6" id="timer-done-next"></p>
+        <button onclick="closeModals();autoStartBreak()" class="w-full py-2 bg-[var(--text-main)] text-[var(--bg-color)] rounded-lg text-sm font-bold" id="timer-done-action">Done</button>
+    </div>
     <div id="modal-wb-text" class="hidden modal-panel min-card p-6 w-80 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-sm font-bold mb-3">Add Text</h3><input type="text" id="wb-text-input" class="bare-input w-full mb-2" placeholder="Type here…"><div class="flex items-center gap-2 mb-4"><label class="text-xs text-[var(--text-muted)]">Size:</label><input type="range" id="wb-text-size" min="10" max="72" value="18" class="w-24 accent-[var(--accent)]"><span id="wb-text-size-disp" class="text-xs text-[var(--text-muted)]">18px</span></div><div class="flex justify-end gap-2"><button onclick="closeModals()" class="text-xs text-[var(--text-muted)]">Cancel</button><button onclick="confirmWbText()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded">Add</button></div></div>
+
+    <!-- Mind Map node text input -->
+    <div id="modal-mm-node" class="hidden modal-panel min-card p-6 w-72 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-sm font-bold mb-3">Add Node</h3>
+        <input type="text" id="mm-node-text-input" class="bare-input w-full mb-2" placeholder="Node label…" onkeypress="if(event.key==='Enter')confirmMmNode()">
+        <div class="flex gap-2 mb-4 mt-2">
+            <button onclick="setMmNodeColor('#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-blue"></button>
+            <button onclick="setMmNodeColor('#22c55e')" class="w-6 h-6 rounded-full bg-green-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-green"></button>
+            <button onclick="setMmNodeColor('#ef4444')" class="w-6 h-6 rounded-full bg-red-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-red"></button>
+            <button onclick="setMmNodeColor('#8b5cf6')" class="w-6 h-6 rounded-full bg-violet-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-purple"></button>
+            <button onclick="setMmNodeColor('#f59e0b')" class="w-6 h-6 rounded-full bg-amber-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-amber"></button>
+        </div>
+        <div class="flex justify-end gap-2"><button onclick="closeModals()" class="text-xs text-[var(--text-muted)]">Cancel</button><button onclick="confirmMmNode()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded">Add</button></div>
+    </div>
 
     <!-- Settings modal -->
     <div id="modal-settings" class="hidden modal-panel min-card p-0 w-[480px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[92vh] overflow-hidden flex flex-col">
@@ -665,6 +799,11 @@
                 <div class="settings-row"><div><span class="text-sm block">Custom Pomodoro</span><span class="text-xs text-[var(--text-muted)]">Minutes</span></div><input type="number" id="custom-pomodoro" value="25" min="1" max="120" onchange="setCustomPomodoro(this.value)" class="bare-input text-sm text-right w-16"></div>
             </div>
             <div class="settings-section">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Notifications</div>
+                <div class="settings-row"><span class="text-sm">Calendar Events</span><button onclick="requestCalNotifications()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Enable</button></div>
+                <div class="settings-row"><span class="text-sm">Task Reminders</span><button onclick="requestTaskNotifications()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Enable</button></div>
+            </div>
+            <div class="settings-section">
                 <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Data</div>
                 <div class="settings-row"><span class="text-sm">Export All Data</span><button onclick="exportAllData()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Export JSON</button></div>
                 <div class="settings-row"><span class="text-sm">Import Data</span><button onclick="document.getElementById('import-all-input').click()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Import JSON</button></div>
@@ -676,6 +815,7 @@
                     <div>Alt + 1–9 → Tabs</div><div>Alt + T → New Task</div>
                     <div>Alt + N → New Note</div><div>Esc → Close modal</div>
                     <div>Space → Flip card</div><div>← / → → Rate card</div>
+                    <div>Tab → Indent bullet</div><div>Shift+Tab → Outdent</div>
                 </div>
             </div>
         </div>
@@ -734,10 +874,15 @@
         <div class="flex justify-end mt-5"><button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">Done</button></div>
     </div>
 
-    <!-- Add Deck modal -->
-    <div id="modal-add-deck" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+    <!-- Add Deck modal (with emoji picker) -->
+    <div id="modal-add-deck" class="hidden modal-panel min-card p-8 w-[420px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[90vh] overflow-y-auto">
         <h3 class="text-lg font-light mb-4">New Deck</h3>
         <input type="text" id="deck-name" placeholder="Deck Name" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')saveDeck()">
+        <div class="mb-4">
+            <label class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold block mb-2">Deck Icon</label>
+            <div id="deck-emoji-grid" class="grid gap-1 mb-1" style="grid-template-columns:repeat(10,1fr);"></div>
+            <input type="text" id="deck-emoji-custom" placeholder="Or type any emoji/symbol..." class="bare-input w-full text-sm mt-2" oninput="setDeckEmoji(this.value)">
+        </div>
         <div class="mb-6">
             <label class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold block mb-2">Group (optional)</label>
             <select id="deck-group-select" class="bare-input w-full text-sm bg-transparent cursor-pointer"><option value="">No group</option></select>
@@ -745,7 +890,7 @@
         <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button><button onclick="saveDeck()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button></div>
     </div>
 
-    <!-- Add Group modal -->
+    <!-- Add Group modal (flashcard groups) -->
     <div id="modal-add-group" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
         <h3 class="text-lg font-light mb-6">New Group</h3>
         <input type="text" id="group-name" placeholder="Group Name (e.g. English)" class="bare-input w-full mb-8" onkeypress="if(event.key==='Enter')saveGroup()">
@@ -765,7 +910,7 @@
     <!-- Add Subject modal -->
     <div id="modal-add-subject" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-6">New Subject</h3><input type="text" id="subject-name" placeholder="Subject Name" class="bare-input w-full mb-8" onkeypress="if(event.key==='Enter')saveSubject()"><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveSubject()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Add</button></div></div>
 
-    <!-- Add Test modal (Belgian style) -->
+    <!-- Add Test modal -->
     <div id="modal-add-test" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
         <h3 class="text-lg font-light mb-2">Add Result</h3>
         <p class="text-xs text-[var(--text-muted)] mb-5">For <span id="add-test-subject-name" class="font-bold"></span></p>
@@ -784,12 +929,17 @@
 
     <!-- Calendar modals -->
     <div id="modal-import-cal" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-2">Import Calendar</h3><p class="text-xs text-[var(--text-muted)] mb-5">Paste Google Calendar Embed URL</p><input type="text" id="cal-url-input" placeholder="https://calendar.google.com/embed…" class="bare-input w-full mb-8 text-xs"><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveCalendarImport()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Import</button></div></div>
+
     <div id="modal-add-event" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
         <h3 class="text-lg font-light mb-1" id="event-modal-date">Add Event</h3>
         <input type="text" id="event-input" placeholder="Event name" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')saveCalEvent()">
-        <div class="flex gap-4 mb-5">
+        <div class="flex gap-4 mb-4">
             <input type="time" id="event-time" class="bare-input w-full text-sm">
             <select id="event-repeat" class="bare-input w-full text-sm bg-transparent"><option value="none">No Repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
+        </div>
+        <div class="flex items-center gap-2 mb-4">
+            <input type="checkbox" id="event-notify" class="w-4 h-4" checked>
+            <label for="event-notify" class="text-sm text-[var(--text-muted)]">Notify me for this event</label>
         </div>
         <div class="mb-5">
             <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Color</label>
@@ -801,6 +951,21 @@
 
     <!-- Add Link modal -->
     <div id="modal-add-link" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-5">Add Link</h3><input type="text" id="link-name" placeholder="Name" class="bare-input w-full mb-4"><input type="text" id="link-url" placeholder="https://" class="bare-input w-full mb-4"><div class="mb-4"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Icon</label><select id="link-icon" class="bare-input w-full text-sm bg-transparent cursor-pointer"><option value="ph-fill ph-link">🔗 Default</option><optgroup label="— Study —"><option value="fa-solid fa-book">📖 Book</option><option value="fa-solid fa-graduation-cap">🎓 Course</option><option value="fa-solid fa-flask">🔬 Science</option><option value="fa-solid fa-calculator">🧮 Math</option><option value="fa-solid fa-globe">🌍 Language</option><option value="fa-solid fa-atom">⚛️ Physics</option><option value="fa-solid fa-dna">🧬 Biology</option><option value="fa-solid fa-music">🎵 Music</option><option value="fa-solid fa-code">💻 CS</option></optgroup><optgroup label="— Platforms —"><option value="fa-brands fa-google">Google</option><option value="fa-brands fa-google-drive">Google Drive</option><option value="fa-brands fa-youtube">YouTube</option><option value="fa-solid fa-envelope">Email</option></optgroup></select></div><div class="mb-5"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Open In</label><div class="flex gap-4 text-sm"><label><input type="radio" name="linkMode" value="newtab" checked> New Tab</label><label><input type="radio" name="linkMode" value="iframe"> In App</label></div></div><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveQuickLink()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button></div></div>
+
+    <!-- Note group modal -->
+    <div id="modal-note-group" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-6">New Note Group</h3>
+        <input type="text" id="note-group-name" placeholder="Group name (e.g. Math, English…)" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')saveNoteGroup()">
+        <div class="flex gap-2 mb-6">
+            <button onclick="setNoteGroupColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 hover:scale-110 transition" id="ngc-blue"></button>
+            <button onclick="setNoteGroupColor('#22c55e')" class="w-8 h-8 rounded-full bg-green-500 hover:scale-110 transition" id="ngc-green"></button>
+            <button onclick="setNoteGroupColor('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 hover:scale-110 transition" id="ngc-red"></button>
+            <button onclick="setNoteGroupColor('#8b5cf6')" class="w-8 h-8 rounded-full bg-violet-500 hover:scale-110 transition" id="ngc-purple"></button>
+            <button onclick="setNoteGroupColor('#f59e0b')" class="w-8 h-8 rounded-full bg-amber-500 hover:scale-110 transition" id="ngc-amber"></button>
+            <button onclick="setNoteGroupColor('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 hover:scale-110 transition" id="ngc-pink"></button>
+        </div>
+        <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveNoteGroup()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button></div>
+    </div>
 
 </div><!-- end modal-overlay -->
 
