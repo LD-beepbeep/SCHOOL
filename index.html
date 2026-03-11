@@ -12,6 +12,103 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="flex h-screen w-screen">
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="login-overlay" class="fixed inset-0 z-[999] flex items-center justify-center">
+
+  <div class="absolute inset-0" style="background: var(--bg-color);"></div>
+  <div class="absolute inset-0" style="background: radial-gradient(circle at 30% 20%, rgba(59,130,246,0.18), transparent 55%), radial-gradient(circle at 80% 80%, rgba(236,72,153,0.12), transparent 50%);"></div>
+  <div class="absolute inset-0 backdrop-blur-sm"></div>
+
+  <!-- Card -->
+  <div class="relative z-10 flex flex-col items-center gap-5 px-10 py-12 rounded-3xl"
+       style="background: var(--glass-panel); border: var(--glass-border); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); box-shadow: 0 8px 48px rgba(0,0,0,0.25); width: 400px;">
+
+    <!-- Logo -->
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center"
+           style="background: var(--accent); box-shadow: 0 8px 24px rgba(59,130,246,0.4);">
+        <i class="ph-bold ph-student text-3xl text-white"></i>
+      </div>
+      <div class="text-center">
+        <h1 class="text-2xl font-semibold tracking-tight" style="color: var(--text-main);">Student OS</h1>
+        <p class="text-sm mt-0.5" style="color: var(--text-muted);">Your workspace, synced everywhere.</p>
+      </div>
+    </div>
+
+    <!-- Google -->
+    <button id="btn-google-signin" onclick="signInWithGoogle()"
+            class="w-full flex items-center justify-center gap-3 py-3 px-5 rounded-xl text-sm font-medium transition-all hover:opacity-80 active:scale-[0.98]"
+            style="background: var(--glass-hover); border: var(--glass-border); color: var(--text-main);">
+      <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48">
+        <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.5 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7l-6.6 4.9C9.7 39.5 16.3 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.4 4.3-4.4 5.8l6.2 5.2C41 35.3 44 30 44 24c0-1.3-.1-2.7-.4-4z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <!-- Divider -->
+    <div class="flex items-center w-full gap-3">
+      <div class="flex-1 h-px" style="background: var(--text-muted); opacity: 0.15;"></div>
+      <span class="text-[11px] tracking-wide uppercase font-medium" style="color: var(--text-muted); opacity: 0.6;">or email</span>
+      <div class="flex-1 h-px" style="background: var(--text-muted); opacity: 0.15;"></div>
+    </div>
+
+    <!-- Email fields -->
+    <div class="w-full flex flex-col gap-3">
+      <input id="login-email" type="email" placeholder="Email address"
+             class="bare-input w-full text-sm"
+             onkeypress="if(event.key==='Enter') signInWithEmail()">
+      <input id="login-password" type="password" placeholder="Password"
+             class="bare-input w-full text-sm"
+             onkeypress="if(event.key==='Enter') signInWithEmail()">
+    </div>
+
+    <!-- Forgot password -->
+    <div class="w-full flex justify-end -mt-2">
+      <button onclick="resetPassword()"
+              class="text-xs hover:underline"
+              style="color: var(--text-muted); background: none; border: none; cursor: pointer;">
+        Forgot password?
+      </button>
+    </div>
+
+    <!-- Sign In / Create Account -->
+    <div class="w-full flex gap-2.5">
+      <button onclick="signInWithEmail()"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+              style="background: var(--accent); box-shadow: 0 4px 14px rgba(59,130,246,0.3);">
+        Sign In
+      </button>
+      <button onclick="signUpWithEmail()"
+              class="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80 active:scale-[0.98]"
+              style="background: var(--glass-hover); border: var(--glass-border); color: var(--text-main);">
+        Create Account
+      </button>
+    </div>
+
+    <!-- Status message (errors in red, success in green) -->
+    <p id="login-error" class="hidden text-xs text-center w-full"></p>
+
+    <!-- Spinner -->
+    <div id="login-spinner" class="hidden items-center gap-2 text-xs" style="color: var(--text-muted);">
+      <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+      </svg>
+      Loading your workspace…
+    </div>
+
+    <!-- Offline -->
+    <button onclick="document.getElementById('login-overlay').classList.add('hidden'); initApp();"
+            class="text-xs hover:underline opacity-40 hover:opacity-70 transition-opacity"
+            style="color: var(--text-muted); background: none; border: none; cursor: pointer;">
+      Continue offline (data won't sync)
+    </button>
+
+  </div>
+</div>
+<!-- ===== END LOGIN OVERLAY ===== -->
 <div class="ambient-light" id="ambient-bg"></div>
 
 <!-- Hidden file inputs -->
@@ -808,6 +905,12 @@
                 <div class="settings-row"><span class="text-sm">Export All Data</span><button onclick="exportAllData()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Export JSON</button></div>
                 <div class="settings-row"><span class="text-sm">Import Data</span><button onclick="document.getElementById('import-all-input').click()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Import JSON</button></div>
                 <div class="settings-row"><span class="text-sm text-red-400">Reset All Data</span><button onclick="resetAllData()" class="text-xs px-3 py-1.5 bg-red-500/15 text-red-400 rounded-lg hover:bg-red-500/25 transition">Reset</button></div>
+                <button onclick="logOut()"
+        class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80 mt-4"
+        style="background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2);">
+    <i class="ph-bold ph-sign-out"></i>
+    Sign Out
+</button>
             </div>
             <div class="settings-section">
                 <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Shortcuts</div>
@@ -978,6 +1081,6 @@
     <iframe id="browser-frame" class="flex-1 w-full border-none bg-white"></iframe>
 </div>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
