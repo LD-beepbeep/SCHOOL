@@ -195,7 +195,7 @@
                 <div class="text-sm font-medium text-[var(--accent)] mt-1" data-i18n="status_txt">Ready to learn</div>
                 <div class="flex gap-2 mt-2 justify-end">
                     <div class="flex items-center gap-1.5 px-2 py-1 bg-[var(--glass-panel)] rounded-lg border border-[var(--glass-border)] text-xs text-[var(--text-muted)]">
-                        <span>🔥</span><span id="dash-streak">0</span><span>day streak</span>
+                        <i class="fa-solid fa-fire text-orange-400"></i><span id="dash-streak">0</span><span>day streak</span>
                     </div>
                     <button onclick="openModal('modal-widgets')" class="px-2 py-1 bg-[var(--glass-panel)] rounded-lg border border-[var(--glass-border)] text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition flex items-center gap-1"><i class="ph ph-sliders text-sm"></i> Widgets</button>
                 </div>
@@ -315,11 +315,13 @@
             </div>
         </div>
         <div class="flex-1 min-card p-5 flex flex-col overflow-hidden">
-            <div id="calendar-iframe-container" class="hidden w-full h-full rounded-xl overflow-hidden relative">
-                <iframe id="cal-frame" src="" class="w-full h-full border-none"></iframe>
+            <div id="calendar-iframe-container" class="hidden w-full h-full rounded-xl overflow-hidden relative flex flex-col">
+                <div id="cal-url-tabs" class="flex gap-2 mb-2 flex-shrink-0 flex-wrap"></div>
+                <iframe id="cal-frame" src="" class="flex-1 w-full border-none rounded-xl"></iframe>
                 <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                    <button onclick="clearCalendar()" class="bg-red-500/80 text-white px-4 py-2 rounded-lg text-xs hover:bg-red-600 backdrop-blur" data-i18n="remove_sync">Remove Sync</button>
-                    <button onclick="openCalNewTab()" class="bg-[var(--glass-panel)] border border-[var(--glass-border)] px-4 py-2 rounded-lg text-xs hover:bg-[var(--glass-hover)] backdrop-blur" data-i18n="open_tab">Open in New Tab</button>
+                    <button onclick="clearCalendar()" class="bg-red-500/80 text-white px-4 py-2 rounded-lg text-xs hover:bg-red-600 backdrop-blur" data-i18n="remove_sync">Remove All</button>
+                    <button onclick="openCalNewTab()" class="bg-[var(--glass-panel)] border border-[var(--glass-border)] px-4 py-2 rounded-lg text-xs hover:bg-[var(--glass-hover)] backdrop-blur" data-i18n="open_tab">Open in Tab</button>
+                    <button onclick="openModal('modal-import-cal')" class="bg-[var(--accent)] text-white px-4 py-2 rounded-lg text-xs hover:opacity-90 backdrop-blur"><i class="fa-solid fa-plus mr-1"></i>Add Calendar</button>
                 </div>
             </div>
             <!-- MONTH VIEW -->
@@ -359,94 +361,134 @@
             <!-- LEFT PANEL: sidebar -->
             <div id="notes-left-panel">
                 <!-- Sidebar controls -->
-                <div class="flex gap-1">
-                    <button onclick="createNewNote()" class="flex-1 py-2.5 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition border border-[var(--glass-border)]" data-i18n="new_note">+ New Note</button>
-                    <button onclick="openModal('modal-note-group')" class="py-2.5 px-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-sm transition border border-[var(--glass-border)]" title="New Group"><i class="ph ph-folder-plus text-base"></i></button>
+                <div class="flex gap-1.5 flex-wrap">
+                    <button onclick="createNewNote()" class="flex items-center gap-1.5 flex-1 py-2 px-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-xs font-semibold transition border border-[var(--glass-border)]"><i class="fa-solid fa-plus"></i> New Note</button>
+                    <button onclick="openPdfAnnotator()" class="flex items-center gap-1.5 py-2 px-3 bg-[var(--glass-panel)] hover:bg-[var(--accent)] hover:text-white rounded-xl text-xs font-semibold transition border border-[var(--glass-border)] text-[var(--accent)]" title="Annotate PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                    <button onclick="openModal('modal-note-group')" class="py-2 px-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-xs transition border border-[var(--glass-border)]" title="New Group"><i class="fa-solid fa-folder-plus text-base"></i></button>
                 </div>
                 <div id="notes-sidebar" class="space-y-1 overflow-y-auto flex-1"></div>
             </div>
             <!-- RIGHT PANEL: editor -->
             <div class="min-card p-0 flex flex-col overflow-hidden">
-                <!-- Toolbar Row 1: Title + Font + Format + Size + Sidebar toggle -->
-                <div class="note-toolbar-row">
-                    <input type="text" id="note-title" placeholder="Untitled" class="text-base font-bold bg-transparent outline-none placeholder-[var(--text-muted)]" style="min-width:60px;max-width:180px;">
+                <!-- ===== COMPACT NOTES TOOLBAR ===== -->
+                <div class="note-toolbar-compact" id="note-toolbar">
+                    <!-- Title -->
+                    <input type="text" id="note-title" placeholder="Untitled" class="text-sm font-bold bg-transparent outline-none placeholder-[var(--text-muted)]" style="min-width:60px;max-width:150px;">
                     <div class="note-section-divider"></div>
-                    <!-- Font family -->
-                    <div class="flex gap-0.5">
-                        <button class="font-opt active-font" id="font-sans" onclick="setNoteFont('Inter, sans-serif','font-sans')" style="font-family:'Inter',sans-serif">Sans</button>
-                        <button class="font-opt" id="font-serif" onclick="setNoteFont('Lora, serif','font-serif')" style="font-family:'Lora',serif">Serif</button>
-                        <button class="font-opt" id="font-mono" onclick="setNoteFont('JetBrains Mono, monospace','font-mono')" style="font-family:'JetBrains Mono',monospace">Mono</button>
-                        <button class="font-opt" id="font-fun" onclick="setNoteFont('Nunito, sans-serif','font-fun')" style="font-family:'Nunito',sans-serif">Fun</button>
-                        <button class="font-opt" id="font-handwrite" onclick="setNoteFont('Caveat, cursive','font-handwrite')" style="font-family:'Caveat',cursive">✍️</button>
+
+                    <!-- Font Dropdown -->
+                    <div class="tbar-group" id="tbar-font-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-font-menu')">
+                            <i class="fa-solid fa-font"></i> Font <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-font-menu">
+                            <span class="tbar-dm-label">Font Family</span>
+                            <div class="tbar-dm-row">
+                                <button class="font-opt active-font tbar-dm-btn" id="font-sans" onclick="setNoteFont('Inter, sans-serif','font-sans');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Inter',sans-serif">Sans</button>
+                                <button class="font-opt tbar-dm-btn" id="font-serif" onclick="setNoteFont('Lora, serif','font-serif');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Lora',serif">Serif</button>
+                                <button class="font-opt tbar-dm-btn" id="font-mono" onclick="setNoteFont('JetBrains Mono, monospace','font-mono');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'JetBrains Mono',monospace">Mono</button>
+                                <button class="font-opt tbar-dm-btn" id="font-fun" onclick="setNoteFont('Nunito, sans-serif','font-fun');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Nunito',sans-serif">Fun</button>
+                                <button class="font-opt tbar-dm-btn" id="font-handwrite" onclick="setNoteFont('Caveat, cursive','font-handwrite');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Caveat',cursive">Hand</button>
+                            </div>
+                            <div class="tbar-dm-divider"></div>
+                            <span class="tbar-dm-label">Size</span>
+                            <div class="tbar-dm-row">
+                                <button onclick="formatDoc('fontSize','2')" class="tbar-dm-btn" style="font-size:.7rem">S</button>
+                                <button onclick="formatDoc('fontSize','3')" class="tbar-dm-btn" style="font-size:.85rem">M</button>
+                                <button onclick="formatDoc('fontSize','5')" class="tbar-dm-btn" style="font-size:1rem">L</button>
+                                <button onclick="formatDoc('fontSize','7')" class="tbar-dm-btn" style="font-size:1.1rem">XL</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="note-section-divider"></div>
-                    <!-- Formatting -->
-                    <button class="nt-btn font-bold" onclick="formatDoc('bold')" title="Bold (Ctrl+B)">B</button>
-                    <button class="nt-btn italic" onclick="formatDoc('italic')" title="Italic (Ctrl+I)">I</button>
-                    <button class="nt-btn underline" onclick="formatDoc('underline')" title="Underline (Ctrl+U)">U</button>
-                    <button class="nt-btn line-through text-xs" onclick="formatDoc('strikeThrough')" title="Strikethrough">S</button>
-                    <div class="note-section-divider"></div>
-                    <!-- Sizes -->
-                    <button onclick="formatDoc('fontSize','2')" class="nsz text-[9px]">S</button>
-                    <button onclick="formatDoc('fontSize','3')" class="nsz text-[11px]">M</button>
-                    <button onclick="formatDoc('fontSize','5')" class="nsz text-[13px]">L</button>
-                    <button onclick="formatDoc('fontSize','7')" class="nsz text-base">XL</button>
-                    <!-- Sidebar toggle (right side) -->
-                    <div class="ml-auto flex gap-1">
-                        <button onclick="toggleNotesSidebar()" id="notes-sidebar-toggle-btn" class="nt-btn" title="Toggle Sidebar"><i class="ph ph-sidebar-simple text-sm"></i></button>
+
+                    <!-- Format Dropdown -->
+                    <div class="tbar-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-format-menu')">
+                            <i class="fa-solid fa-bold"></i> Format <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-format-menu">
+                            <span class="tbar-dm-label">Style</span>
+                            <div class="tbar-dm-row">
+                                <button class="tbar-dm-btn font-bold" onclick="formatDoc('bold')" title="Bold (Ctrl+B)">B</button>
+                                <button class="tbar-dm-btn italic" onclick="formatDoc('italic')" title="Italic">I</button>
+                                <button class="tbar-dm-btn underline" onclick="formatDoc('underline')" title="Underline">U</button>
+                                <button class="tbar-dm-btn line-through text-xs" onclick="formatDoc('strikeThrough')" title="Strike">S</button>
+                            </div>
+                            <div class="tbar-dm-divider"></div>
+                            <span class="tbar-dm-label">Lists & Structure</span>
+                            <div class="tbar-dm-row">
+                                <button class="tbar-dm-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet list"><i class="fa-solid fa-list-ul"></i> Bullets</button>
+                                <button class="tbar-dm-btn" onclick="formatDoc('insertOrderedList')" title="Numbered"><i class="fa-solid fa-list-ol"></i> Numbered</button>
+                            </div>
+                            <div class="tbar-dm-row">
+                                <button class="tbar-dm-btn" onclick="noteInsertCheckbox()" title="Checkbox"><i class="fa-regular fa-square-check"></i> Checkbox</button>
+                                <button class="tbar-dm-btn" onclick="noteIndent()" title="Indent"><i class="fa-solid fa-indent"></i></button>
+                                <button class="tbar-dm-btn" onclick="noteOutdent()" title="Outdent"><i class="fa-solid fa-outdent"></i></button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <!-- Toolbar Row 2: Lists + Highlights + Colors + Insert -->
-                <div class="note-toolbar-row" style="border-bottom:var(--glass-border);">
-                    <!-- Lists -->
-                    <button class="nt-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet list"><i class="ph-bold ph-list-bullets"></i></button>
-                    <button class="nt-btn" onclick="formatDoc('insertOrderedList')" title="Numbered list"><i class="ph-bold ph-list-numbers"></i></button>
-                    <button class="nt-btn" onclick="noteInsertCheckbox()" title="Checkbox"><i class="ph-bold ph-check-square"></i></button>
-                    <button class="nt-btn" onclick="noteIndent()" title="Indent (sub-bullet)"><i class="ph-bold ph-arrow-bend-right-down"></i></button>
-                    <button class="nt-btn" onclick="noteOutdent()" title="Outdent"><i class="ph-bold ph-arrow-bend-left-up"></i></button>
-                    <div class="note-section-divider"></div>
-                    <!-- Highlighters -->
-                    <span class="text-[9px] text-[var(--text-muted)] font-bold mr-0.5">HL</span>
-                    <button class="hlt" style="background:#fde047" onclick="noteHighlight('#fde047')" title="Yellow"></button>
-                    <button class="hlt" style="background:#86efac" onclick="noteHighlight('#86efac')" title="Green"></button>
-                    <button class="hlt" style="background:#f9a8d4" onclick="noteHighlight('#f9a8d4')" title="Pink"></button>
-                    <button class="hlt" style="background:#93c5fd" onclick="noteHighlight('#93c5fd')" title="Blue"></button>
-                    <button class="hlt" style="background:#fdba74" onclick="noteHighlight('#fdba74')" title="Orange"></button>
-                    <button class="hlt w-[18px] h-[18px]" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteHighlight('transparent')" title="Remove highlight">✕</button>
-                    <div class="note-section-divider"></div>
-                    <!-- Text color -->
-                    <span class="text-[9px] text-[var(--text-muted)] font-bold mr-0.5">A</span>
-                    <button class="hlt" style="background:#ef4444" onclick="noteTextColor('#ef4444')"></button>
-                    <button class="hlt" style="background:#3b82f6" onclick="noteTextColor('#3b82f6')"></button>
-                    <button class="hlt" style="background:#22c55e" onclick="noteTextColor('#22c55e')"></button>
-                    <button class="hlt" style="background:#f59e0b" onclick="noteTextColor('#f59e0b')"></button>
-                    <button class="hlt w-[18px] h-[18px]" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteTextColor('inherit')" title="Default">✕</button>
-                    <div class="note-section-divider"></div>
-                    <!-- Insert -->
-                    <button class="nt-btn" onclick="document.getElementById('note-img-input').click()" title="Insert image"><i class="ph-bold ph-image text-xs"></i></button>
-                    <div class="relative">
-                        <button class="nt-btn" onclick="toggleStickerPanel(this)" title="Stickers">🎨</button>
+
+                    <!-- Colors Dropdown -->
+                    <div class="tbar-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-color-menu')">
+                            <i class="fa-solid fa-highlighter"></i> Colors <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-color-menu" style="min-width:220px">
+                            <span class="tbar-dm-label">Highlight</span>
+                            <div class="tbar-color-row">
+                                <button class="tbar-color-dot" style="background:#fde047" onclick="noteHighlight('#fde047')" title="Yellow"></button>
+                                <button class="tbar-color-dot" style="background:#86efac" onclick="noteHighlight('#86efac')" title="Green"></button>
+                                <button class="tbar-color-dot" style="background:#f9a8d4" onclick="noteHighlight('#f9a8d4')" title="Pink"></button>
+                                <button class="tbar-color-dot" style="background:#93c5fd" onclick="noteHighlight('#93c5fd')" title="Blue"></button>
+                                <button class="tbar-color-dot" style="background:#fdba74" onclick="noteHighlight('#fdba74')" title="Orange"></button>
+                                <button class="tbar-color-dot" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteHighlight('transparent')" title="Remove">✕</button>
+                            </div>
+                            <div class="tbar-dm-divider"></div>
+                            <span class="tbar-dm-label">Text Color</span>
+                            <div class="tbar-color-row">
+                                <button class="tbar-color-dot" style="background:#ef4444" onclick="noteTextColor('#ef4444')"></button>
+                                <button class="tbar-color-dot" style="background:#3b82f6" onclick="noteTextColor('#3b82f6')"></button>
+                                <button class="tbar-color-dot" style="background:#22c55e" onclick="noteTextColor('#22c55e')"></button>
+                                <button class="tbar-color-dot" style="background:#f59e0b" onclick="noteTextColor('#f59e0b')"></button>
+                                <button class="tbar-color-dot" style="background:#8b5cf6" onclick="noteTextColor('#8b5cf6')"></button>
+                                <button class="tbar-color-dot" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteTextColor('inherit')" title="Default">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Insert Dropdown -->
+                    <div class="tbar-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-insert-menu')">
+                            <i class="fa-solid fa-paperclip"></i> Insert <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-insert-menu">
+                            <span class="tbar-dm-label">Insert</span>
+                            <div class="tbar-dm-row flex-col items-start">
+                                <button class="tbar-dm-btn w-full" onclick="document.getElementById('note-img-input').click();toggleToolbarDropdown('tbar-insert-menu')"><i class="fa-regular fa-image"></i> Image</button>
+                                <button class="tbar-dm-btn w-full" onclick="toggleStickerPanel(this)"><i class="fa-regular fa-face-smile"></i> Sticker</button>
+                                <div class="relative w-full">
+                                    <button class="tbar-dm-btn w-full" onclick="toggleTablePicker(this)"><i class="fa-solid fa-table-cells"></i> Table</button>
+                                    <div class="nt-dropdown-content" id="table-picker-popup">
+                                        <div class="text-xs text-[var(--text-muted)] mb-2 font-bold">Insert Table</div>
+                                        <div class="table-picker-grid" id="table-picker-grid"></div>
+                                        <div class="table-picker-label" id="table-picker-label">0 × 0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sticker panel remains here -->
                         <div class="sticker-panel" id="sticker-panel">
                             <div class="text-xs text-[var(--text-muted)] font-bold mb-1.5">Stickers</div>
                             <div id="sticker-grid" class="flex flex-wrap gap-1"></div>
                         </div>
                     </div>
-                    <!-- Table insert -->
-                    <div class="relative nt-dropdown">
-                        <button class="nt-btn" onclick="toggleTablePicker(this)" title="Insert table"><i class="ph-bold ph-table text-xs"></i></button>
-                        <div class="nt-dropdown-content" id="table-picker-popup">
-                            <div class="text-xs text-[var(--text-muted)] mb-2 font-bold">Insert Table</div>
-                            <div class="table-picker-grid" id="table-picker-grid"></div>
-                            <div class="table-picker-label" id="table-picker-label">0 × 0</div>
-                        </div>
-                    </div>
-                    <!-- PDF Annotation -->
-                    <button class="nt-btn" onclick="openPdfAnnotator()" title="PDF Annotation" style="font-size:.7rem;font-weight:700;color:var(--accent);">PDF</button>
-                    <!-- Delete note -->
-                    <div class="ml-auto flex gap-1 items-center">
-                        <div class="text-xs text-[var(--text-muted)] font-mono" id="note-stats">0 words</div>
+
+                    <!-- Right side: stats + sidebar toggle + delete -->
+                    <div class="ml-auto flex gap-1 items-center flex-shrink-0">
+                        <div class="text-xs text-[var(--text-muted)] font-mono hidden sm:block" id="note-stats">0 words</div>
                         <div class="flex gap-1" id="note-tag-row"></div>
-                        <button onclick="deleteCurrentNote()" class="nt-btn hover:text-red-400" title="Delete note"><i class="ph-bold ph-trash text-xs"></i></button>
+                        <button onclick="toggleNotesSidebar()" id="notes-sidebar-toggle-btn" class="nt-btn" title="Toggle Sidebar"><i class="fa-solid fa-sidebar text-xs"></i></button>
+                        <button onclick="deleteCurrentNote()" class="nt-btn hover:text-red-400" title="Delete note"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                 </div>
                 <div id="note-editor" contenteditable="true" class="flex-1 p-8 outline-none text-[var(--text-main)] leading-relaxed overflow-y-auto" placeholder="Start writing…" style="font-family:'Inter',sans-serif;font-size:1rem;line-height:1.8;"></div>
@@ -457,58 +499,42 @@
     <!-- ===== WHITEBOARD ===== -->
     <div id="view-whiteboard" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
         <!-- Row 1: Boards + Board actions -->
-        <div class="flex justify-between items-center mb-2 gap-2">
+        <div class="flex justify-between items-center mb-2 gap-2 flex-wrap">
             <div class="flex items-center gap-2 flex-wrap">
                 <h1 class="text-2xl font-light" data-i18n="whiteboard">Whiteboard</h1>
                 <div class="flex gap-1 flex-wrap" id="wb-tabs"></div>
-                <button onclick="wbNewBoard()" class="w-8 h-8 rounded-lg bg-[var(--glass-panel)] border border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] flex items-center justify-center transition"><i class="ph-bold ph-plus text-sm"></i></button>
-            </div>
-            <div class="flex gap-2 items-center text-xs text-[var(--text-muted)]">
-                <span>Canvas bg:</span>
-                <button onclick="setWbBg('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)] hover:scale-110 transition"></button>
-                <button onclick="setWbBg('#09090b')" class="w-5 h-5 rounded-full bg-[#09090b] border border-[var(--glass-border)] hover:scale-110 transition"></button>
-                <button onclick="setWbBg('#fef3c7')" class="w-5 h-5 rounded-full bg-amber-100 hover:scale-110 transition"></button>
-                <button onclick="setWbBg('#f0fdf4')" class="w-5 h-5 rounded-full bg-green-50 hover:scale-110 transition"></button>
-                <button onclick="setWbBg('#eff6ff')" class="w-5 h-5 rounded-full bg-blue-50 hover:scale-110 transition"></button>
-                <span class="ml-1">Stroke: <span id="wb-size-display">3px</span></span>
+                <button onclick="wbNewBoard()" class="w-8 h-8 rounded-lg bg-[var(--glass-panel)] border border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] flex items-center justify-center transition"><i class="fa-solid fa-plus text-sm"></i></button>
             </div>
         </div>
-        <!-- Row 2: Main Toolbar — organized into logical groups -->
+        <!-- Row 2: Main Toolbar -->
         <div class="wb-toolbar-row mb-2">
             <!-- History -->
-            <span class="wb-section-label">History</span>
             <div class="wb-tool-group">
-                <button onclick="wbUndo()" class="wb-tool" title="Undo"><i class="ph-bold ph-arrow-u-up-left"></i></button>
-                <button onclick="wbRedo()" class="wb-tool" title="Redo"><i class="ph-bold ph-arrow-u-up-right"></i></button>
+                <button onclick="wbUndo()" class="wb-tool" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+                <button onclick="wbRedo()" class="wb-tool" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
             <div class="wb-divider"></div>
             <!-- Draw tools -->
-            <span class="wb-section-label">Draw</span>
             <div class="wb-tool-group">
-                <button onclick="wbSetTool('select')" id="wb-tool-select" class="wb-tool" title="Select"><i class="ph-bold ph-cursor"></i></button>
-                <button onclick="wbSetTool('pen')" id="wb-tool-pen" class="wb-tool active-tool" title="Pen"><i class="ph-bold ph-pencil-simple"></i></button>
-                <button onclick="wbSetTool('highlighter')" id="wb-tool-highlighter" class="wb-tool" title="Fluorescent Highlighter" style="font-size:.6rem;font-weight:700;">FLUO</button>
-                <button onclick="wbSetTool('eraser')" id="wb-tool-eraser" class="wb-tool" title="Eraser"><i class="ph-bold ph-eraser"></i></button>
+                <button onclick="wbSetTool('select')" id="wb-tool-select" class="wb-tool" title="Select"><i class="fa-solid fa-arrow-pointer"></i></button>
+                <button onclick="wbSetTool('pen')" id="wb-tool-pen" class="wb-tool active-tool" title="Pen"><i class="fa-solid fa-pencil"></i></button>
+                <button onclick="wbSetTool('highlighter')" id="wb-tool-highlighter" class="wb-tool" title="Highlighter"><i class="fa-solid fa-highlighter"></i></button>
+                <button onclick="wbSetTool('eraser')" id="wb-tool-eraser" class="wb-tool" title="Eraser"><i class="fa-solid fa-eraser"></i></button>
             </div>
             <div class="wb-divider"></div>
             <!-- Shapes -->
-            <span class="wb-section-label">Shapes</span>
             <div class="wb-tool-group">
-                <button onclick="wbSetTool('line')" id="wb-tool-line" class="wb-tool" title="Line"><i class="ph-bold ph-minus"></i></button>
-                <button onclick="wbSetTool('rect')" id="wb-tool-rect" class="wb-tool" title="Rectangle"><i class="ph-bold ph-rectangle"></i></button>
-                <button onclick="wbSetTool('circle')" id="wb-tool-circle" class="wb-tool" title="Circle"><i class="ph-bold ph-circle"></i></button>
-                <button onclick="wbSetTool('arrow')" id="wb-tool-arrow" class="wb-tool" title="Arrow"><i class="ph-bold ph-arrow-up-right"></i></button>
-                <button onclick="wbSetTool('text')" id="wb-tool-text" class="wb-tool" title="Text"><i class="ph-bold ph-text-t"></i></button>
+                <button onclick="wbSetTool('line')" id="wb-tool-line" class="wb-tool" title="Line"><i class="fa-solid fa-minus"></i></button>
+                <button onclick="wbSetTool('rect')" id="wb-tool-rect" class="wb-tool" title="Rectangle"><i class="fa-regular fa-square"></i></button>
+                <button onclick="wbSetTool('circle')" id="wb-tool-circle" class="wb-tool" title="Circle"><i class="fa-regular fa-circle"></i></button>
+                <button onclick="wbSetTool('arrow')" id="wb-tool-arrow" class="wb-tool" title="Arrow"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem"></i></button>
+                <button onclick="wbSetTool('text')" id="wb-tool-text" class="wb-tool" title="Text"><i class="fa-solid fa-t"></i></button>
             </div>
             <div class="wb-divider"></div>
             <!-- Mind Map -->
-            <span class="wb-section-label">Map</span>
-            <div class="wb-tool-group">
-                <button onclick="wbToggleMindMap()" id="wb-tool-mindmap" class="wb-tool" title="Mind Map"><i class="ph-bold ph-graph"></i></button>
-            </div>
+            <button onclick="wbToggleMindMap()" id="wb-tool-mindmap" class="wb-tool" title="Mind Map"><i class="fa-solid fa-diagram-project"></i></button>
             <div class="wb-divider"></div>
             <!-- Colors -->
-            <span class="wb-section-label">Color</span>
             <button onclick="setPenColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)] flex-shrink-0" title="White"></button>
             <button onclick="setPenColor('#1a1a1a')" class="w-5 h-5 rounded-full bg-[#1a1a1a] border border-[var(--glass-border)] flex-shrink-0" title="Black"></button>
             <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 flex-shrink-0"></button>
@@ -516,21 +542,27 @@
             <button onclick="setPenColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 flex-shrink-0"></button>
             <button onclick="setPenColor('#f59e0b')" class="w-5 h-5 rounded-full bg-amber-500 flex-shrink-0"></button>
             <button onclick="setPenColor('#8b5cf6')" class="w-5 h-5 rounded-full bg-violet-500 flex-shrink-0"></button>
-            <button onclick="setPenColor('#fde047')" class="w-5 h-5 rounded-full bg-yellow-300 flex-shrink-0" title="Yellow (great for FLUO)"></button>
+            <button onclick="setPenColor('#fde047')" class="w-5 h-5 rounded-full bg-yellow-300 flex-shrink-0" title="Yellow"></button>
             <input type="color" id="wb-custom-color" onchange="setPenColor(this.value)" title="Custom" style="width:20px;height:20px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;">
             <div class="wb-divider"></div>
             <!-- Size -->
-            <span class="wb-section-label">Size</span>
             <input type="range" id="wb-size" min="1" max="24" value="3" class="w-16 h-1 rounded-full appearance-none cursor-pointer accent-[var(--accent)]">
+            <span class="text-xs text-[var(--text-muted)] w-8" id="wb-size-display">3px</span>
             <div class="wb-divider"></div>
-            <!-- Actions -->
-            <span class="wb-section-label">More</span>
+            <!-- Canvas bg -->
+            <button onclick="setWbBg('#ffffff')" id="wbbg-white" class="w-5 h-5 rounded-full wb-bg-circle bg-white border border-[var(--glass-border)]" title="White canvas"></button>
+            <button onclick="setWbBg('#09090b')" id="wbbg-dark" class="w-5 h-5 rounded-full wb-bg-circle bg-[#09090b] border border-[var(--glass-border)] wb-bg-active" title="Dark canvas"></button>
+            <button onclick="setWbBg('#fef3c7')" id="wbbg-cream" class="w-5 h-5 rounded-full wb-bg-circle bg-amber-100" title="Cream canvas"></button>
+            <button onclick="setWbBg('#f0fdf4')" id="wbbg-green" class="w-5 h-5 rounded-full wb-bg-circle bg-green-50" title="Green canvas"></button>
+            <button onclick="setWbBg('#eff6ff')" id="wbbg-blue" class="w-5 h-5 rounded-full wb-bg-circle bg-blue-50" title="Blue canvas"></button>
+            <div class="wb-divider"></div>
+            <!-- More actions -->
             <div class="wb-tool-group">
-                <button onclick="wbToggleGrid()" id="wb-grid-btn" class="wb-tool" title="Toggle grid"><i class="ph-bold ph-grid-four"></i></button>
-                <button onclick="document.getElementById('wb-img-input').click()" class="wb-tool" title="Insert image"><i class="ph-bold ph-image"></i></button>
-                <button onclick="wbToggleFullscreen()" class="wb-tool" title="Fullscreen"><i class="ph-bold ph-arrows-out" id="wb-fs-icon"></i></button>
-                <button onclick="downloadWhiteboard()" class="wb-tool" title="Download PNG"><i class="ph-bold ph-download-simple"></i></button>
-                <button onclick="wbDeleteBoard()" class="wb-tool hover:text-red-400" title="Delete board"><i class="ph-bold ph-trash"></i></button>
+                <button onclick="wbToggleGrid()" id="wb-grid-btn" class="wb-tool" title="Toggle grid"><i class="fa-solid fa-border-all"></i></button>
+                <button onclick="document.getElementById('wb-img-input').click()" class="wb-tool" title="Insert image"><i class="fa-regular fa-image"></i></button>
+                <button onclick="wbToggleFullscreen()" class="wb-tool" title="Fullscreen"><i class="fa-solid fa-expand" id="wb-fs-icon"></i></button>
+                <button onclick="downloadWhiteboard()" class="wb-tool" title="Download PNG"><i class="fa-solid fa-download"></i></button>
+                <button onclick="wbDeleteBoard()" class="wb-tool hover:text-red-400" title="Delete board"><i class="fa-solid fa-trash"></i></button>
                 <button onclick="clearCanvas()" class="wb-tool hover:text-red-400 text-xs px-2" data-i18n="clear">Clear</button>
             </div>
         </div>
@@ -783,48 +815,70 @@
 
     <!-- ===== FOCUS ===== -->
     <div id="view-focus" class="hidden fade-in max-w-xl mx-auto h-full flex flex-col justify-center items-center">
-        <div class="min-card p-10 w-full flex flex-col items-center shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1.5 bg-[var(--accent)]" id="pomo-top-bar"></div>
+        <div class="min-card p-8 w-full flex flex-col items-center shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-[var(--glass-hover)] rounded-full overflow-hidden">
+                <div class="h-full bg-[var(--accent)] transition-all duration-300" id="pomo-top-bar" style="width:0%"></div>
+            </div>
             <!-- Session dots -->
-            <div class="flex gap-2 mb-6" id="session-dots"></div>
+            <div class="flex gap-2 mb-5 mt-2" id="session-dots"></div>
             <!-- Task selector -->
-            <div class="w-full mb-6"><select id="focus-task-select" class="w-full bg-transparent border-b border-[var(--glass-border)] py-2 text-center outline-none text-sm appearance-none cursor-pointer hover:bg-[var(--glass-hover)] transition rounded-t-lg"><option value="">Select a Task to Focus On</option></select></div>
+            <div class="w-full mb-5">
+                <select id="focus-task-select" class="w-full bg-transparent border border-[var(--glass-border)] rounded-xl py-2 px-3 text-center outline-none text-sm appearance-none cursor-pointer hover:bg-[var(--glass-hover)] transition">
+                    <option value=""><i class="fa-solid fa-bullseye"></i> Select a Task to Focus On</option>
+                </select>
+            </div>
             <!-- Timer display -->
             <div class="text-center mb-6">
-                <div class="text-xs text-[var(--text-muted)] uppercase tracking-[.3em] mb-2 font-bold" id="timer-label">FOCUS SESSION</div>
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-[.3em] mb-2 font-bold flex items-center justify-center gap-2" id="timer-label">
+                    <i class="fa-solid fa-brain" id="pomo-mode-icon"></i> FOCUS SESSION
+                </div>
                 <div id="timer-display" class="text-8xl font-bold tracking-tighter tabular-nums" style="color:var(--clock-color)">25:00</div>
                 <div class="text-xs text-[var(--text-muted)] mt-2" id="pomo-session-info">Session 1 of 4</div>
             </div>
             <!-- Controls -->
-            <div class="flex gap-6 mb-6">
-                <button onclick="toggleTimer()" id="btn-timer-toggle" class="w-20 h-20 rounded-full bg-[var(--text-main)] text-[var(--bg-color)] flex items-center justify-center text-3xl hover:scale-110 transition shadow-xl"><i class="ph-fill ph-play" id="icon-play"></i></button>
-                <button onclick="resetTimer()" class="w-20 h-20 rounded-full border border-[var(--text-muted)] text-[var(--text-muted)] flex items-center justify-center text-3xl hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition"><i class="ph ph-arrow-counter-clockwise"></i></button>
-                <button onclick="skipPomodoroSession()" class="w-12 h-12 self-center rounded-full border border-[var(--glass-border)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition" title="Skip session"><i class="ph ph-skip-forward"></i></button>
+            <div class="flex gap-4 mb-5 items-center">
+                <button onclick="resetTimer()" class="w-12 h-12 rounded-full border border-[var(--glass-border)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition" title="Reset"><i class="fa-solid fa-rotate-left text-lg"></i></button>
+                <button onclick="toggleTimer()" id="btn-timer-toggle" class="w-20 h-20 rounded-full bg-[var(--text-main)] text-[var(--bg-color)] flex items-center justify-center text-3xl hover:scale-110 transition shadow-xl"><i class="fa-solid fa-play" id="icon-play"></i></button>
+                <button onclick="skipPomodoroSession()" class="w-12 h-12 rounded-full border border-[var(--glass-border)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition" title="Skip session"><i class="fa-solid fa-forward-step text-lg"></i></button>
             </div>
             <!-- Mode presets -->
             <div class="flex gap-2 flex-wrap justify-center mb-4">
-                <button onclick="setPomoMode('focus')" id="pomo-btn-focus" class="pomo-mode-btn focus-mode">🍅 Focus</button>
-                <button onclick="setPomoMode('short')" id="pomo-btn-short" class="pomo-mode-btn">☕ Short Break</button>
-                <button onclick="setPomoMode('long')" id="pomo-btn-long" class="pomo-mode-btn">🌿 Long Break</button>
+                <button onclick="setPomoMode('focus')" id="pomo-btn-focus" class="pomo-mode-btn focus-mode"><i class="fa-solid fa-brain mr-1"></i>Focus</button>
+                <button onclick="setPomoMode('short')" id="pomo-btn-short" class="pomo-mode-btn"><i class="fa-solid fa-mug-hot mr-1"></i>Short Break</button>
+                <button onclick="setPomoMode('long')" id="pomo-btn-long" class="pomo-mode-btn"><i class="fa-solid fa-leaf mr-1"></i>Long Break</button>
             </div>
-            <!-- Custom times -->
-            <div class="flex gap-3 mb-4 text-xs text-[var(--text-muted)] items-center">
-                <span>Focus:</span>
-                <input type="number" id="pomo-custom-work" value="25" min="1" max="120" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
-                <span>min &nbsp; Short break:</span>
-                <input type="number" id="pomo-custom-short" value="5" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
-                <span>min &nbsp; Long break:</span>
-                <input type="number" id="pomo-custom-long" value="15" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
-                <span>min</span>
+            <!-- Bottom controls row -->
+            <div class="flex gap-2 flex-wrap justify-center mb-3">
+                <button onclick="toggleAutoBreak()" id="pomo-autobreak" class="pomo-autobreak-toggle">
+                    <i class="fa-solid fa-rotate text-xs"></i> Auto-break: <span id="pomo-autobreak-label">OFF</span>
+                </button>
+                <button onclick="togglePomoSettings()" class="pomo-autobreak-toggle" title="Timer settings">
+                    <i class="fa-solid fa-gear text-xs"></i> Settings <i class="fa-solid fa-caret-down text-xs" id="pomo-settings-chevron"></i>
+                </button>
+                <button onclick="togglePomoFocusMode()" class="pomo-focus-mode-btn" id="pomo-focus-btn" title="Focus Mode - hides all distractions">
+                    <i class="fa-solid fa-expand"></i> Focus Mode
+                </button>
             </div>
-            <!-- Auto-break toggle -->
-            <button onclick="toggleAutoBreak()" id="pomo-autobreak" class="pomo-autobreak-toggle">
-                <i class="ph ph-arrow-arc-right text-xs"></i> Auto-break: <span id="pomo-autobreak-label">OFF</span>
-            </button>
-            <!-- Sessions today log -->
-            <div class="mt-4 text-xs text-[var(--text-muted)]">Sessions today: <span id="pomo-sessions-today" class="font-bold text-[var(--accent)]">0</span></div>
-        </div>
-    </div>
+            <!-- Custom times - collapsible -->
+            <div class="pomo-settings-panel w-full" id="pomo-settings-panel">
+                <div class="flex gap-3 text-xs text-[var(--text-muted)] items-center justify-center pt-3 border-t border-[var(--glass-border)] flex-wrap">
+                    <span>Focus:</span>
+                    <input type="number" id="pomo-custom-work" value="25" min="1" max="120" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                    <span>min &nbsp; Short:</span>
+                    <input type="number" id="pomo-custom-short" value="5" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                    <span>min &nbsp; Long:</span>
+                    <input type="number" id="pomo-custom-long" value="15" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                    <span>min</span>
+                </div>
+                <div class="flex items-center justify-between pt-2 px-1">
+                    <span class="text-xs text-[var(--text-muted)]">Sessions today: <span id="pomo-sessions-today" class="font-bold text-[var(--text-main)]">0</span></span>
+                    <button onclick="toggleTimerSound()" class="flex items-center gap-2 text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition">
+                        <i class="fa-solid fa-volume-high text-xs"></i>
+                        <div class="w-9 h-5 bg-[var(--glass-hover)] rounded-full relative border border-[var(--glass-border)]">
+                            <div class="w-3 h-3 bg-white rounded-full absolute top-1 transition-all" id="timer-sound-dot" style="left:3px;"></div>
+                        </div>
+                    </button>
+                </div>
 
 </main>
 
@@ -1031,7 +1085,21 @@
     </div>
 
     <!-- Calendar modals -->
-    <div id="modal-import-cal" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-2">Import Calendar</h3><p class="text-xs text-[var(--text-muted)] mb-5">Paste Google Calendar Embed URL</p><input type="text" id="cal-url-input" placeholder="https://calendar.google.com/embed…" class="bare-input w-full mb-8 text-xs"><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveCalendarImport()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Import</button></div></div>
+    <div id="modal-import-cal" class="hidden modal-panel min-card p-7 w-[420px] bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-1"><i class="fa-solid fa-calendar-plus text-[var(--accent)] mr-2"></i>Manage Calendars</h3>
+        <p class="text-xs text-[var(--text-muted)] mb-4">Add Google Calendar embed URLs. Each will appear as a tab.</p>
+        <!-- Existing calendar list -->
+        <div id="cal-url-list" class="mb-4 max-h-40 overflow-y-auto space-y-2"></div>
+        <!-- Add new -->
+        <div class="space-y-2 pt-3 border-t border-[var(--glass-border)]">
+            <input type="text" id="cal-label-input" placeholder="Calendar name (e.g. School)" class="bare-input w-full text-sm">
+            <input type="text" id="cal-url-input" placeholder="https://calendar.google.com/embed…" class="bare-input w-full text-xs">
+        </div>
+        <div class="flex justify-end gap-3 mt-4">
+            <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Done</button>
+            <button onclick="addCalendarUrl()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded-lg flex items-center gap-2"><i class="fa-solid fa-plus"></i> Add Calendar</button>
+        </div>
+    </div>
 
     <div id="modal-add-event" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
         <h3 class="text-lg font-light mb-1" id="event-modal-date">Add Event</h3>
@@ -1080,6 +1148,43 @@
     </div>
     <iframe id="browser-frame" class="flex-1 w-full border-none bg-white"></iframe>
 </div>
+
+<!-- ===== MOBILE BOTTOM NAV ===== -->
+<nav id="mobile-nav">
+    <div class="mob-nav-inner">
+        <button class="mob-nav-btn active" id="mob-btn-dashboard" onclick="switchTab('dashboard');closeMobMenu()">
+            <i class="fa-solid fa-house"></i><span>Home</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-tasks" onclick="switchTab('tasks');closeMobMenu()">
+            <i class="fa-solid fa-check-circle"></i><span>Tasks</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-notes" onclick="switchTab('notes');closeMobMenu()">
+            <i class="fa-solid fa-book-open"></i><span>Notes</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-cards" onclick="switchTab('cards');closeMobMenu()">
+            <i class="fa-solid fa-layer-group"></i><span>Study</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-more" onclick="toggleMobMenu()">
+            <i class="fa-solid fa-ellipsis"></i><span>More</span>
+        </button>
+    </div>
+</nav>
+
+<!-- Mobile "More" drawer -->
+<div id="mob-drawer-backdrop" onclick="closeMobMenu()"></div>
+<div id="mob-more-drawer">
+    <button class="mob-drawer-btn" id="mob-btn-calendar" onclick="switchTab('calendar');closeMobMenu()"><i class="fa-solid fa-calendar"></i><span>Calendar</span></button>
+    <button class="mob-drawer-btn" id="mob-btn-whiteboard" onclick="switchTab('whiteboard');closeMobMenu()"><i class="fa-solid fa-pen-to-square"></i><span>Board</span></button>
+    <button class="mob-drawer-btn" id="mob-btn-grades" onclick="switchTab('grades');closeMobMenu()"><i class="fa-solid fa-chart-bar"></i><span>Grades</span></button>
+    <button class="mob-drawer-btn" id="mob-btn-calc" onclick="switchTab('calc');closeMobMenu()"><i class="fa-solid fa-calculator"></i><span>Calc</span></button>
+    <button class="mob-drawer-btn" id="mob-btn-focus" onclick="switchTab('focus');closeMobMenu()"><i class="fa-solid fa-brain"></i><span>Focus</span></button>
+    <button class="mob-drawer-btn" onclick="openModal('modal-settings');closeMobMenu()"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+    <button class="mob-drawer-btn" onclick="openModal('modal-profile');closeMobMenu()"><i class="fa-solid fa-user"></i><span>Profile</span></button>
+    <button class="mob-drawer-btn" onclick="logOut()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+</div>
+
+<!-- Toast notification -->
+<div id="sos-toast"></div>
 
 <script type="module" src="script.js"></script>
 </body>
