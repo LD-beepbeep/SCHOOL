@@ -4122,3 +4122,555 @@ window.showLoginSuccess         = showLoginSuccess;
         }
     };
 })();
+
+// ============================================================
+// ===== STUDENTOS UPDATE — ALL NEW FEATURES PATCH =====
+// ============================================================
+
+// ===== TOOLBAR DROPDOWN TOGGLE =====
+function toggleToolbarDropdown(id) {
+    var menu = document.getElementById(id);
+    if (!menu) return;
+    var isOpen = menu.classList.contains('open');
+    // Close all open menus first
+    document.querySelectorAll('.tbar-dropdown-menu.open').forEach(function(m) {
+        m.classList.remove('open');
+    });
+    if (!isOpen) {
+        menu.classList.add('open');
+        // Close on outside click
+        setTimeout(function() {
+            document.addEventListener('click', function _close(e) {
+                if (!menu.contains(e.target) && !e.target.closest('.tbar-group')) {
+                    menu.classList.remove('open');
+                    document.removeEventListener('click', _close);
+                }
+            });
+        }, 0);
+    }
+}
+window.toggleToolbarDropdown = toggleToolbarDropdown;
+
+// ===== TOAST =====
+function sosToast(msg, duration) {
+    var el = document.getElementById('sos-toast');
+    if (!el) { el = document.createElement('div'); el.id = 'sos-toast'; document.body.appendChild(el); }
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(function() { el.classList.remove('show'); }, duration || 2200);
+}
+window.sosToast = sosToast;
+
+// ===== FIXED CHECKBOX PERSISTENCE =====
+(function() {
+    // Override noteInsertCheckbox to use data-attribute based checkboxes
+    window.noteInsertCheckbox = function() {
+        var editor = document.getElementById('note-editor');
+        if (!editor) return;
+        editor.focus();
+        var cbId = 'cb-' + Date.now() + '-' + Math.floor(Math.random()*9999);
+        var html = '<div class="note-cb-row" data-cb-id="' + cbId + '" data-checked="false" contenteditable="false">'
+            + '<input type="checkbox" onchange="sosToggleCb(this,\'' + cbId + '\')">'
+            + '<span class="cb-text" contenteditable="true">Task item</span>'
+            + '</div><p><br></p>';
+        document.execCommand('insertHTML', false, html);
+        // Don't call saveNote yet — let the input event handle it
+        setTimeout(function() {
+            var newRow = editor.querySelector('[data-cb-id="' + cbId + '"] .cb-text');
+            if (newRow) { newRow.focus(); selectAll(newRow); }
+            saveNote();
+        }, 50);
+    };
+
+    function selectAll(el) {
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+
+    window.sosToggleCb = function(checkbox, cbId) {
+        var row = document.querySelector('[data-cb-id="' + cbId + '"]');
+        if (!row) return;
+        var checked = checkbox.checked;
+        row.dataset.checked = checked ? 'true' : 'false';
+        row.classList.toggle('cb-checked', checked);
+        saveNote();
+    };
+
+    // Patch saveNote to capture checkbox state before serializing
+    var _origSaveNote = window.saveNote;
+    window.saveNote = function() {
+        var editor = document.getElementById('note-editor');
+        if (!editor) { if (_origSaveNote) _origSaveNote(); return; }
+        // Sync all checkboxes to their data-checked attribute BEFORE innerHTML is read
+        editor.querySelectorAll('.note-cb-row').forEach(function(row) {
+            var cb = row.querySelector('input[type=checkbox]');
+            if (cb) {
+                row.dataset.checked = cb.checked ? 'true' : 'false';
+                row.classList.toggle('cb-checked', cb.checked);
+            }
+        });
+        if (_origSaveNote) _origSaveNote();
+    };
+
+    // Patch loadNote to restore checkbox checked states after innerHTML is set
+    var _origLoadNote = window.loadNote;
+    window.loadNote = function(id) {
+        if (_origLoadNote) _origLoadNote(id);
+        setTimeout(function() {
+            var editor = document.getElementById('note-editor');
+            if (!editor) return;
+            editor.querySelectorAll('.note-cb-row').forEach(function(row) {
+                var cb = row.querySelector('input[type=checkbox]');
+                if (cb && row.dataset.checked === 'true') {
+                    cb.checked = true;
+                    row.classList.add('cb-checked');
+                }
+            });
+        }, 30);
+    };
+})();
+
+// ===== FLASHCARD EASY/HARD BADGES FIX =====
+// Track easy ratings separately
+var _cardEasySet = DB.get('os_card_easy', {});
+
+(function() {
+    // Override rateCard to track easy ratings
+    var _origRateCard = window.rateCard;
+    window.rateCard = function(rating) {
+        var card = studyQueue[studyIdx];
+        if (card && activeDeckId) {
+            var key = activeDeckId + '_' + card.id;
+            if (rating === 'easy') {
+                _cardEasySet[key] = true;
+                DB.set('os_card_easy', _cardEasySet);
+            } else {
+                // Mark as hard - remove easy tag
+                delete _cardEasySet[key];
+                DB.set('os_card_easy', _cardEasySet);
+            }
+        }
+        if (_origRateCard) _origRateCard(rating);
+    };
+
+    // Override renderCardList to show proper badges
+    var _origRenderCardList = window.renderCardList;
+    window.renderCardList = function() {
+        var c = document.getElementById('cards-list-container');
+        if (!c) return;
+        var deck = decks.find(function(d) { return d.id === activeDeckId; });
+        if (!deck) { if (_origRenderCardList) _origRenderCardList(); return; }
+        c.innerHTML = '';
+        if (!deck.cards || deck.cards.length === 0) {
+            c.innerHTML = '<div class="text-center py-10 text-[var(--text-muted)] text-sm">No cards yet. Add your first card!</div>';
+            return;
+        }
+        deck.cards.forEach(function(card, i) {
+            var statKey = activeDeckId + '_' + card.id;
+            var hardCount = cardStats[statKey] || 0;
+            var isEasy = _cardEasySet[statKey] === true;
+            var diffBadge = '';
+            if (hardCount >= 2) {
+                diffBadge = '<span class="card-diff-badge hard"><i class="fa-solid fa-fire" style="font-size:.55rem"></i> Hard</span>';
+            } else if (isEasy) {
+                diffBadge = '<span class="card-diff-badge easy"><i class="fa-solid fa-check" style="font-size:.55rem"></i> Easy</span>';
+            }
+            var div = document.createElement('div');
+            div.className = 'flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-[var(--glass-hover)] group transition';
+            div.innerHTML = '<div class="flex-1 min-w-0">'
+                + '<div class="flex items-center gap-2">'
+                + '<div class="text-sm font-medium truncate">' + card.q + '</div>'
+                + diffBadge
+                + '</div>'
+                + '<div class="text-xs text-[var(--text-muted)] truncate">' + card.a + '</div>'
+                + (card.tip ? '<div class="text-[10px] text-yellow-400/70 truncate"><i class="fa-solid fa-lightbulb" style="font-size:.6rem"></i> ' + card.tip + '</div>' : '')
+                + '</div>'
+                + '<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition flex-shrink-0">'
+                + '<button onclick="startCardEdit(' + i + ')" class="text-[var(--text-muted)] hover:text-[var(--accent)] p-1 text-xs"><i class="fa-solid fa-pencil"></i></button>'
+                + '<button onclick="deleteCard(' + i + ')" class="text-[var(--text-muted)] hover:text-red-400 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>'
+                + '</div>';
+            c.appendChild(div);
+        });
+    };
+})();
+
+// ===== WHITEBOARD BACKGROUND ONE-CLICK FIX (pixel swap) =====
+(function() {
+    var _origSetWbBg = window.setWbBg;
+    window.setWbBg = function(newColor) {
+        var prevBg = wbGetBg();
+        DB.set('os_wb_bg_' + wbActiveBoardId, newColor);
+        // Update active button indicator
+        _updateWbBgButtons(newColor);
+
+        if (wbHistoryIndex < 0) {
+            // No history yet — just fill
+            wbFillBg();
+            wbPushHistory();
+            wbSaveBoard();
+            return;
+        }
+
+        // Load the latest snapshot, then pixel-swap old bg color to new color
+        var dataUrl = wbHistory[wbHistoryIndex];
+        var img = new Image();
+        img.onload = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            // Pixel swap
+            try {
+                var prevRGB = _hexToRGB(prevBg);
+                var newRGB  = _hexToRGB(newColor);
+                var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                var d = imgData.data;
+                var tol = 25;
+                for (var i = 0; i < d.length; i += 4) {
+                    if (Math.abs(d[i]   - prevRGB[0]) < tol &&
+                        Math.abs(d[i+1] - prevRGB[1]) < tol &&
+                        Math.abs(d[i+2] - prevRGB[2]) < tol) {
+                        d[i]   = newRGB[0];
+                        d[i+1] = newRGB[1];
+                        d[i+2] = newRGB[2];
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+            } catch(e) {
+                // Fallback to fill
+                ctx.fillStyle = newColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            if (wbGridOn) wbDrawGrid();
+            wbPushHistory();
+            wbSaveBoard();
+        };
+        img.onerror = function() {
+            wbFillBg();
+            wbPushHistory();
+            wbSaveBoard();
+        };
+        img.src = dataUrl;
+    };
+
+    function _hexToRGB(hex) {
+        var h = hex.replace('#', '');
+        if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+        return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+    }
+
+    function _updateWbBgButtons(activeColor) {
+        var bgMap = {
+            '#ffffff': 'wbbg-white',
+            '#09090b': 'wbbg-dark',
+            '#fef3c7': 'wbbg-cream',
+            '#f0fdf4': 'wbbg-green',
+            '#eff6ff': 'wbbg-blue'
+        };
+        Object.keys(bgMap).forEach(function(c) {
+            var btn = document.getElementById(bgMap[c]);
+            if (btn) btn.classList.toggle('wb-bg-active', c === activeColor);
+        });
+    }
+    window._updateWbBgButtons = _updateWbBgButtons;
+
+    // Set initial active bg button state
+    (function() {
+        var existingBg = DB.get('os_wb_bg_' + (typeof wbActiveBoardId !== 'undefined' ? wbActiveBoardId : ''), '#09090b');
+        _updateWbBgButtons(existingBg);
+    })();
+})();
+
+// ===== MULTI-CALENDAR SUPPORT =====
+(function() {
+    // Migrate legacy single URL to array
+    var _legacyUrl = DB.get('os_cal_url', '');
+    var _calUrls = DB.get('os_cal_urls', null);
+    if (_calUrls === null) {
+        if (_legacyUrl) {
+            _calUrls = [{ id: Date.now(), label: 'My Calendar', url: _legacyUrl }];
+        } else {
+            _calUrls = [];
+        }
+        DB.set('os_cal_urls', _calUrls);
+    }
+    var _activeCalIdx = 0;
+
+    function renderCalendarUrls() {
+        var list = document.getElementById('cal-url-list');
+        if (!list) return;
+        _calUrls = DB.get('os_cal_urls', []);
+        if (_calUrls.length === 0) {
+            list.innerHTML = '<div class="text-xs text-center text-[var(--text-muted)] py-3">No calendars added yet.</div>';
+            return;
+        }
+        list.innerHTML = _calUrls.map(function(cal, i) {
+            return '<div class="cal-url-item">'
+                + '<span class="cal-url-label">' + (cal.label || 'Calendar') + '</span>'
+                + '<span class="cal-url-link">' + cal.url.slice(0, 40) + '…</span>'
+                + '<button onclick="removeCalendarUrl(' + cal.id + ')" class="text-[var(--text-muted)] hover:text-red-400 text-xs" title="Remove"><i class="fa-solid fa-times"></i></button>'
+                + '</div>';
+        }).join('');
+    }
+
+    function addCalendarUrl() {
+        var labelEl = document.getElementById('cal-label-input');
+        var urlEl   = document.getElementById('cal-url-input');
+        var label = labelEl ? labelEl.value.trim() : '';
+        var url   = urlEl   ? urlEl.value.trim()   : '';
+        if (!url) { sosToast('Please enter a URL'); return; }
+        _calUrls = DB.get('os_cal_urls', []);
+        _calUrls.push({ id: Date.now(), label: label || 'Calendar ' + (_calUrls.length + 1), url: url });
+        DB.set('os_cal_urls', _calUrls);
+        if (labelEl) labelEl.value = '';
+        if (urlEl) urlEl.value = '';
+        renderCalendarUrls();
+        _applyCalendarFrames();
+        sosToast('Calendar added!');
+    }
+
+    function removeCalendarUrl(id) {
+        _calUrls = DB.get('os_cal_urls', []).filter(function(c) { return c.id !== id; });
+        DB.set('os_cal_urls', _calUrls);
+        renderCalendarUrls();
+        _applyCalendarFrames();
+    }
+
+    function _applyCalendarFrames() {
+        _calUrls = DB.get('os_cal_urls', []);
+        var container = document.getElementById('calendar-iframe-container');
+        var frame = document.getElementById('cal-frame');
+        var tabsEl = document.getElementById('cal-url-tabs');
+        if (!container || !frame) return;
+
+        if (_calUrls.length === 0) {
+            container.classList.add('hidden');
+            if (tabsEl) tabsEl.innerHTML = '';
+            return;
+        }
+        container.classList.remove('hidden');
+        if (_activeCalIdx >= _calUrls.length) _activeCalIdx = 0;
+        frame.src = _calUrls[_activeCalIdx].url;
+
+        // Render tabs if multiple calendars
+        if (tabsEl) {
+            if (_calUrls.length > 1) {
+                tabsEl.innerHTML = _calUrls.map(function(c, i) {
+                    return '<button class="cal-url-tab' + (i === _activeCalIdx ? ' active' : '') + '" onclick="_switchCalTab(' + i + ')">' + c.label + '</button>';
+                }).join('');
+            } else {
+                tabsEl.innerHTML = '';
+            }
+        }
+    }
+
+    window._switchCalTab = function(idx) {
+        _activeCalIdx = idx;
+        _applyCalendarFrames();
+    };
+
+    // Override the old saveCalendarImport (kept for backwards compat HTML references)
+    window.saveCalendarImport = function() {
+        addCalendarUrl();
+    };
+
+    // Override clearCalendar
+    var _origClearCal = window.clearCalendar;
+    window.clearCalendar = function() {
+        _calUrls = [];
+        DB.set('os_cal_urls', []);
+        DB.set('os_cal_url', '');
+        var container = document.getElementById('calendar-iframe-container');
+        if (container) container.classList.add('hidden');
+        sosToast('All calendars removed');
+    };
+
+    // Override openCalNewTab
+    window.openCalNewTab = function() {
+        _calUrls = DB.get('os_cal_urls', []);
+        if (_calUrls.length > 0 && _calUrls[_activeCalIdx]) {
+            window.open(_calUrls[_activeCalIdx].url, '_blank');
+        }
+    };
+
+    // Run on load
+    _applyCalendarFrames();
+
+    // Expose functions
+    window.addCalendarUrl    = addCalendarUrl;
+    window.removeCalendarUrl = removeCalendarUrl;
+    window.renderCalendarUrls = renderCalendarUrls;
+
+    // Patch openModal to render cal URL list when modal opens
+    var _origOM = window.openModal;
+    window.openModal = function(id) {
+        _origOM(id);
+        if (id === 'modal-import-cal') renderCalendarUrls();
+    };
+})();
+
+// ===== POMODORO FOCUS MODE =====
+var _pomoFocusMode = false;
+function togglePomoFocusMode() {
+    _pomoFocusMode = !_pomoFocusMode;
+    document.body.classList.toggle('pomo-focus-mode', _pomoFocusMode);
+    var btn = document.getElementById('pomo-focus-btn');
+    if (btn) {
+        btn.classList.toggle('active', _pomoFocusMode);
+        btn.innerHTML = _pomoFocusMode
+            ? '<i class="fa-solid fa-compress"></i> Exit Focus'
+            : '<i class="fa-solid fa-expand"></i> Focus Mode';
+    }
+}
+window.togglePomoFocusMode = togglePomoFocusMode;
+
+function togglePomoSettings() {
+    var panel = document.getElementById('pomo-settings-panel');
+    var chevron = document.getElementById('pomo-settings-chevron');
+    if (!panel) return;
+    panel.classList.toggle('open');
+    if (chevron) chevron.style.transform = panel.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+window.togglePomoSettings = togglePomoSettings;
+
+// ===== MOBILE NAV =====
+var _mobTabs = ['dashboard','tasks','notes','cards','calendar','whiteboard','grades','calc','focus'];
+
+function setMobActive(tab) {
+    _mobTabs.forEach(function(t) {
+        var btn = document.getElementById('mob-btn-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+    });
+    // Also show "more" as active if tab is in drawer
+    var drawerTabs = ['calendar','whiteboard','grades','calc','focus'];
+    var moreBtn = document.getElementById('mob-btn-more');
+    if (moreBtn) moreBtn.classList.toggle('active', drawerTabs.includes(tab));
+}
+
+function toggleMobMenu() {
+    var drawer = document.getElementById('mob-more-drawer');
+    var backdrop = document.getElementById('mob-drawer-backdrop');
+    if (!drawer) return;
+    var isOpen = drawer.classList.contains('open');
+    if (isOpen) {
+        drawer.classList.remove('open');
+        if (backdrop) backdrop.style.display = 'none';
+    } else {
+        drawer.classList.add('open');
+        if (backdrop) backdrop.style.display = 'block';
+    }
+}
+
+function closeMobMenu() {
+    var drawer = document.getElementById('mob-more-drawer');
+    var backdrop = document.getElementById('mob-drawer-backdrop');
+    if (drawer) drawer.classList.remove('open');
+    if (backdrop) backdrop.style.display = 'none';
+}
+window.setMobActive = setMobActive;
+window.toggleMobMenu = toggleMobMenu;
+window.closeMobMenu = closeMobMenu;
+
+// Patch switchTab to also update mobile nav
+(function() {
+    var _origSwitchTab = window.switchTab;
+    window.switchTab = function(name) {
+        if (_origSwitchTab) _origSwitchTab(name);
+        setMobActive(name);
+        closeMobMenu();
+    };
+})();
+
+// ===== QoL: Ctrl+S saves current note =====
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        var notesView = document.getElementById('view-notes');
+        if (notesView && !notesView.classList.contains('hidden')) {
+            e.preventDefault();
+            saveNote();
+            sosToast('Note saved');
+        }
+    }
+});
+
+// ===== QoL: Keyboard shortcut hints =====
+// Alt+F → Focus
+document.addEventListener('keydown', function(e) {
+    if (e.altKey && e.key === 'f') { switchTab('focus'); }
+    if (e.altKey && e.key === 'w') { switchTab('whiteboard'); }
+    if (e.altKey && e.key === 'c') { switchTab('cards'); }
+    if (e.altKey && e.key === 'g') { switchTab('grades'); }
+});
+
+// ===== QoL: Auto-save notes every 30 seconds =====
+setInterval(function() {
+    var notesView = document.getElementById('view-notes');
+    if (notesView && !notesView.classList.contains('hidden') && activeNote) {
+        var n = notes.find(function(x) { return x.id === activeNote; });
+        if (n) saveNote();
+    }
+}, 30000);
+
+// ===== QoL: Note character/word count live =====
+(function() {
+    var editor = document.getElementById('note-editor');
+    if (!editor) return;
+    var origInput = editor.oninput;
+    editor.addEventListener('input', function() {
+        var tx = editor.innerText;
+        var w = tx.trim() ? tx.trim().split(/\s+/).length : 0;
+        var statsEl = document.getElementById('note-stats');
+        if (statsEl) statsEl.innerText = w + ' words · ' + tx.length + ' chars';
+    });
+})();
+
+// ===== QoL: Pomodoro timer - fix icon-play for FA =====
+(function() {
+    // Override toggleTimer to use FA icons
+    var _origToggleTimer = window.toggleTimer;
+    window.toggleTimer = function() {
+        if (_origToggleTimer) _origToggleTimer();
+        var ico = document.getElementById('icon-play');
+        if (ico) {
+            ico.className = tRun ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+        }
+    };
+    var _origResetTimer = window.resetTimer;
+    window.resetTimer = function() {
+        if (_origResetTimer) _origResetTimer();
+        var ico = document.getElementById('icon-play');
+        if (ico) ico.className = 'fa-solid fa-play';
+    };
+})();
+
+// ===== QoL: Pomodoro - show sessions today on load =====
+(function() {
+    var el = document.getElementById('pomo-sessions-today');
+    if (el) {
+        var pst = DB.get('os_pomo_today', { date: '', count: 0 });
+        var today = new Date().toDateString();
+        el.innerText = (pst.date === today) ? pst.count : 0;
+    }
+})();
+
+// ===== QoL: Whiteboard fullscreen - fix FA icon =====
+(function() {
+    var _origWbFs = window.wbToggleFullscreen;
+    window.wbToggleFullscreen = function() {
+        if (_origWbFs) _origWbFs();
+        var icon = document.getElementById('wb-fs-icon');
+        if (icon) icon.className = wbFull ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    };
+})();
+
+// ===== QoL: Set initial WB bg button state after wbInit =====
+(function() {
+    var _origWbInit = window.wbInit;
+    window.wbInit = function() {
+        if (_origWbInit) _origWbInit();
+        var bg = wbGetBg ? wbGetBg() : '#09090b';
+        if (window._updateWbBgButtons) _updateWbBgButtons(bg);
+    };
+})();
