@@ -4674,3 +4674,5 @@ setInterval(function() {
         if (window._updateWbBgButtons) _updateWbBgButtons(bg);
     };
 })();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
