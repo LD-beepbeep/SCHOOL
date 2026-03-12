@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="mobile.css">  <!-- add this -->
     <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon.png"><meta name="theme-color" content="#0f1117">
     <link rel="icon" type="image/x-icon" href="icon.png">
+    <link rel="stylesheet" href="features.css">
+    <link rel="stylesheet" href="forum.css">
 </head>
 <body class="flex h-screen w-screen">
 <!-- ===== LOGIN OVERLAY ===== -->
@@ -176,6 +178,9 @@
         <button onclick="switchTab('grades')" class="nav-btn" id="btn-grades" data-tooltip="Grades"><i class="ph ph-chart-bar text-xl"></i></button>
         <button onclick="switchTab('calc')" class="nav-btn" id="btn-calc" data-tooltip="Calc"><i class="ph ph-calculator text-xl"></i></button>
         <button onclick="switchTab('focus')" class="nav-btn" id="btn-focus" data-tooltip="Focus"><i class="ph ph-timer text-xl"></i></button>
+        <button onclick="switchTab('music')" class="nav-btn" id="btn-music" data-tooltip="Music"><i class="ph ph-music-note text-xl"></i></button>
+        <button onclick="switchTab('formulas')" class="nav-btn" id="btn-formulas" data-tooltip="Formulas"><i class="ph ph-math-operations text-xl"></i></button>
+        <button onclick="switchTab('forum')" class="nav-btn" id="btn-forum" data-tooltip="Forum"><i class="ph ph-chats-teardrop text-xl"></i></button>
     </div>
     <div class="mt-auto flex flex-col gap-2">
         <button onclick="openModal('modal-settings')" class="nav-btn" data-tooltip="Settings"><i class="ph ph-gear text-xl"></i></button>
@@ -273,6 +278,53 @@
                 </div>
                 <textarea id="dash-quick-note" placeholder="Jot something down…" class="flex-1 bg-transparent text-sm outline-none resize-none text-[var(--text-main)] placeholder-[var(--text-muted)]" oninput="saveQuickNote()" style="min-height:60px;"></textarea>
             </div>
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-exams" draggable="true">
+    <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+            <i class="fa-solid fa-graduation-cap text-[var(--accent)] mr-1"></i> Exams
+        </h3>
+        <button onclick="examOpenModal(null)" title="Add exam"
+                class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition">
+            <i class="ph ph-plus text-lg"></i>
+        </button>
+    </div>
+    <div class="flex-1 overflow-y-auto" id="widget-exams-list">
+        <div class="text-xs text-[var(--text-muted)]">Loading…</div>
+    </div>
+    <button class="exam-manage-btn" onclick="openModal('modal-exam-manage')">
+        <i class="fa-solid fa-list-ul"></i> Manage all exams
+    </button>
+</div>
+
+            <!-- Music Widget -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-music" draggable="true">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                        <i class="ph ph-music-note text-[var(--accent)] mr-1"></i> Music
+                    </h3>
+                    <button onclick="switchTab('music')" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-xs">Open →</button>
+                </div>
+                <div id="widget-music-inner"></div>
+            </div>
+
+            <!-- Forum Quick-Ask Widget -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-forum" draggable="true">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                        <i class="ph ph-chats-teardrop text-[var(--accent)] mr-1"></i> Forum
+                    </h3>
+                    <button onclick="switchTab('forum')" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-xs">Browse →</button>
+                </div>
+                <textarea id="widget-forum-q" placeholder="Ask a quick question…" class="bg-[rgba(255,255,255,.04)] border border-[rgba(255,255,255,.08)] rounded-xl p-3 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none resize-none w-full" style="min-height:64px;font-family:inherit;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                <div class="flex gap-2 items-center mt-2 flex-wrap">
+                    <input type="text" id="widget-forum-subject" placeholder="Subject (optional)" class="bg-[rgba(255,255,255,.04)] border border-[rgba(255,255,255,.08)] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none flex-1 min-w-0">
+                    <button onclick="widgetForumPost()" class="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] text-white rounded-xl text-xs font-bold shrink-0">
+                        <i class="ph ph-paper-plane-tilt"></i> Post
+                    </button>
+                </div>
+                <div id="widget-forum-status" class="text-xs text-[var(--text-muted)] mt-2 min-h-[16px]"></div>
+            </div>
+
         </div>
     </div>
 
@@ -882,6 +934,162 @@
                         </div>
                     </button>
                 </div>
+            </div><!-- end pomo-settings-panel -->
+        </div><!-- end min-card -->
+    </div><!-- end view-focus -->
+    <div id="view-music" class="hidden fade-in">
+
+    <!-- Hidden audio iframe -->
+    <iframe id="music-player-frame" src="" allow="autoplay" allowfullscreen></iframe>
+
+    <div class="music-page-header">
+        <h1>Study <span>Music</span></h1>
+        <button class="music-custom-btn" onclick="musicOpenCustomModal()">
+            <i class="fa-solid fa-plus"></i> Add Custom URL
+        </button>
+    </div>
+
+    <!-- Now-playing bar -->
+    <div id="music-now-bar" class="hidden music-now-bar">
+        <div class="mnb-left">
+            <div class="mnb-icon-wrap" id="mnb-icon"><i class="fa-solid fa-music"></i></div>
+            <div>
+                <div class="mnb-title" id="mnb-title">Nothing playing</div>
+                <div class="mnb-sub" id="mnb-sub">Pick a playlist below</div>
+            </div>
+        </div>
+        <div class="mnb-controls">
+            <button class="mnb-btn mnb-play" id="mnb-play-btn" onclick="musicToggle()" title="Play / Pause">
+                <i class="fa-solid fa-pause" id="mnb-play-icon"></i>
+            </button>
+            <button class="mnb-btn mnb-stop" onclick="musicClose()" title="Stop">
+                <i class="fa-solid fa-stop"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="music-section-label">Presets</div>
+    <div id="music-grid"></div>
+
+    <div class="music-section-label" id="music-custom-label" style="display:none">My Stations</div>
+    <div id="music-custom-grid"></div>
+
+</div>
+ 
+ 
+<!-- ============================================================
+     ② FORMULA SHEETS VIEW
+     Add inside <main>, before </main>
+     ============================================================ -->
+<div id="view-formulas" class="hidden fade-in">
+ 
+    <div class="formula-topbar">
+        <h1>Formula <span>Sheets</span></h1>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="formula-search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search formulas…"
+                       oninput="formulaSearch(this.value)">
+            </div>
+            <button onclick="formulaOpenModal(null)"
+                    style="display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:12px;background:var(--accent);color:#fff;font-size:.82rem;font-weight:700;border:none;cursor:pointer;">
+                <i class="fa-solid fa-plus"></i> Add Formula
+            </button>
+        </div>
+    </div>
+ 
+    <div id="formula-subject-bar"></div>
+ 
+    <div id="formula-list">
+        <div class="formula-empty">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Loading…</p>
+        </div>
+    </div>
+
+</div><!-- end view-formulas -->
+
+<div id="view-forum" class="hidden fade-in h-full">
+
+    <!-- ── List view ── -->
+    <div id="forum-list-view">
+
+        <div class="forum-topbar">
+            <h1>Study <span>Forum</span></h1>
+            <div class="forum-sort-row">
+                <button class="forum-sort-btn active" data-sort="new"
+                        onclick="forumSetSort('new')">New</button>
+                <button class="forum-sort-btn" data-sort="top"
+                        onclick="forumSetSort('top')">Top</button>
+                <button class="forum-sort-btn" data-sort="unsolved"
+                        onclick="forumSetSort('unsolved')">Unsolved</button>
+            </div>
+        </div>
+
+        <!-- Subject filter -->
+        <div id="forum-subject-bar"></div>
+
+        <!-- New post panel (hidden until FAB clicked) -->
+        <div id="forum-new-panel" class="hidden">
+            <h3><i class="fa-solid fa-pen-to-square"></i> Ask a Question</h3>
+            <div id="forum-new-error"></div>
+            <input id="forum-new-title" type="text"
+                   placeholder="What's your question? (be specific)"
+                   onkeydown="if(event.key==='Enter')document.getElementById('forum-new-body').focus()">
+            <select id="forum-new-subject">
+                <option value="math">Maths</option>
+                <option value="science">Science</option>
+                <option value="english">English</option>
+                <option value="history">History</option>
+                <option value="it">IT &amp; CS</option>
+                <option value="other" selected>Other</option>
+            </select>
+            <textarea id="forum-new-body"
+                      placeholder="Describe your question in detail…"
+                      onkeydown="if(event.ctrlKey&&event.key==='Enter')forumSubmitPost()"></textarea>
+            <div class="forum-new-actions">
+                <p style="font-size:.7rem;color:var(--text-muted);margin-right:auto">
+                    Ctrl+Enter to post
+                </p>
+                <button class="forum-new-cancel" onclick="forumCancelNew()">Cancel</button>
+                <button id="forum-submit-btn" onclick="forumSubmitPost()">
+                    <i class="fa-solid fa-paper-plane"></i> Post Question
+                </button>
+            </div>
+        </div>
+
+        <!-- Posts -->
+        <div id="forum-post-list">
+            <div class="forum-empty">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Loading posts…</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Thread view (hidden by default) ── -->
+    <div id="forum-thread-view" class="hidden">
+        <div id="forum-thread-content"></div>
+
+        <!-- Reply box -->
+        <div class="ft-reply-box">
+            <div id="forum-reply-error"></div>
+            <textarea id="forum-reply-input"
+                      placeholder="Write a reply… (Ctrl+Enter to submit)"
+                      onkeydown="if(event.ctrlKey&&event.key==='Enter')forumSubmitReply()"></textarea>
+            <button id="forum-reply-btn" onclick="forumSubmitReply()">
+                <i class="fa-solid fa-reply"></i> Reply
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Floating "Ask" button (only shown on forum tab) -->
+<button id="forum-fab" class="hidden" onclick="forumOpenNew()">
+    <i class="fa-solid fa-plus"></i> Ask a Question
+</button>
+ 
 
 </main>
 
@@ -1030,6 +1238,9 @@
             <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-grades" checked onchange="setWidgetVisible('grades',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-grades">Grades Overview</label></div></div>
             <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-minicalendar" checked onchange="setWidgetVisible('minicalendar',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-minicalendar">Upcoming Events</label></div></div>
             <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-quicknote" checked onchange="setWidgetVisible('quicknote',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-quicknote">Quick Note</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-exams" checked onchange="setWidgetVisible('exams',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-exams">Exam Countdown</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-music" checked onchange="setWidgetVisible('music',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-music">Music Player</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-forum" checked onchange="setWidgetVisible('forum',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-forum">Forum Quick Ask</label></div></div>
         </div>
         <div class="flex justify-end mt-5"><button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">Done</button></div>
     </div>
@@ -1140,8 +1351,135 @@
         </div>
         <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveNoteGroup()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button></div>
     </div>
+    <!-- Formula modal -->
+<div id="modal-formula" class="hidden modal-panel min-card p-7 w-[440px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[90vh] overflow-y-auto">
+    <h3 class="text-lg font-light mb-5" id="formula-modal-heading">Add Formula</h3>
+    <input type="hidden" id="formula-modal-id">
+    <div id="formula-modal-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+    <label>Title</label>
+    <input type="text" id="formula-modal-title" placeholder="e.g. Quadratic Formula"
+           class="bare-input w-full mb-4">
+    <label>Subject <span style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <input type="text" id="formula-modal-subject" placeholder="e.g. Mathematics" class="bare-input w-full mb-4">
+    <label>Formula</label>
+    <textarea id="formula-modal-formula" placeholder="e.g. x = (-b ± √(b²-4ac)) / 2a"
+              style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px 14px;font-family:'Courier New',monospace;font-size:.9rem;color:var(--text-main);outline:none;resize:none;min-height:80px;box-sizing:border-box;margin-bottom:12px;"
+              onkeydown="if(event.ctrlKey&&event.key==='Enter')formulaSave()"></textarea>
+    <label>Notes <span style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <textarea id="formula-modal-note" placeholder="When to use this, examples, tips…"
+              style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px 14px;font-size:.85rem;color:var(--text-main);outline:none;resize:none;min-height:60px;box-sizing:border-box;margin-bottom:16px;"></textarea>
+    <div class="flex justify-end gap-3">
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="formulaSave()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">
+            Save
+        </button>
+    </div>
+</div>
+ 
+<!-- Exam add/edit modal -->
+<div id="modal-exam" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+    <h3 class="text-lg font-light mb-5" id="exam-modal-heading">Add Exam</h3>
+    <input type="hidden" id="exam-modal-id">
+    <div id="exam-modal-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Exam Name</label>
+    <input type="text" id="exam-modal-title" placeholder="e.g. Mathematics — Chapter 4"
+           class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')examSave()">
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Subject <span style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <input type="text" id="exam-modal-subject" placeholder="e.g. Mathematics" class="bare-input w-full mb-4">
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Date</label>
+    <input type="date" id="exam-modal-date" class="bare-input w-full mb-6">
+    <div class="flex justify-end gap-3">
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="examSave()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">
+            Save
+        </button>
+    </div>
+</div>
+
+<!-- Exam manage list modal -->
+<div id="modal-exam-manage" class="hidden modal-panel min-card p-7 w-[440px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[80vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-light">All Exams</h3>
+        <button onclick="examOpenModal(null)"
+                class="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-white rounded-xl text-xs font-bold">
+            <i class="fa-solid fa-plus"></i> Add
+        </button>
+    </div>
+    <div id="exam-manage-list"></div>
+</div>
+ 
+<!-- Timetable slot modal -->
+<div id="modal-timetable" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+    <h3 class="text-lg font-light mb-5">Class Slot</h3>
+    <input type="hidden" id="tt-modal-id">
+    <div id="tt-modal-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+ 
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Class Name</label>
+    <input type="text" id="tt-modal-name" placeholder="e.g. Mathematics" class="bare-input w-full mb-4">
+ 
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Room (optional)</label>
+    <input type="text" id="tt-modal-room" placeholder="e.g. Room 12A" class="bare-input w-full mb-4">
+ 
+    <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Day</label>
+            <select id="tt-modal-day" class="bare-input w-full bg-transparent">
+                <option value="0">Monday</option>
+                <option value="1">Tuesday</option>
+                <option value="2">Wednesday</option>
+                <option value="3">Thursday</option>
+                <option value="4">Friday</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Colour</label>
+            <input type="color" id="tt-modal-color" value="#3b82f6"
+                   style="width:100%;height:38px;border-radius:8px;padding:2px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:transparent;">
+        </div>
+    </div>
+ 
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Start (hour)</label>
+            <input type="number" id="tt-modal-start" min="7" max="21" value="8" class="bare-input w-full">
+        </div>
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">End (hour)</label>
+            <input type="number" id="tt-modal-end" min="8" max="22" value="9" class="bare-input w-full">
+        </div>
+    </div>
+ 
+    <div class="flex gap-3">
+        <button id="tt-delete-btn" onclick="ttDeleteSlot()"
+                class="px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition">
+            <i class="fa-solid fa-trash"></i> Delete
+        </button>
+        <div class="flex-1"></div>
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="ttSave()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">Save</button>
+    </div>
+</div>
+
+<!-- Custom Music URL Modal -->
+<div id="modal-music-custom" class="hidden modal-panel min-card p-7 w-[440px] bg-[var(--bg-color)] border border-[var(--glass-border)]">
+    <h3 class="text-lg font-light mb-2">Add Custom Station</h3>
+    <p class="text-xs text-[var(--text-muted)] mb-5 leading-relaxed">Paste a YouTube or SoundCloud URL. It will be embedded as a live station.</p>
+    <input type="hidden" id="music-custom-edit-id">
+    <div id="music-custom-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Station Name</label>
+    <input type="text" id="music-custom-name" placeholder="e.g. My Chill Mix" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')musicSaveCustom()">
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">YouTube or SoundCloud URL</label>
+    <input type="url" id="music-custom-url" placeholder="https://youtube.com/watch?v=..." class="bare-input w-full mb-6" onkeypress="if(event.key==='Enter')musicSaveCustom()">
+    <div class="flex justify-end gap-3">
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="musicSaveCustom()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">Save</button>
+    </div>
+</div>
 
 </div><!-- end modal-overlay -->
+
+<!-- Mini music bar — lives OUTSIDE modal-overlay so modals don't reveal it -->
+<div id="music-minibar" class="hidden">
 
 <!-- Iframe browser -->
 <div id="modal-browser" class="hidden fixed inset-0 z-[150] bg-black flex flex-col fade-in" style="position:fixed;">
@@ -1246,7 +1584,12 @@
             </div>
             <span>Log Out</span>
         </button>
+        <button class="mbd-tool" id="mob-btn-forum" style="--c:#3b82f6" onclick="switchTab('forum');closeMobMenu()">
+    <i class="fa-solid fa-comments mbd-tool-icon"></i>
+    <span class="mbd-tool-name">Forum</span>
+</button>
     </div>
+
 
 </div>
 
@@ -1254,6 +1597,8 @@
 <div id="sos-toast"></div>
 
 <script type="module" src="script.js"></script>
+<script type="module" src="features.js"></script>
+<script type="module" src="forum.js"></script>
 <script> (function() {
 
     /* ── "More" button rotates when drawer is open ── */
