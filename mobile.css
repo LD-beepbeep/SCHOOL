@@ -1,0 +1,667 @@
+/* ============================================================
+   StudentOS — Mobile UI Overhaul
+   Add this file as: <link rel="stylesheet" href="mobile.css">
+   (after styles.css)
+   ============================================================ */
+
+/* ===== GLOBAL MOBILE TOKENS ===== */
+@media (max-width: 768px) {
+
+/* --- Reset desktop layout --- */
+body { overflow: hidden; }
+nav.w-20 { display: none !important; }
+main#main-scroll {
+    padding: 16px 14px calc(var(--nav-h) + 16px);
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* All views full width */
+.max-w-6xl, .max-w-5xl, .max-w-4xl,
+.max-w-xl, .max-w-sm, .max-w-2xl {
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* ============================================================
+   BOTTOM NAV — pill active indicator, feels native
+   ============================================================ */
+:root { --nav-h: 68px; }
+
+#mobile-nav {
+    display: block !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 200;
+    height: var(--nav-h);
+    padding: 0 4px env(safe-area-inset-bottom, 8px);
+    background: color-mix(in srgb, var(--bg-color) 85%, transparent);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border-top: 1px solid rgba(255,255,255,.07);
+    box-shadow: 0 -8px 32px rgba(0,0,0,.25);
+}
+#mobile-nav .mob-nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 100%;
+}
+.mob-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    min-width: 56px;
+    min-height: 50px;
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: var(--text-muted);
+    border: none;
+    background: none;
+    transition: color .2s, transform .15s;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    position: relative;
+}
+.mob-nav-btn i { font-size: 1.25rem; line-height: 1; }
+.mob-nav-btn span { font-size: .58rem; margin-top: 1px; }
+
+/* Active pill */
+.mob-nav-btn.active { color: var(--accent); }
+.mob-nav-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%; transform: translateX(-50%);
+    width: 36px; height: 3px;
+    border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+}
+.mob-nav-btn:active { transform: scale(.92); }
+
+/* ============================================================
+   MORE DRAWER — native sheet feel
+   ============================================================ */
+#mob-more-drawer {
+    position: fixed;
+    bottom: var(--nav-h);
+    left: 0; right: 0;
+    z-index: 199;
+    background: var(--bg-color);
+    border-radius: 24px 24px 0 0;
+    border: 1px solid rgba(255,255,255,.08);
+    border-bottom: none;
+    padding: 8px 16px 24px;
+    box-shadow: 0 -12px 48px rgba(0,0,0,.5);
+    display: none;
+}
+#mob-more-drawer::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,.15);
+    margin: 8px auto 16px;
+}
+#mob-more-drawer.open {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    animation: sheetUp .25s cubic-bezier(.32,.72,0,1);
+}
+@keyframes sheetUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+.mob-drawer-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border-radius: 16px;
+    font-size: .65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.06);
+    transition: all .15s;
+    -webkit-tap-highlight-color: transparent;
+}
+.mob-drawer-btn i { font-size: 1.4rem; }
+.mob-drawer-btn:active { transform: scale(.93); }
+
+#mob-drawer-backdrop {
+    position: fixed; inset: 0;
+    z-index: 198;
+    background: rgba(0,0,0,.4);
+    backdrop-filter: blur(4px);
+    display: none;
+    animation: fadeIn .2s;
+}
+
+/* ============================================================
+   MODALS — bottom sheet style
+   ============================================================ */
+#modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+}
+.modal-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 16px) !important;
+    max-height: 92dvh;
+    overflow-y: auto;
+    animation: sheetUp .28s cubic-bezier(.32,.72,0,1);
+}
+.modal-panel::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,.15);
+    margin: 0 auto 20px;
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+#view-dashboard header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 4px;
+}
+#view-dashboard header .text-right {
+    text-align: left;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+#view-dashboard header .text-right > div:first-child { display: none; } /* hide "Current Status" label */
+#view-dashboard header .text-right > div:nth-child(2) { display: none; } /* hide "Ready to learn" */
+#view-dashboard header .text-right .flex.gap-2 {
+    margin-top: 0;
+    justify-content: flex-start;
+}
+#clock-time { font-size: 3.5rem !important; letter-spacing: -.04em; }
+#date-display { font-size: .9rem; }
+
+/* Dashboard widgets — horizontal scroll rows */
+#widgets-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: auto !important;
+}
+#widgets-grid .widget-item {
+    width: 100%;
+    border-radius: 18px;
+    min-height: 0;
+}
+/* Quick links — compact */
+#widget-links { min-height: 90px; }
+#widget-links #quick-links-container {
+    padding-bottom: 0;
+    gap: 10px;
+}
+/* Up next + Quick note side by side */
+#widget-upnext, #widget-quicknote {
+    flex: 1;
+}
+/* Put Up Next and Quick Note in a row */
+#widget-upnext + #widget-goals,
+#widget-goals { order: 3; }
+/* Study stats + Grades row */
+#widget-studystats, #widget-grades {
+    flex: 1;
+}
+/* Compact widget padding */
+#widgets-grid .widget-item { padding: 14px 16px !important; }
+#widgets-grid h3 { margin-bottom: 8px; }
+
+/* ============================================================
+   TASKS
+   ============================================================ */
+#view-tasks { height: auto !important; }
+#view-tasks > .flex.justify-between {
+    margin-bottom: 14px !important;
+    align-items: center;
+}
+#view-tasks h1 { font-size: 1.5rem !important; }
+#view-tasks .min-card { padding: 14px !important; border-radius: 20px !important; }
+
+/* Task input row — stack vertically */
+#view-tasks .flex.gap-3.mb-5 {
+    flex-direction: column;
+    gap: 10px;
+}
+#task-input {
+    font-size: 1rem !important;
+    padding: 12px 0 !important;
+    min-width: 0 !important;
+}
+/* Priority + date in a row */
+#view-tasks .flex.gap-3.mb-5 select,
+#view-tasks .flex.gap-3.mb-5 input[type="date"] {
+    width: auto;
+    flex: 1;
+}
+#view-tasks .flex.gap-3.mb-5 > div.flex { flex-wrap: nowrap; }
+/* Pack prio+date+color+btn in one row */
+#view-tasks .flex.gap-3.mb-5::after { display: none; }
+#view-tasks .flex.gap-3.mb-5 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+#view-tasks .flex.gap-3.mb-5 > .flex.items-center.gap-1\.5,
+#view-tasks .flex.gap-3.mb-5 > select,
+#view-tasks .flex.gap-3.mb-5 > input[type="date"],
+#view-tasks .flex.gap-3.mb-5 > button {
+    grid-row: 2;
+}
+/* Bottom row of task inputs in one flex line */
+#view-tasks .flex.gap-3.mb-5 > :not(#task-input) {
+    display: inline-flex;
+}
+/* Task rows — bigger touch targets */
+.task-row { padding: 10px 0 !important; }
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+#view-calendar h1 { font-size: 1.4rem !important; }
+#view-calendar > .flex.justify-between {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px !important;
+}
+#view-calendar > .flex > .flex.gap-1 { flex-wrap: wrap; }
+#view-calendar .min-card { padding: 12px !important; border-radius: 20px !important; }
+
+/* Calendar grid — tighter cells */
+.cal-day {
+    min-height: 48px !important;
+    padding: 4px !important;
+    border-radius: 10px !important;
+}
+.cal-day-num { font-size: .75rem !important; }
+.cal-event-tag { font-size: .52rem !important; padding: 1px 3px !important; }
+
+/* Hide week view overflow on mobile */
+.cal-week-grid { overflow-x: auto; }
+
+/* ============================================================
+   NOTES
+   ============================================================ */
+.notes-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100dvh - var(--nav-h) - 32px);
+}
+#notes-left-panel {
+    max-height: 200px;
+    flex-shrink: 0;
+    border-bottom: var(--glass-border);
+    overflow-y: auto;
+}
+/* Sidebar controls */
+#notes-left-panel > .flex.gap-1\.5 {
+    gap: 8px;
+    padding-bottom: 8px;
+}
+/* Editor fills remaining height */
+.notes-layout > .min-card:last-child {
+    flex: 1;
+    min-height: 0;
+    border-radius: 20px !important;
+    display: flex;
+    flex-direction: column;
+}
+/* Compact note toolbar on mobile */
+.note-toolbar-compact {
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    padding: 8px 12px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.note-toolbar-compact::-webkit-scrollbar { display: none; }
+.tbar-dropdown-btn { padding: 6px 10px !important; font-size: .75rem !important; }
+#note-title { max-width: 120px !important; font-size: .9rem !important; }
+/* Bigger note editor touch zone */
+#note-editor {
+    padding: 16px !important;
+    font-size: .95rem !important;
+    line-height: 1.75 !important;
+    flex: 1;
+}
+/* Dropdown menus from bottom on mobile */
+.tbar-dropdown-menu {
+    position: fixed !important;
+    bottom: var(--nav-h) !important;
+    top: auto !important;
+    left: 8px !important;
+    right: 8px !important;
+    border-radius: 20px 20px 0 0 !important;
+    min-width: auto !important;
+    max-height: 60dvh;
+    overflow-y: auto;
+    box-shadow: 0 -8px 40px rgba(0,0,0,.5) !important;
+    padding: 16px !important;
+    animation: sheetUp .22s cubic-bezier(.32,.72,0,1) !important;
+}
+
+/* ============================================================
+   WHITEBOARD
+   ============================================================ */
+#view-whiteboard {
+    display: flex !important;
+    flex-direction: column;
+    height: calc(100dvh - var(--nav-h) - 32px);
+}
+#view-whiteboard > .flex.justify-between:first-child {
+    margin-bottom: 8px !important;
+}
+#view-whiteboard h1 { font-size: 1.2rem !important; }
+
+/* Toolbar — horizontal scroll */
+.wb-toolbar-row {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding: 8px 10px !important;
+    border-radius: 16px !important;
+    gap: 6px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: 8px !important;
+}
+.wb-toolbar-row::-webkit-scrollbar { display: none; }
+.wb-tool {
+    padding: 8px 10px !important;
+    min-width: 38px;
+    min-height: 38px;
+    font-size: .95rem !important;
+}
+.wb-tool-group { gap: 2px !important; }
+.wb-divider { flex-shrink: 0; }
+/* Bigger canvas */
+#wb-container { flex: 1; border-radius: 18px !important; }
+/* Section labels hidden — toolbar too wide */
+.wb-section-label { display: none !important; }
+/* Mind-map status bar */
+#mm-status { font-size: .65rem !important; }
+
+/* ============================================================
+   FLASHCARDS
+   ============================================================ */
+#view-cards { height: auto !important; }
+
+/* Deck list header */
+#cards-deck-view > .flex.justify-between {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px !important;
+}
+#cards-deck-view h1 { font-size: 1.5rem !important; }
+#cards-deck-view > .flex.justify-between > .flex.gap-2 {
+    flex-wrap: wrap;
+    gap: 6px;
+}
+#cards-deck-view button { font-size: .78rem !important; }
+
+/* Edit view — collapse sidebar */
+#cards-edit-view .grid.grid-cols-1 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+#cards-edit-view .md\:col-span-3 { order: 2; }
+#cards-edit-view .md\:col-span-1 { order: 1; }
+/* Study modes — horizontal scroll pill row */
+#cards-edit-view .min-card:first-child .space-y-3 > .min-card:first-child {
+    padding: 12px !important;
+}
+#cards-edit-view .w-full.py-2.mb-1\.5,
+#cards-edit-view .w-full.py-2 {
+    padding: 10px !important;
+    border-radius: 14px !important;
+    font-size: .82rem !important;
+}
+
+/* Flashcard — proper aspect ratio on mobile */
+#study-flip-mode .aspect-\[3\/2\] {
+    aspect-ratio: auto !important;
+    height: 52dvh !important;
+    max-width: 100%;
+}
+#study-flip-mode .min-card.p-10 {
+    padding: 24px 20px !important;
+}
+#card-front, #card-back { font-size: 1.5rem !important; line-height: 1.3 !important; }
+/* Rate buttons — bigger */
+.absolute.bottom-5.flex.gap-6 {
+    bottom: 16px !important;
+    gap: 12px !important;
+}
+.absolute.bottom-5.flex.gap-6 button {
+    padding: 10px 20px !important;
+    font-size: .85rem !important;
+    border-radius: 14px !important;
+    min-height: 44px;
+}
+/* "Tap to flip" hint */
+.absolute.bottom-5.text-\[var\(--text-muted\)\] { display: none; }
+/* Keyboard hint */
+#study-flip-mode + .mt-4.text-xs { display: none; }
+
+/* Write mode */
+#study-write-mode .min-card.p-10 { padding: 20px 16px !important; }
+#write-question { font-size: 1.4rem !important; }
+.write-answer-input { font-size: 1rem !important; padding: 12px 14px !important; }
+
+/* Match game — vertical on mobile */
+#cards-match-view .grid.grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+.match-card { padding: 10px 12px !important; font-size: .8rem !important; }
+
+/* ============================================================
+   GRADES
+   ============================================================ */
+#view-grades h1 { font-size: 1.5rem !important; }
+#view-grades > .flex { flex-wrap: wrap; gap: 8px; margin-bottom: 12px !important; }
+/* Summary card — 2-col on mobile */
+#view-grades .min-card.p-5.mb-5.grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    padding: 14px !important;
+}
+#view-grades .col-span-2 { grid-column: span 2 !important; }
+#view-grades #global-average { font-size: 2.5rem !important; }
+/* Subjects — single column */
+#subjects-container {
+    grid-template-columns: 1fr !important;
+    padding-bottom: 24px;
+}
+
+/* ============================================================
+   CALCULATOR
+   ============================================================ */
+#view-calc { justify-content: flex-start !important; padding-top: 12px; }
+#view-calc .min-card {
+    border-radius: 24px !important;
+    padding: 16px !important;
+}
+.calc-key {
+    border-radius: 14px !important;
+    font-size: 1.1rem !important;
+    min-height: 58px !important;
+}
+.calc-key.h-12 { height: auto !important; min-height: 58px !important; }
+.calc-key.h-10 { min-height: 46px !important; }
+#calc-grid { gap: 8px !important; }
+#calc-result { font-size: 2.8rem !important; }
+
+/* ============================================================
+   FOCUS / POMODORO
+   ============================================================ */
+#view-focus {
+    justify-content: flex-start !important;
+    padding-top: 8px;
+}
+#view-focus .min-card {
+    border-radius: 24px !important;
+    padding: 20px 18px !important;
+}
+#timer-display { font-size: 5.5rem !important; }
+#view-focus .w-20.h-20 {
+    width: 76px !important; height: 76px !important;
+}
+#view-focus .w-12.h-12 {
+    width: 52px !important; height: 52px !important;
+}
+#view-focus .flex.gap-4.mb-5 { gap: 16px !important; }
+.pomo-mode-btn {
+    padding: 8px 14px !important;
+    font-size: .78rem !important;
+    border-radius: 99px !important;
+}
+.pomo-autobreak-toggle,
+.pomo-focus-mode-btn {
+    padding: 7px 14px !important;
+    font-size: .72rem !important;
+}
+#focus-task-select {
+    font-size: .85rem !important;
+    padding: 10px 14px !important;
+}
+
+/* ============================================================
+   WIDGET CARDS — shared mobile padding
+   ============================================================ */
+.min-card { border-radius: 18px !important; }
+
+/* ============================================================
+   COMMON — bigger tap targets
+   ============================================================ */
+button, select, input[type="text"],
+input[type="email"], input[type="password"],
+input[type="number"], input[type="date"] {
+    min-height: 36px;
+}
+/* Remove tap flash */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Scrollbar hidden globally on mobile */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
+
+/* Bare inputs */
+.bare-input { padding: 10px 0 !important; font-size: .95rem !important; }
+
+/* ============================================================
+   PAGE TRANSITIONS
+   ============================================================ */
+.fade-in {
+    animation: mobileFadeSlide .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes mobileFadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   FLASH CARD STUDY — swipe-friendly layout
+   ============================================================ */
+#cards-study-view > .flex.items-center.justify-between.mb-4 {
+    margin-bottom: 10px !important;
+}
+#cards-study-view h1 { font-size: 1.15rem !important; }
+#study-correct, #study-wrong { font-size: .8rem !important; }
+#study-counter { font-size: .75rem !important; padding: 4px 10px !important; }
+
+/* ============================================================
+   LOGIN CARD
+   ============================================================ */
+#login-overlay > div:last-child {
+    width: 92vw !important;
+    padding: 28px 24px !important;
+}
+
+/* ============================================================
+   PDF ANNOTATOR
+   ============================================================ */
+.pdf-toolbar {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none;
+}
+.pdf-toolbar::-webkit-scrollbar { display: none; }
+.pdf-tool-btn { padding: 6px 8px !important; white-space: nowrap; }
+
+/* ============================================================
+   NOTIF BUTTONS — icon only on mobile
+   ============================================================ */
+.notif-btn span { display: none; }
+.notif-btn { padding: 6px 10px !important; }
+
+/* ============================================================
+   TOAST — account for nav height
+   ============================================================ */
+#sos-toast {
+    bottom: calc(var(--nav-h) + 12px) !important;
+    font-size: .8rem !important;
+}
+
+} /* end @media (max-width: 768px) */
+
+
+/* ============================================================
+   EXTRA SMALL — 390px and below (iPhone SE, older phones)
+   ============================================================ */
+@media (max-width: 390px) {
+    #clock-time { font-size: 2.8rem !important; }
+    #timer-display { font-size: 4.5rem !important; }
+    .calc-key { min-height: 52px !important; font-size: 1rem !important; }
+    .mob-nav-btn { min-width: 46px !important; padding: 6px 8px !important; }
+    .mob-nav-btn span { display: none; } /* icon-only nav on very small */
+    #card-front, #card-back { font-size: 1.2rem !important; }
+}
+
+
+/* ============================================================
+   LANDSCAPE PHONE — side-by-side focus layout
+   ============================================================ */
+@media (max-height: 500px) and (max-width: 900px) {
+    main#main-scroll { padding-top: 8px; }
+    #view-focus {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 16px;
+        padding-top: 8px;
+    }
+    #view-focus .min-card { flex: 1; }
+    #timer-display { font-size: 3.5rem !important; }
+    #view-focus .flex.gap-4.mb-5 { margin-bottom: 10px !important; }
+}
