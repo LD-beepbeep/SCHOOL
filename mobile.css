@@ -550,3 +550,469 @@ button:active { transform: scale(.96); transition: transform .1s; }
     #timer-display { font-size: 3.2rem !important; }
     .wb-tool { width: 32px !important; min-width: 32px !important; height: 32px !important; }
 }
+
+/* ================================================================
+   StudentOS — More Drawer + Modal Redesign
+   Add as:  <link rel="stylesheet" href="mob-extras.css">
+   (after mobile.css)
+   ================================================================ */
+
+/* ================================================================
+   MORE DRAWER
+   ================================================================ */
+@media (max-width: 768px) {
+
+#mob-more-drawer {
+    /* Reset old grid rule from mobile.css */
+    display: none;
+    flex-direction: column;
+    gap: 0;
+
+    position: fixed;
+    left: 0; right: 0;
+    bottom: calc(var(--nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+    z-index: 199;
+
+    padding: 0 14px calc(env(safe-area-inset-bottom, 0px) + 22px);
+    background: color-mix(in srgb, var(--bg-color) 97%, white 3%);
+    backdrop-filter: blur(48px) saturate(180%);
+    -webkit-backdrop-filter: blur(48px) saturate(180%);
+    border: 1px solid rgba(255,255,255,.09);
+    border-bottom: none;
+    border-radius: 28px 28px 0 0;
+    box-shadow:
+        0 -24px 80px rgba(0,0,0,.6),
+        inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+#mob-more-drawer.open {
+    display: flex;
+    animation: drawerUp .3s cubic-bezier(.25,.8,.25,1);
+}
+
+@keyframes drawerUp {
+    from { transform: translateY(100%); opacity: .6; }
+    to   { transform: translateY(0);    opacity: 1;  }
+}
+
+/* Drag pill */
+#mob-more-drawer::before {
+    content: '';
+    display: block;
+    width: 44px; height: 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,.13);
+    margin: 13px auto 22px;
+    flex-shrink: 0;
+}
+
+/* ── Section label ── */
+.mbd-label {
+    font-size: .58rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: .5;
+    padding: 0 2px 9px;
+}
+
+/* ── Featured 2-col cards (Calendar + Whiteboard) ── */
+.mbd-featured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-bottom: 9px;
+}
+.mbd-feat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 15px 13px;
+    border-radius: 20px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.07);
+    cursor: pointer;
+    transition: transform .12s, background .15s;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+    position: relative;
+    min-height: 90px;
+}
+/* colour bloom */
+.mbd-feat::after {
+    content: '';
+    position: absolute;
+    top: -16px; right: -16px;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--c);
+    opacity: .11;
+    filter: blur(18px);
+    pointer-events: none;
+}
+.mbd-feat:active { transform: scale(.95); }
+.mbd-feat:active::after { opacity: .22; }
+.mbd-feat.active {
+    background: color-mix(in srgb, var(--c) 12%, transparent);
+    border-color: color-mix(in srgb, var(--c) 28%, transparent);
+}
+
+.mbd-feat-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--c) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
+    color: var(--c);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem;
+}
+.mbd-feat-name {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -.01em;
+}
+
+/* ── Tools 3-col grid (Grades · Calc · Focus) ── */
+.mbd-tools {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.mbd-tool {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 8px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+    cursor: pointer;
+    transition: transform .12s, background .15s;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 72px;
+    position: relative;
+    overflow: hidden;
+}
+.mbd-tool::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: color-mix(in srgb, var(--c) 12%, transparent);
+    opacity: 0;
+    transition: opacity .15s;
+}
+.mbd-tool:active::before { opacity: 1; }
+.mbd-tool:active { transform: scale(.94); }
+.mbd-tool.active .mbd-tool-icon {
+    filter: drop-shadow(0 0 6px var(--c));
+}
+.mbd-tool-icon {
+    font-size: 1.4rem;
+    color: var(--c);
+    line-height: 1;
+}
+.mbd-tool-name {
+    font-size: .6rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-align: center;
+    letter-spacing: .01em;
+}
+
+/* ── Divider ── */
+.mbd-divider {
+    height: 1px;
+    background: rgba(255,255,255,.07);
+    margin: 2px 0 14px;
+}
+
+/* ── Account row (Profile · Settings · Logout) ── */
+.mbd-account {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.mbd-account-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+    border-radius: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background .15s, transform .12s;
+    -webkit-tap-highlight-color: transparent;
+}
+.mbd-account-btn:active {
+    background: var(--glass-hover);
+    transform: scale(.93);
+}
+.mbd-acct-icon {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c) 24%, transparent);
+    color: var(--c);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem;
+}
+.mbd-account-btn span {
+    font-size: .6rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.mbd-acct-logout span { color: rgba(239,68,68,.75); }
+
+/* More button chevron rotates open */
+#mob-btn-more i { transition: transform .3s cubic-bezier(.32,.72,0,1); }
+#mob-btn-more.open i { transform: rotate(90deg); }
+
+/* Backdrop */
+#mob-drawer-backdrop {
+    position: fixed; inset: 0;
+    z-index: 198;
+    background: rgba(0,0,0,.42);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+}
+#mob-drawer-backdrop.open { display: block; animation: bkFade .2s; }
+@keyframes bkFade { from { opacity:0; } to { opacity:1; } }
+
+
+/* ================================================================
+   MODALS — bottom-sheet redesign
+   ================================================================ */
+
+#modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+    background: rgba(0,0,0,.5) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.modal-panel {
+    /* geometry */
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    border-radius: 28px 28px 0 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-top: 1px solid rgba(255,255,255,.08) !important;
+    max-height: 90dvh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    /* visual */
+    background: color-mix(in srgb, var(--bg-color) 97%, white 3%) !important;
+    backdrop-filter: blur(40px) !important;
+    box-shadow: 0 -20px 80px rgba(0,0,0,.55) !important;
+    /* spacing */
+    padding: 0 24px calc(env(safe-area-inset-bottom,0px) + 32px) !important;
+    box-sizing: border-box;
+    animation: sheetUp .28s cubic-bezier(.25,.8,.25,1);
+}
+.modal-panel::before {
+    content: '';
+    display: block;
+    width: 44px; height: 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,.13);
+    margin: 14px auto 22px;
+}
+
+/* Small modals (alert, confirm, wb-text) — centred on mobile */
+#modal-alert,
+#modal-confirm,
+#modal-wb-text,
+#modal-mm-node {
+    margin: auto !important;
+    width: calc(100vw - 32px) !important;
+    border-radius: 22px !important;
+    max-height: 80dvh !important;
+    padding: 28px 22px !important;
+    animation: popIn .22s cubic-bezier(.34,1.4,.64,1) !important;
+}
+#modal-alert::before,
+#modal-confirm::before,
+#modal-wb-text::before,
+#modal-mm-node::before { display: none; }
+
+@keyframes sheetUp {
+    from { transform: translateY(110%); opacity: .7; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes popIn {
+    from { transform: scale(.88); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Shared modal heading ── */
+.modal-panel h3 {
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -.02em !important;
+    margin-bottom: 20px;
+}
+
+/* ── Inputs inside modals ── */
+.modal-panel input[type="text"],
+.modal-panel input[type="email"],
+.modal-panel input[type="password"],
+.modal-panel input[type="number"],
+.modal-panel input[type="date"],
+.modal-panel input[type="time"],
+.modal-panel select,
+.modal-panel textarea {
+    width: 100%;
+    background: rgba(255,255,255,.05) !important;
+    border: 1px solid rgba(255,255,255,.1) !important;
+    border-radius: 14px !important;
+    padding: 13px 16px !important;
+    font-size: .95rem !important;
+    color: var(--text-main) !important;
+    outline: none;
+    transition: border-color .15s, background .15s;
+    box-sizing: border-box;
+    margin-bottom: 12px !important;
+}
+.modal-panel input:focus,
+.modal-panel select:focus,
+.modal-panel textarea:focus {
+    border-color: var(--accent) !important;
+    background: rgba(59,130,246,.06) !important;
+}
+.modal-panel textarea { resize: none; min-height: 90px; }
+
+/* bare-input inside modals — also gets the card style */
+.modal-panel .bare-input {
+    background: rgba(255,255,255,.05) !important;
+    border: 1px solid rgba(255,255,255,.1) !important;
+    border-bottom: 1px solid rgba(255,255,255,.1) !important;
+    border-radius: 14px !important;
+    padding: 13px 16px !important;
+}
+.modal-panel .bare-input:focus {
+    border-color: var(--accent) !important;
+}
+
+/* ── Labels ── */
+.modal-panel label,
+.modal-panel .text-\[10px\] {
+    font-size: .62rem !important;
+    font-weight: 800 !important;
+    letter-spacing: .10em !important;
+    color: var(--text-muted) !important;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px !important;
+}
+
+/* ── Action buttons row ── */
+.modal-panel .flex.justify-end {
+    gap: 10px !important;
+    margin-top: 8px;
+}
+.modal-panel .flex.justify-end > button,
+.modal-panel button[onclick*="closeModals"],
+.modal-panel button[onclick*="Cancel"] {
+    border-radius: 14px !important;
+    padding: 13px 22px !important;
+    font-size: .88rem !important;
+    font-weight: 600 !important;
+    min-height: 48px;
+    flex: 1;
+}
+
+/* Primary (accent bg) button */
+.modal-panel .bg-\[var\(--accent\)\],
+.modal-panel button[class*="bg-[var(--accent)]"] {
+    border-radius: 14px !important;
+    padding: 13px 22px !important;
+    font-size: .88rem !important;
+    font-weight: 600 !important;
+}
+
+/* Cancel / ghost button */
+.modal-panel button.text-\[var\(--text-muted\)\] {
+    color: var(--text-muted) !important;
+    background: rgba(255,255,255,.05) !important;
+    border: 1px solid rgba(255,255,255,.09) !important;
+}
+
+/* ── Settings modal specifics ── */
+#modal-settings {
+    max-height: 94dvh !important;
+    padding-bottom: calc(env(safe-area-inset-bottom,0px) + 48px) !important;
+}
+#modal-settings .flex.border-b { overflow-x: auto; flex-wrap: nowrap; }
+#modal-settings .settings-tab-btn { white-space: nowrap; font-size: .78rem !important; padding: 10px 14px !important; }
+
+/* ── Profile modal ── */
+#modal-profile {
+    max-height: 94dvh !important;
+    padding-bottom: calc(env(safe-area-inset-bottom,0px) + 48px) !important;
+}
+
+/* ── Deck / card modals ── */
+#modal-add-deck,
+#modal-add-card {
+    max-height: 90dvh !important;
+}
+
+/* ── Colour picker rows ── */
+.modal-panel .flex.gap-2 > button[class*="rounded-full"],
+.modal-panel .flex.gap-2 > button[class*="w-8"] {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+}
+
+/* ── Radio/checkbox rows ── */
+.modal-panel .flex.gap-4.text-sm label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px;
+    font-size: .88rem !important;
+    font-weight: 500;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    color: var(--text-main) !important;
+    cursor: pointer;
+    flex: 1;
+}
+.modal-panel input[type="radio"],
+.modal-panel input[type="checkbox"] {
+    width: auto !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: none !important;
+    accent-color: var(--accent);
+}
+
+/* Alert/confirm CTA full-width */
+#modal-alert button,
+#modal-confirm .flex > button {
+    flex: 1;
+    border-radius: 14px !important;
+    padding: 13px !important;
+    min-height: 48px;
+}
+
+} /* end @media (max-width: 768px) */
