@@ -466,3 +466,5 @@ body.pomo-focus-mode #view-focus {
 }
 .pomo-focus-mode-btn:hover { background:var(--glass-hover); color:var(--text-main); }
 .pomo-focus-mode-btn.active { background:rgba(59,130,246,.2); color:var(--accent); border-color:rgba(59,130,246,.4); }
+
+.hidden { display: none !important; }
