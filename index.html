@@ -1171,17 +1171,81 @@
     </div>
 </nav>
 
-<!-- Mobile "More" drawer -->
-<div id="mob-drawer-backdrop" onclick="closeMobMenu()"></div>
+<!-- ================================================================
+     Replace your existing #mob-more-drawer block with this.
+     (The backdrop div above it stays the same.)
+     ================================================================ -->
+
 <div id="mob-more-drawer">
-    <button class="mob-drawer-btn" id="mob-btn-calendar" onclick="switchTab('calendar');closeMobMenu()"><i class="fa-solid fa-calendar"></i><span>Calendar</span></button>
-    <button class="mob-drawer-btn" id="mob-btn-whiteboard" onclick="switchTab('whiteboard');closeMobMenu()"><i class="fa-solid fa-pen-to-square"></i><span>Board</span></button>
-    <button class="mob-drawer-btn" id="mob-btn-grades" onclick="switchTab('grades');closeMobMenu()"><i class="fa-solid fa-chart-bar"></i><span>Grades</span></button>
-    <button class="mob-drawer-btn" id="mob-btn-calc" onclick="switchTab('calc');closeMobMenu()"><i class="fa-solid fa-calculator"></i><span>Calc</span></button>
-    <button class="mob-drawer-btn" id="mob-btn-focus" onclick="switchTab('focus');closeMobMenu()"><i class="fa-solid fa-brain"></i><span>Focus</span></button>
-    <button class="mob-drawer-btn" onclick="openModal('modal-settings');closeMobMenu()"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
-    <button class="mob-drawer-btn" onclick="openModal('modal-profile');closeMobMenu()"><i class="fa-solid fa-user"></i><span>Profile</span></button>
-    <button class="mob-drawer-btn" onclick="logOut()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+
+    <!-- ── Apps ── -->
+    <div class="mbd-label">Apps</div>
+
+    <div class="mbd-featured">
+        <button class="mbd-feat" id="mob-btn-calendar"
+                style="--c:#3b82f6"
+                onclick="switchTab('calendar');closeMobMenu()">
+            <div class="mbd-feat-icon"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="mbd-feat-name">Calendar</div>
+        </button>
+        <button class="mbd-feat" id="mob-btn-whiteboard"
+                style="--c:#8b5cf6"
+                onclick="switchTab('whiteboard');closeMobMenu()">
+            <div class="mbd-feat-icon"><i class="fa-solid fa-pen-nib"></i></div>
+            <div class="mbd-feat-name">Whiteboard</div>
+        </button>
+    </div>
+
+    <div class="mbd-tools">
+        <button class="mbd-tool" id="mob-btn-grades"
+                style="--c:#22c55e"
+                onclick="switchTab('grades');closeMobMenu()">
+            <i class="fa-solid fa-chart-bar mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Grades</span>
+        </button>
+        <button class="mbd-tool" id="mob-btn-calc"
+                style="--c:#f59e0b"
+                onclick="switchTab('calc');closeMobMenu()">
+            <i class="fa-solid fa-calculator mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Calculator</span>
+        </button>
+        <button class="mbd-tool" id="mob-btn-focus"
+                style="--c:#ef4444"
+                onclick="switchTab('focus');closeMobMenu()">
+            <i class="fa-solid fa-brain mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Focus</span>
+        </button>
+    </div>
+
+    <div class="mbd-divider"></div>
+
+    <!-- ── Account ── -->
+    <div class="mbd-label">Account</div>
+
+    <div class="mbd-account">
+        <button class="mbd-account-btn"
+                onclick="openModal('modal-profile');closeMobMenu()">
+            <div class="mbd-acct-icon" style="--c:#3b82f6">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <span>Profile</span>
+        </button>
+        <button class="mbd-account-btn"
+                onclick="openModal('modal-settings');closeMobMenu()">
+            <div class="mbd-acct-icon" style="--c:#6b7280">
+                <i class="fa-solid fa-gear"></i>
+            </div>
+            <span>Settings</span>
+        </button>
+        <button class="mbd-account-btn mbd-acct-logout"
+                onclick="logOut()">
+            <div class="mbd-acct-icon" style="--c:#ef4444">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <span>Log Out</span>
+        </button>
+    </div>
+
 </div>
 
 <!-- Toast notification -->
