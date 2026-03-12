@@ -1,6 +1,6 @@
 # 🎓 Student OS
 
-A minimalist, glassmorphism-inspired productivity dashboard for students! See screenshots [here](screenshots.md)!
+A minimalist, glassmorphism-inspired productivity dashboard for students! See screenshots [here](SCREENSHOTS.md)!
 
 ### ✨ What it does
 * **Tasks & Notes:** Stay organized with a clean, distraction-free interface.
@@ -14,7 +14,7 @@ A minimalist, glassmorphism-inspired productivity dashboard for students! See sc
 * **Backend:** Firebase (Auth & Firestore).
 
 ### 💡 The Vibe
-Built by a fellow tinkerer who wanted a study tool that actually looked good. No bloat, no ads—just a clean space to get work done. If you want to [contribute](contribute.md)!
+Built by a fellow tinkerer who wanted a study tool that actually looked good. No bloat, no ads—just a clean space to get work done. If you want to [contribute](CONTRIBUTE.md)!
 
 ---
 [View Live Demo!](https://ld-beepbeep.github.io/SCHOOL/)
