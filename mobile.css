@@ -1,11 +1,3 @@
-/* ============================================================
-   StudentOS — Mobile UI v2
-   Place AFTER styles.css:
-   <link rel="stylesheet" href="styles.css">
-   <link rel="stylesheet" href="mobile.css">
-   ============================================================ */
-
-/* ===== DESIGN TOKENS ===== */
 :root {
     --nav-h: 64px;
     --safe-b: env(safe-area-inset-bottom, 0px);
@@ -13,9 +5,6 @@
     --card-radius: 20px;
 }
 
-/* ============================================================
-   CORE LAYOUT
-   ============================================================ */
 @media (max-width: 768px) {
 
 nav.w-20 { display: none !important; }
