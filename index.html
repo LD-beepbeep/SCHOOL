@@ -1252,5 +1252,46 @@
 <div id="sos-toast"></div>
 
 <script type="module" src="script.js"></script>
+<script /* ================================================================
+   StudentOS — More Drawer JS patch
+   Paste at the very bottom of script.js
+   (or add as an inline <script> before </body>)
+   ================================================================ */
+
+(function() {
+
+    /* ── "More" button rotates when drawer is open ── */
+    var _origToggle = window.toggleMobMenu;
+    window.toggleMobMenu = function() {
+        _origToggle && _origToggle();
+        var btn    = document.getElementById('mob-btn-more');
+        var drawer = document.getElementById('mob-more-drawer');
+        var bk     = document.getElementById('mob-drawer-backdrop');
+        if (btn)    btn.classList.toggle('open',    drawer && drawer.classList.contains('open'));
+        if (bk)     bk .classList.toggle('open',    drawer && drawer.classList.contains('open'));
+    };
+
+    var _origClose = window.closeMobMenu;
+    window.closeMobMenu = function() {
+        _origClose && _origClose();
+        var btn = document.getElementById('mob-btn-more');
+        var bk  = document.getElementById('mob-drawer-backdrop');
+        if (btn) btn.classList.remove('open');
+        if (bk)  bk .classList.remove('open');
+    };
+
+    /* ── Active state on featured / tool buttons in drawer ── */
+    var _origActive = window.setMobActive;
+    window.setMobActive = function(tab) {
+        _origActive && _origActive(tab);
+        document.querySelectorAll('.mbd-feat, .mbd-tool')
+            .forEach(function(b) { b.classList.remove('active'); });
+        var b = document.getElementById('mob-btn-' + tab);
+        if (b && (b.classList.contains('mbd-feat') || b.classList.contains('mbd-tool'))) {
+            b.classList.add('active');
+        }
+    };
+
+})();</script>
 </body>
 </html>
