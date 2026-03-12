@@ -462,6 +462,8 @@ function initApp() {
     updateNotifButtons();
     checkEventNotifications();
     checkTaskNotifications();
+    initFormulas();
+    
 
     // Streak update
     (function() {
@@ -696,7 +698,7 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
 });
 
 // ===== TAB NAVIGATION =====
-var tabs = ['dashboard','tasks','calendar','notes','whiteboard','cards','grades','calc','focus'];
+var tabs = ['dashboard','tasks','calendar','notes','whiteboard','cards','grades','calc','focus','forum','music','formulas',];
 function switchTab(name) {
     tabs.forEach(function(t) {
         var v = document.getElementById('view-' + t);
@@ -4104,6 +4106,8 @@ window.loadPdfForAnnotation     = loadPdfForAnnotation;
 window.resetPassword            = resetPassword;
 window.resendVerificationEmail  = resendVerificationEmail;
 window.showLoginSuccess         = showLoginSuccess;
+
+
 
 // ===== openModal PATCH — populates deck groups when modal opens =====
 (function() {
