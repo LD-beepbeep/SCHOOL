@@ -1,7 +1,6 @@
 /* ================================================================
-   StudentOS — Study Forum  (forum.js)
-   Add as a second module script in index.html:
-     <script type="module" src="forum.js"></script>
+   StudentOS — Study Forum  (forum.js)  v2 — FIXED
+   Fixes: reply error, upvotes, delete, FAB visibility, sort, mobile
    ================================================================ */
 
 import { initializeApp, getApps }
@@ -11,7 +10,7 @@ import { getAuth, onAuthStateChanged }
 import {
     getFirestore,
     collection, doc,
-    addDoc, getDoc, getDocs, setDoc, deleteDoc, updateDoc,
+    addDoc, getDoc, getDocs, deleteDoc, updateDoc,
     onSnapshot,
     query, orderBy, where, limit,
     serverTimestamp, arrayUnion, arrayRemove, increment
@@ -25,38 +24,30 @@ const _db   = getFirestore(_app);
 /* ── State ── */
 let _uid         = null;
 let _displayName = '';
-let _unsubPosts  = null;   // live listener teardown
-let _activePost  = null;   // currently open post id
+let _unsubPosts  = null;
+let _activePost  = null;
 let _unsubReplies = null;
 let _activeSubject = 'all';
 let _activeSort    = 'new';
 
 const SUBJECTS = [
-    { id:'all',     label:'All',         icon:'fa-border-all',        color:'#6b7280' },
-    { id:'math',    label:'Maths',        icon:'fa-square-root-alt',   color:'#3b82f6' },
-    { id:'science', label:'Science',      icon:'fa-flask',             color:'#22c55e' },
-    { id:'english', label:'English',      icon:'fa-book-open',         color:'#f59e0b' },
-    { id:'history', label:'History',      icon:'fa-landmark',          color:'#8b5cf6' },
+    { id:'all',     label:'Alles',        icon:'fa-border-all',        color:'#6b7280' },
+    { id:'math',    label:'Wiskunde',     icon:'fa-square-root-alt',   color:'#3b82f6' },
+    { id:'science', label:'Wetenschappen',icon:'fa-flask',             color:'#22c55e' },
+    { id:'english', label:'Engels',       icon:'fa-book-open',         color:'#f59e0b' },
+    { id:'history', label:'Geschiedenis', icon:'fa-landmark',          color:'#8b5cf6' },
     { id:'it',      label:'IT & CS',      icon:'fa-code',              color:'#06b6d4' },
-    { id:'other',   label:'Other',        icon:'fa-circle-question',   color:'#ec4899' },
+    { id:'other',   label:'Overig',       icon:'fa-circle-question',   color:'#ec4899' },
 ];
 
 /* ================================================================
-   BOOT — wait for auth
+   BOOT
    ================================================================ */
 onAuthStateChanged(_auth, user => {
     if (!user) return;
     _uid = user.uid;
-    _displayName = user.displayName || user.email.split('@')[0];
-    /* Add forum to tabs if not already there */
-    _registerTab();
+    _displayName = user.displayName || user.email?.split('@')[0] || 'Student';
 });
-
-function _registerTab() {
-    if (typeof window.tabs !== 'undefined' && !window.tabs.includes('forum')) {
-        window.tabs.push('forum');
-    }
-}
 
 /* ================================================================
    HELPERS
@@ -68,20 +59,32 @@ function _timeAgo(ts) {
     if (!ts) return '';
     const d   = ts.toDate ? ts.toDate() : new Date(ts);
     const sec = Math.floor((Date.now() - d) / 1000);
-    if (sec < 60)   return `${sec}s ago`;
-    if (sec < 3600) return `${Math.floor(sec/60)}m ago`;
-    if (sec < 86400)return `${Math.floor(sec/3600)}h ago`;
-    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+    if (sec < 60)    return `${sec}s geleden`;
+    if (sec < 3600)  return `${Math.floor(sec/60)}m geleden`;
+    if (sec < 86400) return `${Math.floor(sec/3600)}u geleden`;
+    return d.toLocaleDateString('nl-NL', { day:'numeric', month:'short' });
 }
 function _esc(str) {
     const d = document.createElement('div');
-    d.textContent = str;
+    d.textContent = str || '';
     return d.innerHTML;
 }
 function _avatar(name, color) {
     const initials = (name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-    const c = color || '#3b82f6';
-    return `<div class="forum-avatar" style="background:${c};">${_esc(initials)}</div>`;
+    return `<div class="forum-avatar" style="background:${color||'#3b82f6'};">${_esc(initials)}</div>`;
+}
+function _toast(msg, isErr = false) {
+    const t = document.getElementById('sos-toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.style.background = isErr ? '#ef4444' : '';
+    t.classList.add('show');
+    setTimeout(() => { t.classList.remove('show'); t.style.background=''; }, 2500);
+}
+
+/* ── Silent update helper — won't surface errors to user ── */
+async function _silentUpdate(ref, data) {
+    try { await updateDoc(ref, data); } catch(e) { /* security-rule safe */ }
 }
 
 /* ================================================================
@@ -107,50 +110,52 @@ function _listenPosts() {
     const col = collection(_db, 'forum_posts');
     let q;
     if (_activeSubject === 'all') {
-        q = query(col, orderBy('createdAt', 'desc'), limit(60));
+        q = query(col, orderBy('createdAt', 'desc'), limit(80));
     } else {
         q = query(col,
             where('subject', '==', _activeSubject),
             orderBy('createdAt', 'desc'),
-            limit(60));
+            limit(80));
     }
 
     _unsubPosts = onSnapshot(q, snap => {
         let posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if (_activeSort === 'top') {
-            posts = posts.sort((a,b) => (b.upvoteCount||0) - (a.upvoteCount||0));
+            posts = [...posts].sort((a,b) => (b.upvoteCount||0) - (a.upvoteCount||0));
         } else if (_activeSort === 'unsolved') {
             posts = posts.filter(p => !p.solved);
         }
         _renderPostList(posts);
         if (typeof window.renderForumWidget === 'function') window.renderForumWidget(posts);
-    }, err => console.error('Forum listen error:', err));
+    }, err => console.warn('Forum snapshot error:', err));
 }
 
 function _renderPostList(posts) {
     const list = document.getElementById('forum-post-list');
     if (!list) return;
-    if (posts.length === 0) {
+    if (!posts || posts.length === 0) {
         list.innerHTML = `
             <div class="forum-empty">
                 <i class="fa-solid fa-comments"></i>
-                <p>No posts yet — be the first to ask!</p>
+                <p>Nog geen berichten — wees de eerste die een vraag stelt!</p>
             </div>`;
         return;
     }
     list.innerHTML = posts.map(p => {
-        const sub  = _subjectMeta(p.subject);
-        const voted = (p.upvotes||[]).includes(_uid);
+        const sub   = _subjectMeta(p.subject);
+        const voted = Array.isArray(p.upvotes) && p.upvotes.includes(_uid);
+        const isOwn = p.uid === _uid;
         return `
         <div class="forum-post-card ${p.solved?'solved':''}"
              onclick="forumOpenPost('${p.id}')">
             <div class="fpc-left">
                 <button class="fpc-vote ${voted?'voted':''}"
-                        onclick="event.stopPropagation();forumVote('${p.id}',${voted})">
+                        onclick="event.stopPropagation();forumVote('${p.id}',${voted})"
+                        title="${voted?'Stem intrekken':'Omhoog stemmen'}">
                     <i class="fa-solid fa-arrow-up"></i>
                     <span>${p.upvoteCount||0}</span>
                 </button>
-                <div class="fpc-replies-count">
+                <div class="fpc-replies-count" title="${p.replyCount||0} antwoorden">
                     <i class="fa-regular fa-comment"></i>
                     <span>${p.replyCount||0}</span>
                 </div>
@@ -160,16 +165,16 @@ function _renderPostList(posts) {
                     <span class="fpc-subject-tag" style="background:${sub.color}22;color:${sub.color}">
                         <i class="fa-solid ${sub.icon}"></i> ${_esc(sub.label)}
                     </span>
-                    ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Solved</span>' : ''}
+                    ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Opgelost</span>' : ''}
                 </div>
                 <h3 class="fpc-title">${_esc(p.title)}</h3>
-                <p class="fpc-excerpt">${_esc((p.body||'').slice(0,120))}${(p.body||'').length>120?'…':''}</p>
+                <p class="fpc-excerpt">${_esc((p.body||'').slice(0,130))}${(p.body||'').length>130?'…':''}</p>
                 <div class="fpc-footer">
                     ${_avatar(p.displayName, sub.color)}
-                    <span class="fpc-author">${_esc(p.displayName||'Anonymous')}</span>
+                    <span class="fpc-author">${_esc(p.displayName||'Anoniem')}</span>
                     <span class="fpc-dot">·</span>
                     <span class="fpc-time">${_timeAgo(p.createdAt)}</span>
-                    ${p.uid===_uid ? `<button class="fpc-delete" title="Delete post"
+                    ${isOwn ? `<button class="fpc-delete" title="Bericht verwijderen"
                         onclick="event.stopPropagation();forumDeletePost('${p.id}')">
                         <i class="fa-solid fa-trash"></i>
                     </button>` : ''}
@@ -184,51 +189,60 @@ function _renderPostList(posts) {
    ================================================================ */
 window.forumOpenPost = async function(postId) {
     _activePost = postId;
-    const snap = await getDoc(doc(_db, 'forum_posts', postId));
-    if (!snap.exists()) return;
-    const p   = { id: snap.id, ...snap.data() };
+    let p;
+    try {
+        const snap = await getDoc(doc(_db, 'forum_posts', postId));
+        if (!snap.exists()) { _toast('Bericht niet gevonden.', true); return; }
+        p = { id: snap.id, ...snap.data() };
+    } catch(e) {
+        _toast('Fout bij laden bericht.', true);
+        return;
+    }
     const sub = _subjectMeta(p.subject);
 
     document.getElementById('forum-list-view').classList.add('hidden');
+    document.getElementById('forum-fab').classList.add('hidden');
     const tv = document.getElementById('forum-thread-view');
     tv.classList.remove('hidden');
+    tv.scrollTop = 0;
 
-    const voted = (p.upvotes||[]).includes(_uid);
+    const voted = Array.isArray(p.upvotes) && p.upvotes.includes(_uid);
+    const isOwn = p.uid === _uid;
     tv.querySelector('#forum-thread-content').innerHTML = `
         <div class="ft-header">
             <button class="ft-back" onclick="forumCloseThread()">
-                <i class="fa-solid fa-arrow-left"></i> Back
+                <i class="fa-solid fa-arrow-left"></i> Terug
             </button>
             <span class="fpc-subject-tag" style="background:${sub.color}22;color:${sub.color}">
                 <i class="fa-solid ${sub.icon}"></i> ${_esc(sub.label)}
             </span>
-            ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Solved</span>' : ''}
+            ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Opgelost</span>' : ''}
         </div>
         <h2 class="ft-title">${_esc(p.title)}</h2>
         <div class="ft-post-body">${_esc(p.body).replace(/\n/g,'<br>')}</div>
         <div class="ft-post-meta">
             ${_avatar(p.displayName, sub.color)}
-            <span class="fpc-author">${_esc(p.displayName||'Anonymous')}</span>
+            <span class="fpc-author">${_esc(p.displayName||'Anoniem')}</span>
             <span class="fpc-dot">·</span>
             <span class="fpc-time">${_timeAgo(p.createdAt)}</span>
             <div class="ft-actions">
-                <button class="ft-vote-btn ${voted?'voted':''}"
-                        onclick="forumVote('${p.id}',${voted});this.classList.toggle('voted')">
-                    <i class="fa-solid fa-arrow-up"></i> ${p.upvoteCount||0}
+                <button class="ft-vote-btn ${voted?'voted':''}" id="ft-vote-btn-${postId}"
+                        onclick="forumVote('${p.id}',${voted})" title="${voted?'Stem intrekken':'Omhoog stemmen'}">
+                    <i class="fa-solid fa-arrow-up"></i> <span id="ft-vote-count">${p.upvoteCount||0}</span>
                 </button>
-                ${p.uid===_uid ? `
+                ${isOwn ? `
                     <button class="ft-action-btn ft-delete-btn"
                             onclick="forumDeletePost('${p.id}')">
-                        <i class="fa-solid fa-trash"></i> Delete
+                        <i class="fa-solid fa-trash"></i> Verwijderen
                     </button>
                     ${!p.solved ? `<button class="ft-action-btn ft-solve-btn"
                             onclick="forumMarkSolved('${p.id}')">
-                        <i class="fa-solid fa-circle-check"></i> Mark Solved
+                        <i class="fa-solid fa-circle-check"></i> Markeer als opgelost
                     </button>` : ''}
                 ` : ''}
             </div>
         </div>
-        <div class="ft-replies-label" id="ft-replies-label">Replies</div>
+        <div class="ft-replies-label" id="ft-replies-label">Antwoorden laden…</div>
         <div id="ft-replies-list"></div>`;
 
     _listenReplies(postId);
@@ -239,6 +253,7 @@ window.forumCloseThread = function() {
     _activePost = null;
     document.getElementById('forum-thread-view').classList.add('hidden');
     document.getElementById('forum-list-view').classList.remove('hidden');
+    document.getElementById('forum-fab').classList.remove('hidden');
 };
 
 function _listenReplies(postId) {
@@ -250,29 +265,32 @@ function _listenReplies(postId) {
     _unsubReplies = onSnapshot(q, snap => {
         const replies = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         _renderReplies(replies, postId);
-    });
+        // Update reply count label silently on parent post
+        _silentUpdate(doc(_db, 'forum_posts', postId), { replyCount: replies.length });
+    }, err => console.warn('Replies snapshot error:', err));
 }
 
 function _renderReplies(replies, postId) {
-    const el = document.getElementById('ft-replies-list');
+    const el    = document.getElementById('ft-replies-list');
     const label = document.getElementById('ft-replies-label');
     if (!el) return;
-    if (label) label.textContent = `${replies.length} ${replies.length===1?'Reply':'Replies'}`;
+    if (label) label.textContent = `${replies.length} ${replies.length === 1 ? 'Antwoord' : 'Antwoorden'}`;
     if (replies.length === 0) {
-        el.innerHTML = `<p class="ft-no-replies">No replies yet — add one below!</p>`;
+        el.innerHTML = `<p class="ft-no-replies">Nog geen antwoorden — voeg hieronder een toe!</p>`;
         return;
     }
     el.innerHTML = replies.map(r => `
         <div class="ft-reply ${r.isAnswer?'is-answer':''}">
             <div class="ft-reply-header">
                 ${_avatar(r.displayName, r.isAnswer?'#22c55e':'#6b7280')}
-                <span class="fpc-author">${_esc(r.displayName||'Anonymous')}</span>
-                ${r.isAnswer ? '<span class="ft-answer-badge"><i class="fa-solid fa-check"></i> Best Answer</span>' : ''}
+                <span class="fpc-author">${_esc(r.displayName||'Anoniem')}</span>
+                ${r.isAnswer ? '<span class="ft-answer-badge"><i class="fa-solid fa-check"></i> Beste Antwoord</span>' : ''}
                 <span class="fpc-dot">·</span>
                 <span class="fpc-time">${_timeAgo(r.createdAt)}</span>
-                ${r.uid===_uid ? `
+                ${r.uid === _uid ? `
                     <button class="ft-reply-delete"
-                            onclick="forumDeleteReply('${postId}','${r.id}')">
+                            onclick="forumDeleteReply('${postId}','${r.id}')"
+                            title="Verwijderen">
                         <i class="fa-solid fa-trash"></i>
                     </button>` : ''}
             </div>
@@ -281,39 +299,57 @@ function _renderReplies(replies, postId) {
 }
 
 /* ================================================================
-   ACTIONS — vote, post, reply, delete, mark solved
+   ACTIONS
    ================================================================ */
+
+/* ── Vote (robust: won't show error if counter update fails) ── */
 window.forumVote = async function(postId, alreadyVoted) {
-    if (!_uid) return;
+    if (!_uid) { _toast('Log eerst in om te stemmen.', true); return; }
     const ref = doc(_db, 'forum_posts', postId);
     try {
         if (alreadyVoted) {
             await updateDoc(ref, {
-                upvotes:      arrayRemove(_uid),
-                upvoteCount:  increment(-1)
+                upvotes:     arrayRemove(_uid),
+                upvoteCount: increment(-1)
             });
         } else {
             await updateDoc(ref, {
-                upvotes:      arrayUnion(_uid),
-                upvoteCount:  increment(1)
+                upvotes:     arrayUnion(_uid),
+                upvoteCount: increment(1)
             });
         }
-    } catch(e) { console.error('Vote error:', e); }
+        // Update vote button in thread view if open
+        const btn = document.getElementById(`ft-vote-btn-${postId}`);
+        if (btn) btn.classList.toggle('voted', !alreadyVoted);
+        const cnt = document.getElementById('ft-vote-count');
+        if (cnt) {
+            const cur = parseInt(cnt.textContent) || 0;
+            cnt.textContent = alreadyVoted ? Math.max(0, cur-1) : cur+1;
+        }
+    } catch(e) {
+        console.warn('Vote error (check Firestore rules):', e);
+        _toast('Stem kon niet worden opgeslagen. Controleer Firestore regels.', true);
+    }
 };
 
+/* ── Submit post ── */
 window.forumSubmitPost = async function() {
-    const title   = document.getElementById('forum-new-title').value.trim();
-    const body    = document.getElementById('forum-new-body').value.trim();
-    const subject = document.getElementById('forum-new-subject').value;
-    const errEl   = document.getElementById('forum-new-error');
+    const titleEl   = document.getElementById('forum-new-title');
+    const bodyEl    = document.getElementById('forum-new-body');
+    const subjectEl = document.getElementById('forum-new-subject');
+    const errEl     = document.getElementById('forum-new-error');
+    const btn       = document.getElementById('forum-submit-btn');
 
-    if (!title) { errEl.textContent = 'Please add a title.'; return; }
-    if (!body)  { errEl.textContent = 'Please describe your question.'; return; }
+    const title   = titleEl.value.trim();
+    const body    = bodyEl.value.trim();
+    const subject = subjectEl.value;
+
+    if (!title) { errEl.textContent = 'Voeg een titel toe.'; titleEl.focus(); return; }
+    if (!body)  { errEl.textContent = 'Beschrijf je vraag.'; bodyEl.focus(); return; }
     errEl.textContent = '';
 
-    const btn = document.getElementById('forum-submit-btn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Posting…';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Plaatsen…';
 
     try {
         await addDoc(collection(_db, 'forum_posts'), {
@@ -328,28 +364,33 @@ window.forumSubmitPost = async function() {
             solved:      false,
             createdAt:   serverTimestamp()
         });
-        document.getElementById('forum-new-title').value   = '';
-        document.getElementById('forum-new-body').value    = '';
+        titleEl.value = '';
+        bodyEl.value  = '';
         _closeNewPost();
+        _toast('Vraag geplaatst! ✓');
     } catch(e) {
-        errEl.textContent = 'Failed to post. Try again.';
-        console.error(e);
+        errEl.textContent = 'Plaatsen mislukt. Probeer opnieuw.';
+        console.error('Post submit error:', e);
     }
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Post Question';
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Vraag Plaatsen';
 };
 
+/* ── Submit reply (FIXED: counter update is now non-blocking) ── */
 window.forumSubmitReply = async function() {
     if (!_activePost) return;
-    const body  = document.getElementById('forum-reply-input').value.trim();
-    const errEl = document.getElementById('forum-reply-error');
-    if (!body) { errEl.textContent = 'Write a reply first.'; return; }
-    errEl.textContent = '';
+    const bodyEl = document.getElementById('forum-reply-input');
+    const errEl  = document.getElementById('forum-reply-error');
+    const btn    = document.getElementById('forum-reply-btn');
+    const body   = bodyEl.value.trim();
 
-    const btn = document.getElementById('forum-reply-btn');
+    if (!body) { errEl.textContent = 'Schrijf eerst een antwoord.'; bodyEl.focus(); return; }
+    errEl.textContent = '';
     btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
     try {
+        // ① Write the reply — this is the critical operation
         await addDoc(
             collection(_db, 'forum_posts', _activePost, 'replies'),
             {
@@ -360,46 +401,65 @@ window.forumSubmitReply = async function() {
                 createdAt:   serverTimestamp()
             }
         );
-        await updateDoc(doc(_db, 'forum_posts', _activePost), {
+        // ② Update reply count silently — won't crash if rules block it
+        _silentUpdate(doc(_db, 'forum_posts', _activePost), {
             replyCount: increment(1)
         });
-        document.getElementById('forum-reply-input').value = '';
+        bodyEl.value = '';
+        _toast('Antwoord geplaatst! ✓');
     } catch(e) {
-        errEl.textContent = 'Failed to reply.';
-        console.error(e);
+        errEl.textContent = 'Antwoord kon niet worden geplaatst. Controleer je verbinding.';
+        console.error('Reply submit error:', e);
     }
     btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-reply"></i> Antwoorden';
 };
 
+/* ── Delete post (FIXED: handles subcollection cleanup gracefully) ── */
 window.forumDeletePost = async function(postId) {
-    if (!confirm('Delete this post and all its replies?')) return;
+    if (!confirm('Dit bericht en alle antwoorden verwijderen?')) return;
     try {
-        /* delete replies subcollection first */
-        const repliesSnap = await getDocs(
-            collection(_db, 'forum_posts', postId, 'replies')
-        );
-        await Promise.all(repliesSnap.docs.map(d => deleteDoc(d.ref)));
+        // Delete replies (best-effort)
+        try {
+            const repliesSnap = await getDocs(
+                collection(_db, 'forum_posts', postId, 'replies')
+            );
+            await Promise.all(repliesSnap.docs.map(d => deleteDoc(d.ref)));
+        } catch(e) { console.warn('Could not delete all replies:', e); }
+
         await deleteDoc(doc(_db, 'forum_posts', postId));
         if (_activePost === postId) forumCloseThread();
-    } catch(e) { console.error('Delete post error:', e); }
+        _toast('Bericht verwijderd.');
+    } catch(e) {
+        _toast('Verwijderen mislukt. Controleer Firestore regels.', true);
+        console.error('Delete post error:', e);
+    }
 };
 
+/* ── Delete reply ── */
 window.forumDeleteReply = async function(postId, replyId) {
-    if (!confirm('Delete this reply?')) return;
+    if (!confirm('Dit antwoord verwijderen?')) return;
     try {
         await deleteDoc(doc(_db, 'forum_posts', postId, 'replies', replyId));
-        await updateDoc(doc(_db, 'forum_posts', postId), {
-            replyCount: increment(-1)
-        });
-    } catch(e) { console.error('Delete reply error:', e); }
+        // Best-effort decrement
+        _silentUpdate(doc(_db, 'forum_posts', postId), { replyCount: increment(-1) });
+        _toast('Antwoord verwijderd.');
+    } catch(e) {
+        _toast('Verwijderen mislukt.', true);
+        console.error('Delete reply error:', e);
+    }
 };
 
+/* ── Mark solved ── */
 window.forumMarkSolved = async function(postId) {
     try {
         await updateDoc(doc(_db, 'forum_posts', postId), { solved: true });
-        /* re-open to refresh UI */
         forumOpenPost(postId);
-    } catch(e) { console.error('Mark solved error:', e); }
+        _toast('Gemarkeerd als opgelost! ✓');
+    } catch(e) {
+        _toast('Kon niet markeren. Controleer Firestore regels.', true);
+        console.error('Mark solved error:', e);
+    }
 };
 
 /* ================================================================
@@ -423,32 +483,55 @@ window.forumSetSort = function(sort) {
    NEW POST PANEL
    ================================================================ */
 function _closeNewPost() {
-    document.getElementById('forum-new-panel').classList.add('hidden');
-    document.getElementById('forum-fab').classList.remove('hidden');
+    const panel = document.getElementById('forum-new-panel');
+    const fab   = document.getElementById('forum-fab');
+    if (panel) panel.classList.add('hidden');
+    if (fab)   fab.classList.remove('hidden');
 }
-window.forumOpenNew  = function() {
-    document.getElementById('forum-new-panel').classList.remove('hidden');
-    document.getElementById('forum-fab').classList.add('hidden');
-    document.getElementById('forum-new-title').focus();
+
+window.forumOpenNew = function() {
+    const panel = document.getElementById('forum-new-panel');
+    const fab   = document.getElementById('forum-fab');
+    if (panel) { panel.classList.remove('hidden'); }
+    if (fab)   { fab.classList.add('hidden'); }
+    setTimeout(() => {
+        const t = document.getElementById('forum-new-title');
+        if (t) t.focus();
+    }, 50);
 };
 window.forumCancelNew = _closeNewPost;
 
+/* ── Ctrl+Enter to post ── */
+document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'Enter') {
+        const active = document.activeElement;
+        if (active && active.id === 'forum-new-body')    window.forumSubmitPost();
+        if (active && active.id === 'forum-reply-input') window.forumSubmitReply();
+    }
+});
+
 /* ================================================================
-   TAB INIT — called when forum tab is opened
+   TAB INIT
    ================================================================ */
 window.forumInit = function() {
     _renderSubjectBar();
     _listenPosts();
+    const fab = document.getElementById('forum-fab');
+    if (fab) fab.classList.remove('hidden');
 };
 
-// REPLACE the existing IIFE at the bottom of forum.js:
+/* ── Patch switchTab ── */
 (function _waitForumPatch(){
     if(typeof window.switchTab === 'function'){
         const _orig = window.switchTab;
         window.switchTab = function(name){
             _orig && _orig(name);
-            if(name === 'forum') setTimeout(window.forumInit, 50);
-            if(name !== 'forum'){
+            const fab = document.getElementById('forum-fab');
+            if(name === 'forum') {
+                setTimeout(window.forumInit, 50);
+                if(fab) fab.classList.remove('hidden');
+            } else {
+                if(fab) fab.classList.add('hidden');
                 if(_unsubPosts)   { _unsubPosts();   _unsubPosts   = null; }
                 if(_unsubReplies) { _unsubReplies(); _unsubReplies = null; }
             }
@@ -457,31 +540,30 @@ window.forumInit = function() {
         setTimeout(_waitForumPatch, 100);
     }
 })();
+
 /* ── Quick Post from dashboard widget ── */
 window.forumQuickPost = async function(body, subject) {
     if (!_uid) throw new Error('Not logged in');
-    if (!body || !body.trim()) throw new Error('Empty body');
-    const postRef = collection(_db, 'forum_posts');
-    await addDoc(postRef, {
-        uid:          _uid,
-        displayName:  _displayName || 'Student',
-        title:        body.trim().slice(0, 80) + (body.trim().length > 80 ? '…' : ''),
-        body:         body.trim(),
-        subject:      subject || '',
-        upvotes:      [],
-        upvoteCount:  0,
-        replyCount:   0,
-        solved:       false,
-        createdAt:    serverTimestamp(),
+    if (!body?.trim()) throw new Error('Empty body');
+    await addDoc(collection(_db, 'forum_posts'), {
+        uid:         _uid,
+        displayName: _displayName || 'Student',
+        title:       body.trim().slice(0, 80) + (body.trim().length > 80 ? '…' : ''),
+        body:        body.trim(),
+        subject:     subject || 'other',
+        upvotes:     [],
+        upvoteCount: 0,
+        replyCount:  0,
+        solved:      false,
+        createdAt:   serverTimestamp(),
     });
 };
 
-/* ── If a pending post was queued from the widget, auto-fill it ── */
+/* ── Pending post from widget ── */
 (function _checkPending() {
     if (typeof window._pendingForumPost !== 'undefined') {
         const p = window._pendingForumPost;
         delete window._pendingForumPost;
-        // Wait for forum init then auto-open new post
         setTimeout(() => {
             const titleEl = document.getElementById('forum-new-title');
             const bodyEl  = document.getElementById('forum-new-body');
@@ -490,6 +572,6 @@ window.forumQuickPost = async function(body, subject) {
             if (bodyEl)  bodyEl.value  = p.body;
             if (subjEl && p.subject) subjEl.value = p.subject;
             if (typeof window.forumOpenNew === 'function') window.forumOpenNew();
-        }, 600);
+        }, 700);
     }
 })();
