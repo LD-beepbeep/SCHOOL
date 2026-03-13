@@ -307,7 +307,7 @@ onAuthStateChanged(_auth, u => {
         if (!right) { setTimeout(_inject, 250); return; }
         const chip = Object.assign(document.createElement('div'), { id:'p3-chip' });
         chip.style.cssText = 'font-size:.6rem;font-weight:700;letter-spacing:.04em;color:var(--text-muted);display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:transparent;transition:color .25s,background .25s,opacity .3s;opacity:0;white-space:nowrap;user-select:none;';
-        chip.innerHTML = '<i class="fa-solid fa-check" style="font-size:.55rem"></i> Opgeslagen';
+        chip.innerHTML = '<i class="fa-solid fa-check" style="font-size:.55rem"></i> Saved';
         right.insertBefore(chip, right.querySelector('#note-stats') || right.firstChild);
     }
     let _ft;
