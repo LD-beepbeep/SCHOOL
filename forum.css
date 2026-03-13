@@ -1,6 +1,5 @@
 /* ================================================================
-   StudentOS — Study Forum Styles (forum.css)
-   <link rel="stylesheet" href="forum.css">
+   StudentOS — Study Forum Styles (forum.css)  v2
    ================================================================ */
 
 /* ── View container ── */
@@ -17,7 +16,7 @@
    ================================================================ */
 #forum-list-view { display: flex; flex-direction: column; height: 100%; gap: 0; }
 
-/* Top bar */
+/* Top bar — matches formula/music style exactly */
 .forum-topbar {
     display: flex;
     align-items: center;
@@ -30,8 +29,26 @@
     font-size: 1.8rem;
     font-weight: 300;
     letter-spacing: -.03em;
+    line-height: 1.2;
 }
 .forum-topbar h1 span { color: var(--accent); }
+
+/* Music page header — match other tabs */
+.music-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.music-page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: -.03em;
+    line-height: 1.2;
+}
+.music-page-header h1 span { color: var(--accent); }
 
 /* Sort buttons */
 .forum-sort-row {
@@ -63,7 +80,7 @@
     display: flex;
     gap: 7px;
     overflow-x: auto;
-    padding-bottom: 4px;
+    padding-bottom: 6px;
     margin-bottom: 16px;
     scrollbar-width: none;
 }
@@ -99,7 +116,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding-bottom: 80px; /* room for FAB */
+    padding-bottom: 100px;
 }
 
 /* Post card */
@@ -115,7 +132,7 @@
 }
 .forum-post-card:hover {
     background: var(--glass-hover);
-    border-color: rgba(255,255,255,.12);
+    border-color: rgba(255,255,255,.13);
     transform: translateY(-1px);
 }
 .forum-post-card.solved { border-color: rgba(34,197,94,.25); }
@@ -127,7 +144,7 @@
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
-    min-width: 36px;
+    min-width: 38px;
 }
 .fpc-vote {
     display: flex;
@@ -136,7 +153,7 @@
     gap: 2px;
     padding: 6px 8px;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.09);
     background: transparent;
     color: var(--text-muted);
     font-size: .7rem;
@@ -150,7 +167,7 @@
     border-color: rgba(59,130,246,.35);
     color: #3b82f6;
 }
-.fpc-vote i { font-size: .85rem; }
+.fpc-vote i { font-size: .9rem; }
 .fpc-replies-count {
     display: flex;
     flex-direction: column;
@@ -221,7 +238,6 @@
 .fpc-dot    { font-size: .6rem;  color: var(--text-muted); }
 .fpc-time   { font-size: .72rem; color: var(--text-muted); }
 
-/* Delete button on card */
 .fpc-delete {
     margin-left: auto;
     padding: 4px 8px;
@@ -233,11 +249,11 @@
     cursor: pointer;
     transition: color .15s, background .15s;
     opacity: 0;
+    transition: opacity .15s, color .15s, background .15s;
 }
 .forum-post-card:hover .fpc-delete { opacity: 1; }
 .fpc-delete:hover { color: #ef4444; background: rgba(239,68,68,.1); }
 
-/* Empty state */
 .forum-empty {
     display: flex;
     flex-direction: column;
@@ -250,7 +266,6 @@
 .forum-empty i   { font-size: 2.5rem; opacity: .4; }
 .forum-empty p   { font-size: .9rem; }
 
-/* Avatar */
 .forum-avatar {
     width: 24px; height: 24px;
     border-radius: 8px;
@@ -262,33 +277,34 @@
 }
 
 /* ================================================================
-   FAB — floating "Ask a Question" button
+   FAB — FIXED: always on top, proper position
    ================================================================ */
 #forum-fab {
     position: fixed;
-    bottom: 88px; right: 20px;
-    z-index: 50;
+    bottom: 28px;
+    right: 28px;
+    z-index: 200;          /* higher than sidebar (z-50) */
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 14px 20px;
+    padding: 14px 22px;
     border-radius: 99px;
     background: var(--accent);
     color: #fff;
     font-size: .88rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 28px rgba(59,130,246,.45);
+    box-shadow: 0 8px 28px rgba(59,130,246,.5);
     border: none;
     transition: transform .15s, box-shadow .15s;
+    pointer-events: all;
 }
-#forum-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(59,130,246,.55); }
+#forum-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(59,130,246,.6); }
 #forum-fab:active { transform: scale(.96); }
 #forum-fab i { font-size: 1rem; }
 
-/* On desktop, pin to main area */
-@media (min-width: 769px) {
-    #forum-fab { bottom: 28px; }
+@media (max-width: 768px) {
+    #forum-fab { bottom: calc(var(--mob-nav-h, 74px) + 12px); right: 16px; padding: 12px 18px; }
 }
 
 /* ================================================================
@@ -306,6 +322,9 @@
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 #forum-new-title, #forum-new-body, #forum-new-subject {
     width: 100%;
@@ -325,7 +344,7 @@
     border-color: var(--accent);
 }
 #forum-new-body { resize: none; min-height: 90px; line-height: 1.6; }
-#forum-new-subject { background: rgba(255,255,255,.05); cursor: pointer; }
+#forum-new-subject { cursor: pointer; }
 #forum-new-subject option { background: var(--bg-color); }
 .forum-new-actions {
     display: flex;
@@ -333,6 +352,7 @@
     align-items: center;
     gap: 10px;
     margin-top: 4px;
+    flex-wrap: wrap;
 }
 .forum-new-cancel {
     padding: 9px 18px;
@@ -360,7 +380,8 @@
     cursor: pointer;
     transition: opacity .15s;
 }
-#forum-submit-btn:disabled { opacity: .6; }
+#forum-submit-btn:hover { opacity: .9; }
+#forum-submit-btn:disabled { opacity: .6; cursor: not-allowed; }
 #forum-new-error, #forum-reply-error {
     font-size: .75rem;
     color: #f87171;
@@ -420,7 +441,6 @@
     border-radius: 14px;
     padding: 16px 18px;
     margin-bottom: 14px;
-    white-space: pre-wrap;
 }
 
 .ft-post-meta {
@@ -473,7 +493,6 @@
 .ft-delete-btn:hover { color: #ef4444; background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.25); }
 .ft-solve-btn:hover  { color: #22c55e; background: rgba(34,197,94,.1);  border-color: rgba(34,197,94,.25); }
 
-/* Replies */
 .ft-replies-label {
     font-size: .72rem;
     font-weight: 800;
@@ -518,7 +537,6 @@
     font-size: .88rem;
     line-height: 1.65;
     color: var(--text-main);
-    white-space: pre-wrap;
 }
 .ft-reply-delete {
     margin-left: auto;
@@ -530,7 +548,7 @@
     font-size: .7rem;
     cursor: pointer;
     opacity: 0;
-    transition: all .15s;
+    transition: opacity .15s, color .15s, background .15s;
 }
 .ft-reply:hover .ft-reply-delete { opacity: 1; }
 .ft-reply-delete:hover { color: #ef4444; background: rgba(239,68,68,.1); }
@@ -576,20 +594,22 @@
     cursor: pointer;
     transition: opacity .15s;
 }
-#forum-reply-btn:disabled { opacity: .6; }
+#forum-reply-btn:hover { opacity: .9; }
+#forum-reply-btn:disabled { opacity: .6; cursor: not-allowed; }
 .ft-reply-box::after { content: ''; display: table; clear: both; }
 
 /* ================================================================
    MOBILE
    ================================================================ */
 @media (max-width: 768px) {
+    #view-forum { max-width: 100%; }
     .forum-topbar { margin-bottom: 12px; }
     .forum-topbar h1 { font-size: 1.4rem; }
     .forum-post-card { padding: 12px 14px; gap: 10px; }
     .fpc-title { font-size: .92rem; }
-    .fpc-delete { opacity: 1; } /* always visible on mobile */
-    #forum-fab { bottom: calc(var(--nav-h, 64px) + 12px); right: 14px; }
+    .fpc-delete { opacity: 1; }
     .ft-title { font-size: 1.2rem; }
     .ft-post-body { padding: 12px 14px; }
     .ft-actions { margin-left: 0; width: 100%; }
+    .ft-reply-box { margin-top: 12px; }
 }
