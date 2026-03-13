@@ -137,7 +137,7 @@ function _renderPostList(posts) {
         list.innerHTML = `
             <div class="forum-empty">
                 <i class="fa-solid fa-comments"></i>
-                <p>Nog geen berichten — wees de eerste die een vraag stelt!</p>
+                <p>No messageges yet - be the first one! </p>
             </div>`;
         return;
     }
