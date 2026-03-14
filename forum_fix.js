@@ -116,8 +116,8 @@ function _render() {
             <div class="forum-empty">
                 <i class="fa-solid fa-comments"></i>
                 <p>${_activeSubject !== 'all'
-                    ? 'Geen berichten in dit vak.'
-                    : 'Nog geen berichten — wees de eerste!'}</p>
+                    ? 'No messages here!'
+                    : 'No messages yet - be the first one!'}</p>
             </div>`;
         return;
     }
