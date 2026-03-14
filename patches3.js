@@ -138,7 +138,7 @@ onAuthStateChanged(_auth, u => {
                 if (!raw) { prev.style.display='none'; return; }
                 _load(() => {
                     prev.style.display = 'block';
-                    prev.innerHTML = '<span style="font-size:.58rem;color:var(--text-muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;">Voorbeeld</span>';
+                    prev.innerHTML = '<span style="font-size:.58rem;color:var(--text-muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;">Preview</span>';
                     const d = document.createElement('div');
                     d.setAttribute('data-raw', raw);
                     prev.appendChild(d);
@@ -260,7 +260,7 @@ onAuthStateChanged(_auth, u => {
             el.style.cssText='position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:var(--glass-panel);border:var(--glass-border);border-radius:20px;padding:5px 14px;font-size:.7rem;color:var(--text-muted);z-index:55;pointer-events:none;backdrop-filter:blur(8px);transition:opacity .3s;';
             document.body.appendChild(el);
         }
-        el.textContent=`${name} typt…`; el.style.opacity='1';
+        el.textContent=`${name} is typing…`; el.style.opacity='1';
         clearTimeout(_tt); _tt=setTimeout(()=>{el.style.opacity='0';},2200);
     }
 
@@ -338,7 +338,7 @@ onAuthStateChanged(_auth, u => {
         if (!sidebar||document.getElementById('p3-nsearch')) return;
         const wrap=document.createElement('div');
         wrap.style.cssText='padding:0 0 6px;position:relative;flex-shrink:0;';
-        wrap.innerHTML=`<i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.62rem;pointer-events:none;"></i><input id="p3-nsearch" placeholder="Zoeken…" type="text" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px 10px 6px 28px;font-size:.72rem;color:var(--text-main);outline:none;box-sizing:border-box;font-family:inherit;transition:border-color .15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.08)'">`;
+        wrap.innerHTML=`<i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.62rem;pointer-events:none;"></i><input id="p3-nsearch" placeholder="Search notes..." type="text" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px 10px 6px 28px;font-size:.72rem;color:var(--text-main);outline:none;box-sizing:border-box;font-family:inherit;transition:border-color .15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.08)'">`;
         sidebar.parentNode.insertBefore(wrap,sidebar);
         document.getElementById('p3-nsearch').addEventListener('input',function(){
             const q=this.value.toLowerCase().trim();
@@ -424,7 +424,7 @@ _patchOpenModalResize();
             const btn=document.createElement('button');
             btn.className='p3-eb';
             btn.innerHTML='<i class="fa-solid fa-pencil"></i>';
-            btn.title='Vak bewerken';
+            btn.title='Edit subject';
             btn.style.cssText='position:absolute;top:10px;right:10px;background:transparent;border:none;cursor:pointer;color:var(--text-muted);font-size:.7rem;padding:5px 7px;border-radius:7px;opacity:0;z-index:2;transition:opacity .15s,color .15s,background .15s;';
             btn.onmouseenter=()=>{btn.style.color='var(--accent)';btn.style.background='rgba(59,130,246,.12)';};
             btn.onmouseleave=()=>{btn.style.color='var(--text-muted)';btn.style.background='transparent';};
@@ -439,7 +439,7 @@ _patchOpenModalResize();
         const m=document.createElement('div');
         m.id='p3-sm';
         m.style.cssText='position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;';
-        m.innerHTML=`<div style="background:var(--bg-color);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:28px 26px;width:320px;box-shadow:0 12px 48px rgba(0,0,0,.5);animation:p3fi .15s;"><h3 style="font-size:.95rem;font-weight:700;margin-bottom:18px;"><i class="fa-solid fa-pencil" style="color:var(--accent);margin-right:6px;"></i>Vak bewerken</h3><label style="font-size:.6rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px;">Naam</label><input id="p3-sn" value="${sub.name}" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 13px;color:var(--text-main);font-size:.88rem;outline:none;box-sizing:border-box;margin-bottom:18px;font-family:inherit;transition:border-color .15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" onkeydown="if(event.key==='Enter')document.getElementById('p3-ss').click()"><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="p3-sc" style="padding:8px 16px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text-muted);font-size:.78rem;font-weight:600;cursor:pointer;">Annuleren</button><button id="p3-ss" style="padding:8px 18px;border-radius:10px;background:var(--accent);color:#fff;font-size:.78rem;font-weight:700;border:none;cursor:pointer;">Opslaan</button></div></div>`;
+        m.innerHTML=`<div style="background:var(--bg-color);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:28px 26px;width:320px;box-shadow:0 12px 48px rgba(0,0,0,.5);animation:p3fi .15s;"><h3 style="font-size:.95rem;font-weight:700;margin-bottom:18px;"><i class="fa-solid fa-pencil" style="color:var(--accent);margin-right:6px;"></i>Edit Subject</h3><label style="font-size:.6rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px;">Name</label><input id="p3-sn" value="${sub.name}" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 13px;color:var(--text-main);font-size:.88rem;outline:none;box-sizing:border-box;margin-bottom:18px;font-family:inherit;transition:border-color .15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" onkeydown="if(event.key==='Enter')document.getElementById('p3-ss').click()"><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="p3-sc" style="padding:8px 16px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text-muted);font-size:.78rem;font-weight:600;cursor:pointer;">Cancel</button><button id="p3-ss" style="padding:8px 18px;border-radius:10px;background:var(--accent);color:#fff;font-size:.78rem;font-weight:700;border:none;cursor:pointer;">Save</button></div></div>`;
         document.body.appendChild(m);
         m.querySelector('#p3-sn').select();
         m.querySelector('#p3-sc').onclick=()=>m.remove();
