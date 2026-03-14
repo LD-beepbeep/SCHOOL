@@ -59,9 +59,9 @@ function _timeAgo(ts) {
     if (!ts) return '';
     const d   = ts.toDate ? ts.toDate() : new Date(ts);
     const sec = Math.floor((Date.now() - d) / 1000);
-    if (sec < 60)    return `${sec}s geleden`;
-    if (sec < 3600)  return `${Math.floor(sec/60)}m geleden`;
-    if (sec < 86400) return `${Math.floor(sec/3600)}u geleden`;
+    if (sec < 60)    return `${sec}s ago `;
+    if (sec < 3600)  return `${Math.floor(sec/60)}min ago`;
+    if (sec < 86400) return `${Math.floor(sec/3600)}h ago`;
     return d.toLocaleDateString('nl-NL', { day:'numeric', month:'short' });
 }
 function _esc(str) {
@@ -151,11 +151,11 @@ function _renderPostList(posts) {
             <div class="fpc-left">
                 <button class="fpc-vote ${voted?'voted':''}"
                         onclick="event.stopPropagation();forumVote('${p.id}',${voted})"
-                        title="${voted?'Stem intrekken':'Omhoog stemmen'}">
+                        title="${voted?'Downvote':'Upvote'}">
                     <i class="fa-solid fa-arrow-up"></i>
                     <span>${p.upvoteCount||0}</span>
                 </button>
-                <div class="fpc-replies-count" title="${p.replyCount||0} antwoorden">
+                <div class="fpc-replies-count" title="${p.replyCount||0} replies">
                     <i class="fa-regular fa-comment"></i>
                     <span>${p.replyCount||0}</span>
                 </div>
@@ -165,7 +165,7 @@ function _renderPostList(posts) {
                     <span class="fpc-subject-tag" style="background:${sub.color}22;color:${sub.color}">
                         <i class="fa-solid ${sub.icon}"></i> ${_esc(sub.label)}
                     </span>
-                    ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Opgelost</span>' : ''}
+                    ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Solved</span>' : ''}
                 </div>
                 <h3 class="fpc-title">${_esc(p.title)}</h3>
                 <p class="fpc-excerpt">${_esc((p.body||'').slice(0,130))}${(p.body||'').length>130?'…':''}</p>
@@ -174,7 +174,7 @@ function _renderPostList(posts) {
                     <span class="fpc-author">${_esc(p.displayName||'Anoniem')}</span>
                     <span class="fpc-dot">·</span>
                     <span class="fpc-time">${_timeAgo(p.createdAt)}</span>
-                    ${isOwn ? `<button class="fpc-delete" title="Bericht verwijderen"
+                    ${isOwn ? `<button class="fpc-delete" title="Delete Post"
                         onclick="event.stopPropagation();forumDeletePost('${p.id}')">
                         <i class="fa-solid fa-trash"></i>
                     </button>` : ''}
@@ -195,7 +195,7 @@ window.forumOpenPost = async function(postId) {
         if (!snap.exists()) { _toast('Bericht niet gevonden.', true); return; }
         p = { id: snap.id, ...snap.data() };
     } catch(e) {
-        _toast('Fout bij laden bericht.', true);
+        _toast('Error loading this message.', true);
         return;
     }
     const sub = _subjectMeta(p.subject);
@@ -216,7 +216,7 @@ window.forumOpenPost = async function(postId) {
             <span class="fpc-subject-tag" style="background:${sub.color}22;color:${sub.color}">
                 <i class="fa-solid ${sub.icon}"></i> ${_esc(sub.label)}
             </span>
-            ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Opgelost</span>' : ''}
+            ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Solved</span>' : ''}
         </div>
         <h2 class="ft-title">${_esc(p.title)}</h2>
         <div class="ft-post-body">${_esc(p.body).replace(/\n/g,'<br>')}</div>
@@ -227,22 +227,22 @@ window.forumOpenPost = async function(postId) {
             <span class="fpc-time">${_timeAgo(p.createdAt)}</span>
             <div class="ft-actions">
                 <button class="ft-vote-btn ${voted?'voted':''}" id="ft-vote-btn-${postId}"
-                        onclick="forumVote('${p.id}',${voted})" title="${voted?'Stem intrekken':'Omhoog stemmen'}">
+                        onclick="forumVote('${p.id}',${voted})" title="${voted?'Downvote':'Upvote}">
                     <i class="fa-solid fa-arrow-up"></i> <span id="ft-vote-count">${p.upvoteCount||0}</span>
                 </button>
                 ${isOwn ? `
                     <button class="ft-action-btn ft-delete-btn"
                             onclick="forumDeletePost('${p.id}')">
-                        <i class="fa-solid fa-trash"></i> Verwijderen
+                        <i class="fa-solid fa-trash"></i> Delete
                     </button>
                     ${!p.solved ? `<button class="ft-action-btn ft-solve-btn"
                             onclick="forumMarkSolved('${p.id}')">
-                        <i class="fa-solid fa-circle-check"></i> Markeer als opgelost
+                        <i class="fa-solid fa-circle-check"></i> Mark as solved
                     </button>` : ''}
                 ` : ''}
             </div>
         </div>
-        <div class="ft-replies-label" id="ft-replies-label">Antwoorden laden…</div>
+        <div class="ft-replies-label" id="ft-replies-label">Loading replies…</div>
         <div id="ft-replies-list"></div>`;
 
     _listenReplies(postId);
@@ -274,17 +274,17 @@ function _renderReplies(replies, postId) {
     const el    = document.getElementById('ft-replies-list');
     const label = document.getElementById('ft-replies-label');
     if (!el) return;
-    if (label) label.textContent = `${replies.length} ${replies.length === 1 ? 'Antwoord' : 'Antwoorden'}`;
+    if (label) label.textContent = `${replies.length} ${replies.length === 1 ? 'Reply : 'Replies'}`;
     if (replies.length === 0) {
-        el.innerHTML = `<p class="ft-no-replies">Nog geen antwoorden — voeg hieronder een toe!</p>`;
+        el.innerHTML = `<p class="ft-no-replies">No answers yet - add one!</p>`;
         return;
     }
     el.innerHTML = replies.map(r => `
         <div class="ft-reply ${r.isAnswer?'is-answer':''}">
             <div class="ft-reply-header">
                 ${_avatar(r.displayName, r.isAnswer?'#22c55e':'#6b7280')}
-                <span class="fpc-author">${_esc(r.displayName||'Anoniem')}</span>
-                ${r.isAnswer ? '<span class="ft-answer-badge"><i class="fa-solid fa-check"></i> Beste Antwoord</span>' : ''}
+                <span class="fpc-author">${_esc(r.displayName||'Anonymous')}</span>
+                ${r.isAnswer ? '<span class="ft-answer-badge"><i class="fa-solid fa-check"></i> Best answer</span>' : ''}
                 <span class="fpc-dot">·</span>
                 <span class="fpc-time">${_timeAgo(r.createdAt)}</span>
                 ${r.uid === _uid ? `
@@ -304,7 +304,7 @@ function _renderReplies(replies, postId) {
 
 /* ── Vote (robust: won't show error if counter update fails) ── */
 window.forumVote = async function(postId, alreadyVoted) {
-    if (!_uid) { _toast('Log eerst in om te stemmen.', true); return; }
+    if (!_uid) { _toast('Log in to vote', true); return; }
     const ref = doc(_db, 'forum_posts', postId);
     try {
         if (alreadyVoted) {
@@ -328,7 +328,7 @@ window.forumVote = async function(postId, alreadyVoted) {
         }
     } catch(e) {
         console.warn('Vote error (check Firestore rules):', e);
-        _toast('Stem kon niet worden opgeslagen. Controleer Firestore regels.', true);
+        _toast('Vote could not be saved.', true);
     }
 };
 
@@ -344,12 +344,12 @@ window.forumSubmitPost = async function() {
     const body    = bodyEl.value.trim();
     const subject = subjectEl.value;
 
-    if (!title) { errEl.textContent = 'Voeg een titel toe.'; titleEl.focus(); return; }
-    if (!body)  { errEl.textContent = 'Beschrijf je vraag.'; bodyEl.focus(); return; }
+    if (!title) { errEl.textContent = 'Add a title'; titleEl.focus(); return; }
+    if (!body)  { errEl.textContent = 'Describe your question'; bodyEl.focus(); return; }
     errEl.textContent = '';
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Plaatsen…';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Posting…';
 
     try {
         await addDoc(collection(_db, 'forum_posts'), {
@@ -367,13 +367,13 @@ window.forumSubmitPost = async function() {
         titleEl.value = '';
         bodyEl.value  = '';
         _closeNewPost();
-        _toast('Vraag geplaatst! ✓');
+        _toast('Question posted ✓');
     } catch(e) {
-        errEl.textContent = 'Plaatsen mislukt. Probeer opnieuw.';
+        errEl.textContent = 'Post submit error - try again...';
         console.error('Post submit error:', e);
     }
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Vraag Plaatsen';
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Place a question';
 };
 
 /* ── Submit reply (FIXED: counter update is now non-blocking) ── */
@@ -406,18 +406,18 @@ window.forumSubmitReply = async function() {
             replyCount: increment(1)
         });
         bodyEl.value = '';
-        _toast('Antwoord geplaatst! ✓');
+        _toast('Answer submitted! ✓');
     } catch(e) {
-        errEl.textContent = 'Antwoord kon niet worden geplaatst. Controleer je verbinding.';
+        errEl.textContent = 'Reply could not be submitted - check your internet connection';
         console.error('Reply submit error:', e);
     }
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-reply"></i> Antwoorden';
+    btn.innerHTML = '<i class="fa-solid fa-reply"></i> Replies';
 };
 
 /* ── Delete post (FIXED: handles subcollection cleanup gracefully) ── */
 window.forumDeletePost = async function(postId) {
-    if (!confirm('Dit bericht en alle antwoorden verwijderen?')) return;
+    if (!confirm('Do you want to delete this post?')) return;
     try {
         // Delete replies (best-effort)
         try {
@@ -431,21 +431,21 @@ window.forumDeletePost = async function(postId) {
         if (_activePost === postId) forumCloseThread();
         _toast('Bericht verwijderd.');
     } catch(e) {
-        _toast('Verwijderen mislukt. Controleer Firestore regels.', true);
+        _toast('Post deletion failed', true);
         console.error('Delete post error:', e);
     }
 };
 
 /* ── Delete reply ── */
 window.forumDeleteReply = async function(postId, replyId) {
-    if (!confirm('Dit antwoord verwijderen?')) return;
+    if (!confirm('Delete this answer?')) return;
     try {
         await deleteDoc(doc(_db, 'forum_posts', postId, 'replies', replyId));
         // Best-effort decrement
         _silentUpdate(doc(_db, 'forum_posts', postId), { replyCount: increment(-1) });
-        _toast('Antwoord verwijderd.');
+        _toast('Answer deleted!');
     } catch(e) {
-        _toast('Verwijderen mislukt.', true);
+        _toast('Deletion error.', true);
         console.error('Delete reply error:', e);
     }
 };
@@ -455,9 +455,9 @@ window.forumMarkSolved = async function(postId) {
     try {
         await updateDoc(doc(_db, 'forum_posts', postId), { solved: true });
         forumOpenPost(postId);
-        _toast('Gemarkeerd als opgelost! ✓');
+        _toast('Marked as solved ✓');
     } catch(e) {
-        _toast('Kon niet markeren. Controleer Firestore regels.', true);
+        _toast('Could not mark as solved.', true);
         console.error('Mark solved error:', e);
     }
 };
