@@ -1,0 +1,15 @@
+# Student OS Screenshots
+
+![Screenshot](screenshots/screenshot-1.png)
+![Screenshot](screenshots/screenshot-2.png)
+![Screenshot](screenshots/screenshot-3.png)
+![Screenshot](screenshots/screenshot-4.png)
+![Screenshot](screenshots/screenshot-6.png)
+![Screenshot](screenshots/screenshot-7.png)
+![Screenshot](screenshots/screenshot-8.png)
+![Screenshot](screenshots/screenshot-9.png)
+![Screenshot](screenshots/screenshot-10.png)
+![Screenshot](screenshots/screenshot-11.png)
+![Screenshot](screenshots/screenshot-12.png)
+![Screenshot](screenshots/screenshot-13.png)
+![Screenshot](screenshots/screenshot-14.png)
