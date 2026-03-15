@@ -1,0 +1,48 @@
+{
+  "name": "StudentOS",
+  "short_name": "StudentOS",
+  "description": "Your all-in-one student dashboard",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tasks",
+      "short_name": "Tasks",
+      "description": "Open your task list",
+      "url": "/?tab=tasks",
+      "icons": [{ "src": "icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Notes",
+      "short_name": "Notes",
+      "description": "Open your notes",
+      "url": "/?tab=notes",
+      "icons": [{ "src": "icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Focus",
+      "short_name": "Focus",
+      "description": "Start a focus session",
+      "url": "/?tab=focus",
+      "icons": [{ "src": "icon.png", "sizes": "96x96" }]
+    }
+  ]
+}

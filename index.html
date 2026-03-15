@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mobile.css">  <!-- add this -->
+    <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon.png"><meta name="theme-color" content="#0f1117">
+    <link rel="icon" type="image/x-icon" href="icon.png">
+    <link rel="stylesheet" href="features.css">
+    <link rel="stylesheet" href="forum.css">
+</head>
+<body class="flex h-screen w-screen">
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="login-overlay" class="fixed inset-0 z-[999] flex items-center justify-center">
+
+  <div class="absolute inset-0" style="background: var(--bg-color);"></div>
+  <div class="absolute inset-0" style="background: radial-gradient(circle at 30% 20%, rgba(59,130,246,0.18), transparent 55%), radial-gradient(circle at 80% 80%, rgba(236,72,153,0.12), transparent 50%);"></div>
+  <div class="absolute inset-0 backdrop-blur-sm"></div>
+
+  <!-- Card -->
+  <div class="relative z-10 flex flex-col items-center gap-5 px-10 py-12 rounded-3xl"
+       style="background: var(--glass-panel); border: var(--glass-border); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); box-shadow: 0 8px 48px rgba(0,0,0,0.25); width: 400px;">
+
+    <!-- Logo -->
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center"
+           style="background: var(--accent); box-shadow: 0 8px 24px rgba(59,130,246,0.4);">
+        <i class="ph-bold ph-student text-3xl text-white"></i>
+      </div>
+      <div class="text-center">
+        <h1 class="text-2xl font-semibold tracking-tight" style="color: var(--text-main);">Student OS</h1>
+        <p class="text-sm mt-0.5" style="color: var(--text-muted);">Your workspace, synced everywhere.</p>
+      </div>
+    </div>
+
+    <!-- Google -->
+    <button id="btn-google-signin" onclick="signInWithGoogle()"
+            class="w-full flex items-center justify-center gap-3 py-3 px-5 rounded-xl text-sm font-medium transition-all hover:opacity-80 active:scale-[0.98]"
+            style="background: var(--glass-hover); border: var(--glass-border); color: var(--text-main);">
+      <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 48 48">
+        <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.5 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7l-6.6 4.9C9.7 39.5 16.3 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.4 4.3-4.4 5.8l6.2 5.2C41 35.3 44 30 44 24c0-1.3-.1-2.7-.4-4z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <!-- Divider -->
+    <div class="flex items-center w-full gap-3">
+      <div class="flex-1 h-px" style="background: var(--text-muted); opacity: 0.15;"></div>
+      <span class="text-[11px] tracking-wide uppercase font-medium" style="color: var(--text-muted); opacity: 0.6;">or email</span>
+      <div class="flex-1 h-px" style="background: var(--text-muted); opacity: 0.15;"></div>
+    </div>
+
+    <!-- Email fields -->
+    <div class="w-full flex flex-col gap-3">
+      <input id="login-email" type="email" placeholder="Email address"
+             class="bare-input w-full text-sm"
+             onkeypress="if(event.key==='Enter') signInWithEmail()">
+      <input id="login-password" type="password" placeholder="Password"
+             class="bare-input w-full text-sm"
+             onkeypress="if(event.key==='Enter') signInWithEmail()">
+    </div>
+
+    <!-- Forgot password -->
+    <div class="w-full flex justify-end -mt-2">
+      <button onclick="resetPassword()"
+              class="text-xs hover:underline"
+              style="color: var(--text-muted); background: none; border: none; cursor: pointer;">
+        Forgot password?
+      </button>
+    </div>
+
+    <!-- Sign In / Create Account -->
+    <div class="w-full flex gap-2.5">
+      <button onclick="signInWithEmail()"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+              style="background: var(--accent); box-shadow: 0 4px 14px rgba(59,130,246,0.3);">
+        Sign In
+      </button>
+      <button onclick="signUpWithEmail()"
+              class="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80 active:scale-[0.98]"
+              style="background: var(--glass-hover); border: var(--glass-border); color: var(--text-main);">
+        Create Account
+      </button>
+    </div>
+
+    <!-- Status message (errors in red, success in green) -->
+    <p id="login-error" class="hidden text-xs text-center w-full"></p>
+
+    <!-- Spinner -->
+    <div id="login-spinner" class="hidden items-center gap-2 text-xs" style="color: var(--text-muted);">
+      <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+      </svg>
+      Loading your workspace…
+    </div>
+
+    <!-- Offline -->
+    <button onclick="document.getElementById('login-overlay').classList.add('hidden'); initApp();"
+            class="text-xs hover:underline opacity-40 hover:opacity-70 transition-opacity"
+            style="color: var(--text-muted); background: none; border: none; cursor: pointer;">
+      Continue offline (data won't sync)
+    </button>
+
+  </div>
+</div>
+<!-- ===== END LOGIN OVERLAY ===== -->
+<div class="ambient-light" id="ambient-bg"></div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="import-deck-input" class="hidden" accept=".json,.csv" onchange="handleImportDeck(this)">
+<input type="file" id="profile-img-input" class="hidden" accept="image/*" onchange="handleProfileImage(this)">
+<input type="file" id="wb-img-input" class="hidden" accept="image/*" onchange="wbInsertImage(this)">
+<input type="file" id="import-all-input" class="hidden" accept=".json" onchange="importAllData(this)">
+<input type="file" id="note-img-input" class="hidden" accept="image/*" onchange="noteInsertImage(this)">
+<input type="file" id="pdf-upload-input" class="hidden" accept="application/pdf" onchange="loadPdfForAnnotation(this)">
+
+<!-- ===== PDF ANNOTATOR OVERLAY ===== -->
+<div id="pdf-annotator-overlay">
+    <div class="pdf-toolbar">
+        <button onclick="closePdfAnnotator()" class="pdf-tool-btn"><i class="ph-bold ph-arrow-left"></i> Back to Notes</button>
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <button onclick="setPdfTool('highlight')" id="pdf-tool-highlight" class="pdf-tool-btn active-pdf-tool"><i class="ph-bold ph-highlighter"></i> Highlight</button>
+        <button onclick="setPdfTool('pen')" id="pdf-tool-pen" class="pdf-tool-btn"><i class="ph-bold ph-pencil-simple"></i> Draw</button>
+        <button onclick="setPdfTool('text')" id="pdf-tool-text" class="pdf-tool-btn"><i class="ph-bold ph-text-t"></i> Annotate</button>
+        <button onclick="setPdfTool('erase')" id="pdf-tool-erase" class="pdf-tool-btn"><i class="ph-bold ph-eraser"></i> Erase</button>
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <span class="text-xs text-[var(--text-muted)]">Color:</span>
+        <button onclick="setPdfColor('#fde04788')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#fde047;"></button>
+        <button onclick="setPdfColor('#86efac88')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#86efac;"></button>
+        <button onclick="setPdfColor('#f9a8d488')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#f9a8d4;"></button>
+        <button onclick="setPdfColor('#93c5fd88')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#93c5fd;"></button>
+        <button onclick="setPdfColor('#ff000099')" class="w-5 h-5 rounded-full flex-shrink-0" style="background:#ef4444;"></button>
+        <input type="color" onchange="setPdfColor(this.value+'cc')" style="width:20px;height:20px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;">
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <span class="text-xs text-[var(--text-muted)]">Size:</span>
+        <input type="range" id="pdf-pen-size" min="2" max="30" value="10" class="w-20 accent-[var(--accent)]">
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.15);"></div>
+        <button onclick="pdfUndo()" class="pdf-tool-btn"><i class="ph-bold ph-arrow-u-up-left"></i></button>
+        <button onclick="savePdfAnnotations()" class="pdf-tool-btn" style="background:var(--accent);color:#fff;border-radius:8px;margin-left:auto;"><i class="ph-bold ph-floppy-disk"></i> Save to Note</button>
+        <span class="text-xs text-[var(--text-muted)] ml-2" id="pdf-page-info">Page 0/0</span>
+    </div>
+    <div id="pdf-pages-area">
+        <div id="pdf-upload-prompt" class="flex flex-col items-center justify-center h-full gap-4">
+            <i class="ph ph-file-pdf text-6xl text-[var(--text-muted)]"></i>
+            <p class="text-[var(--text-muted)] text-sm">Upload a PDF to start annotating</p>
+            <button onclick="document.getElementById('pdf-upload-input').click()" class="px-6 py-3 bg-[var(--accent)] text-white rounded-xl text-sm font-medium hover:opacity-90 transition flex items-center gap-2"><i class="ph-bold ph-upload-simple"></i> Upload PDF</button>
+        </div>
+        <div id="pdf-render-container" class="hidden"></div>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<nav class="w-20 h-full flex flex-col items-center py-6 border-r border-[var(--glass-border)] z-50 bg-[var(--bg-color)]/80 backdrop-blur-xl flex-shrink-0">
+    <div class="mb-8">
+        <div class="profile-btn shadow-lg" id="profile-btn" onclick="openModal('modal-profile')" title="Profile">
+            <span id="profile-display" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--accent);">
+                <i class="ph-bold ph-student text-xl text-white"></i>
+            </span>
+        </div>
+    </div>
+    <div class="flex flex-col gap-2.5">
+        <button onclick="switchTab('dashboard')" class="nav-btn active" id="btn-dashboard" data-tooltip="Home"><i class="ph ph-squares-four text-xl"></i></button>
+        <button onclick="switchTab('tasks')" class="nav-btn" id="btn-tasks" data-tooltip="Tasks"><i class="ph ph-check-circle text-xl"></i></button>
+        <button onclick="switchTab('calendar')" class="nav-btn" id="btn-calendar" data-tooltip="Calendar"><i class="ph ph-calendar-blank text-xl"></i></button>
+        <button onclick="switchTab('notes')" class="nav-btn" id="btn-notes" data-tooltip="Notes"><i class="ph ph-notebook text-xl"></i></button>
+        <button onclick="switchTab('whiteboard')" class="nav-btn" id="btn-whiteboard" data-tooltip="Draw"><i class="ph ph-pencil-simple text-xl"></i></button>
+        <button onclick="switchTab('cards')" class="nav-btn" id="btn-cards" data-tooltip="Study"><i class="ph ph-cards text-xl"></i></button>
+        <button onclick="switchTab('grades')" class="nav-btn" id="btn-grades" data-tooltip="Grades"><i class="ph ph-chart-bar text-xl"></i></button>
+        <button onclick="switchTab('calc')" class="nav-btn" id="btn-calc" data-tooltip="Calc"><i class="ph ph-calculator text-xl"></i></button>
+        <button onclick="switchTab('focus')" class="nav-btn" id="btn-focus" data-tooltip="Focus"><i class="ph ph-timer text-xl"></i></button>
+        <button onclick="switchTab('music')" class="nav-btn" id="btn-music" data-tooltip="Music"><i class="ph ph-music-note text-xl"></i></button>
+        <button onclick="switchTab('formulas')" class="nav-btn" id="btn-formulas" data-tooltip="Formulas"><i class="ph ph-math-operations text-xl"></i></button>
+        <button onclick="switchTab('forum')" class="nav-btn" id="btn-forum" data-tooltip="Forum"><i class="ph ph-chats-teardrop text-xl"></i></button>
+    </div>
+    <div class="mt-auto flex flex-col gap-2">
+        <button onclick="openModal('modal-settings')" class="nav-btn" data-tooltip="Settings"><i class="ph ph-gear text-xl"></i></button>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="flex-1 relative overflow-y-auto overflow-x-hidden p-6 md:p-10 z-10" id="main-scroll">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="view-dashboard" class="fade-in max-w-6xl mx-auto space-y-6">
+        <header class="flex justify-between items-end">
+            <div>
+                <h2 class="text-base font-medium text-[var(--accent)] mb-1" id="dash-greeting">Good Morning</h2>
+                <h1 class="text-6xl font-light tracking-tighter" id="clock-time">09:41</h1>
+                <p class="text-[var(--text-muted)] text-base mt-1 font-medium" id="date-display">Monday</p>
+            </div>
+            <div class="text-right">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold" data-i18n="status">Current Status</div>
+                <div class="text-sm font-medium text-[var(--accent)] mt-1" data-i18n="status_txt">Ready to learn</div>
+                <div class="flex gap-2 mt-2 justify-end">
+                    <div class="flex items-center gap-1.5 px-2 py-1 bg-[var(--glass-panel)] rounded-lg border border-[var(--glass-border)] text-xs text-[var(--text-muted)]">
+                        <i class="fa-solid fa-fire text-orange-400"></i><span id="dash-streak">0</span><span>day streak</span>
+                    </div>
+                    <button onclick="openModal('modal-widgets')" class="px-2 py-1 bg-[var(--glass-panel)] rounded-lg border border-[var(--glass-border)] text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition flex items-center gap-1"><i class="ph ph-sliders text-sm"></i> Widgets</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Widgets Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 min-h-[16rem]" id="widgets-grid">
+            <!-- Quick Links -->
+            <div class="col-span-2 min-card p-5 flex flex-col group widget-item" id="widget-links" draggable="true">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest" data-i18n="ql">Quick Links</h3>
+                    <button onclick="openAddLinkModal()" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"><i class="ph ph-plus text-lg"></i></button>
+                </div>
+                <div class="flex gap-3 overflow-x-auto pb-2 flex-1 items-center" id="quick-links-container"></div>
+            </div>
+            <!-- Daily Goals -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-goals" draggable="true">
+                <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2" data-i18n="goals">Daily Goals</h3>
+                <div class="flex-1 overflow-y-auto space-y-1.5 pr-1" id="goals-container"></div>
+                <div class="mt-2 flex gap-2">
+                    <input type="text" id="goal-input" placeholder="Add goal…" class="bg-transparent text-sm w-full outline-none text-[var(--text-main)] border-b border-[var(--glass-border)] pb-1 focus:border-[var(--accent)] transition" onkeypress="if(event.key==='Enter')addGoal()">
+                    <button onclick="addGoal()" class="text-[var(--accent)]"><i class="ph-bold ph-plus"></i></button>
+                </div>
+            </div>
+            <!-- Up Next -->
+            <div class="col-span-1 min-card p-5 flex flex-col justify-between relative overflow-hidden widget-item" id="widget-upnext" draggable="true">
+                <div class="absolute top-0 right-0 p-28 bg-[var(--accent)] rounded-full blur-3xl opacity-10 -mr-10 -mt-10 pointer-events-none"></div>
+                <div class="cursor-pointer" onclick="switchTab('tasks')">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2" data-i18n="up_next">Up Next</h3>
+                    <div id="dash-top-task" class="text-lg font-medium line-clamp-2">No tasks queued</div>
+                    <div id="dash-top-date" class="text-xs text-[var(--text-muted)] mt-1 font-medium">Clear schedule</div>
+                </div>
+                <div class="flex gap-2 mt-3 relative z-10">
+                    <input type="text" id="dash-quick-task" placeholder="Quick add task…" class="bg-transparent text-xs w-full outline-none text-[var(--text-main)] border-b border-[var(--glass-border)] pb-1 focus:border-[var(--accent)] transition" onkeypress="if(event.key==='Enter')dashAddTask()">
+                    <button onclick="dashAddTask()" class="text-[var(--accent)]"><i class="ph-bold ph-plus text-sm"></i></button>
+                </div>
+            </div>
+            <!-- Study Stats widget -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-studystats" draggable="true">
+                <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Study Stats</h3>
+                <div class="flex-1 flex flex-col justify-center gap-2">
+                    <div class="flex justify-between text-sm"><span class="text-[var(--text-muted)]">Cards today</span><span class="font-bold" id="stat-cards-today">0</span></div>
+                    <div class="flex justify-between text-sm"><span class="text-[var(--text-muted)]">Total decks</span><span class="font-bold" id="stat-decks">0</span></div>
+                    <div class="flex justify-between text-sm"><span class="text-[var(--text-muted)]">Best streak</span><span class="font-bold text-[var(--accent)]" id="stat-best-streak">0</span></div>
+                </div>
+                <button onclick="switchTab('cards')" class="mt-2 text-xs text-[var(--accent)] hover:underline">Study now →</button>
+            </div>
+            <!-- Grades Overview widget -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-grades" draggable="true">
+                <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">Grades Overview</h3>
+                <div class="flex items-center gap-3 flex-1">
+                    <div class="text-4xl font-light" id="dash-grade-avg">--</div>
+                    <div>
+                        <div class="text-xs text-[var(--text-muted)]">Overall</div>
+                        <div class="text-xs font-bold text-[var(--accent)]" id="dash-grade-label">No data</div>
+                    </div>
+                </div>
+                <button onclick="switchTab('grades')" class="text-xs text-[var(--accent)] hover:underline">View grades →</button>
+            </div>
+            <!-- Mini Calendar widget -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-minicalendar" draggable="true">
+                <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">Upcoming Events</h3>
+                <div id="dash-upcoming-events" class="flex-1 space-y-1.5 overflow-y-auto text-xs text-[var(--text-muted)]">No events</div>
+                <button onclick="switchTab('calendar')" class="mt-2 text-xs text-[var(--accent)] hover:underline">Open calendar →</button>
+            </div>
+            <!-- Quick Note widget — with "Send to Notes" button -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-quicknote" draggable="true">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Quick Note</h3>
+                    <button onclick="quickNoteToNotes()" title="Send to Notes" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition text-xs flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-[var(--glass-hover)]"><i class="ph ph-arrow-square-up-right text-sm"></i> To Notes</button>
+                </div>
+                <textarea id="dash-quick-note" placeholder="Jot something down…" class="flex-1 bg-transparent text-sm outline-none resize-none text-[var(--text-main)] placeholder-[var(--text-muted)]" oninput="saveQuickNote()" style="min-height:60px;"></textarea>
+            </div>
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-exams" draggable="true">
+    <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+            <i class="fa-solid fa-graduation-cap text-[var(--accent)] mr-1"></i> Exams
+        </h3>
+        <button onclick="examOpenModal(null)" title="Add exam"
+                class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition">
+            <i class="ph ph-plus text-lg"></i>
+        </button>
+    </div>
+    <div class="flex-1 overflow-y-auto" id="widget-exams-list">
+        <div class="text-xs text-[var(--text-muted)]">Loading…</div>
+    </div>
+    <button class="exam-manage-btn" onclick="openModal('modal-exam-manage')">
+        <i class="fa-solid fa-list-ul"></i> Manage all exams
+    </button>
+</div>
+
+            <!-- Music Widget -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-music" draggable="true">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                        <i class="ph ph-music-note text-[var(--accent)] mr-1"></i> Music
+                    </h3>
+                    <button onclick="switchTab('music')" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-xs">Open →</button>
+                </div>
+                <div id="widget-music-inner"></div>
+            </div>
+
+            <!-- Forum Quick-Ask Widget -->
+            <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-forum" draggable="true">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                        <i class="ph ph-chats-teardrop text-[var(--accent)] mr-1"></i> Forum
+                    </h3>
+                    <button onclick="switchTab('forum')" class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-xs">Browse →</button>
+                </div>
+                <textarea id="widget-forum-q" placeholder="Ask a quick question…" class="bg-[rgba(255,255,255,.04)] border border-[rgba(255,255,255,.08)] rounded-xl p-3 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none resize-none w-full" style="min-height:64px;font-family:inherit;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                <div class="flex gap-2 items-center mt-2 flex-wrap">
+                    <input type="text" id="widget-forum-subject" placeholder="Subject (optional)" class="bg-[rgba(255,255,255,.04)] border border-[rgba(255,255,255,.08)] rounded-xl px-3 py-2 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none flex-1 min-w-0">
+                    <button onclick="widgetForumPost()" class="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] text-white rounded-xl text-xs font-bold shrink-0">
+                        <i class="ph ph-paper-plane-tilt"></i> Post
+                    </button>
+                </div>
+                <div id="widget-forum-status" class="text-xs text-[var(--text-muted)] mt-2 min-h-[16px]"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== TASKS ===== -->
+    <div id="view-tasks" class="hidden fade-in max-w-4xl mx-auto h-full flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-light" data-i18n="tasks">Tasks</h1>
+            <div class="flex gap-2 items-center">
+                <button id="tasks-notif-btn" onclick="requestTaskNotifications()" class="notif-btn" title="Enable task reminders"><i class="ph ph-bell text-sm"></i> Reminders</button>
+                <button onclick="clearCompletedTasks()" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--text-muted)] rounded-lg text-xs hover:text-[var(--text-main)] hover:bg-[var(--glass-hover)] transition" data-i18n="clear_done">Clear Done</button>
+            </div>
+        </div>
+        <div class="min-card flex-1 flex flex-col overflow-hidden p-5">
+            <div class="flex gap-3 mb-5 flex-wrap items-center">
+                <input type="text" id="task-input" placeholder="New Task…" class="bare-input flex-1 text-lg min-w-32" onkeypress="if(event.key==='Enter')addTask()">
+                <select id="task-prio" class="bare-input text-sm bg-transparent w-28"><option value="high">High</option><option value="med">Medium</option><option value="low" selected>Low</option></select>
+                <input type="date" id="task-date" class="bare-input text-sm text-[var(--text-muted)] w-32">
+                <div class="flex items-center gap-1.5" title="Task color">
+                    <input type="color" id="task-color" value="#3b82f6" style="width:24px;height:24px;border-radius:50%;padding:0;cursor:pointer;">
+                    <button onclick="taskColorOff()" style="width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;line-height:1;border:1px solid rgba(255,255,255,.15);background:transparent;cursor:pointer;color:var(--text-muted);padding:0;vertical-align:middle;" title="No color">✕</button>
+                </div>
+                <button onclick="addTask()" class="bg-[var(--text-main)] text-[var(--bg-color)] w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition"><i class="ph-bold ph-plus"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto pr-1" id="full-task-list"></div>
+        </div>
+    </div>
+
+    <!-- ===== CALENDAR ===== -->
+    <div id="view-calendar" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+        <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-light" data-i18n="calendar">Calendar</h1>
+                <div class="flex gap-1">
+                    <button class="cal-view-btn active" id="cal-btn-month" onclick="switchCalView('month')">Month</button>
+                    <button class="cal-view-btn" id="cal-btn-week" onclick="switchCalView('week')">Week</button>
+                    <button class="cal-view-btn" id="cal-btn-agenda" onclick="switchCalView('agenda')">Agenda</button>
+                </div>
+            </div>
+            <div class="flex gap-2 items-center">
+                <button onclick="calGoToday()" class="px-3 py-1.5 text-xs bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-lg transition">Today</button>
+                <button id="cal-notif-btn" onclick="requestCalNotifications()" class="notif-btn" title="Enable event notifications"><i class="ph ph-bell text-sm"></i> Notifications</button>
+                <button onclick="openModal('modal-import-cal')" class="px-3 py-1.5 text-xs bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-lg transition" data-i18n="sync_url">Sync URL</button>
+            </div>
+        </div>
+        <div class="flex-1 min-card p-5 flex flex-col overflow-hidden">
+            <div id="calendar-iframe-container" class="hidden w-full h-full rounded-xl overflow-hidden relative flex flex-col">
+                <div id="cal-url-tabs" class="flex gap-2 mb-2 flex-shrink-0 flex-wrap"></div>
+                <iframe id="cal-frame" src="" class="flex-1 w-full border-none rounded-xl"></iframe>
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    <button onclick="clearCalendar()" class="bg-red-500/80 text-white px-4 py-2 rounded-lg text-xs hover:bg-red-600 backdrop-blur" data-i18n="remove_sync">Remove All</button>
+                    <button onclick="openCalNewTab()" class="bg-[var(--glass-panel)] border border-[var(--glass-border)] px-4 py-2 rounded-lg text-xs hover:bg-[var(--glass-hover)] backdrop-blur" data-i18n="open_tab">Open in Tab</button>
+                    <button onclick="openModal('modal-import-cal')" class="bg-[var(--accent)] text-white px-4 py-2 rounded-lg text-xs hover:opacity-90 backdrop-blur"><i class="fa-solid fa-plus mr-1"></i>Add Calendar</button>
+                </div>
+            </div>
+            <!-- MONTH VIEW -->
+            <div id="cal-view-month" class="w-full h-full flex flex-col">
+                <div class="flex justify-between mb-3 items-center">
+                    <h2 class="text-lg font-medium" id="cal-month-name">October 2025</h2>
+                    <div class="flex gap-1">
+                        <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full hover:bg-[var(--glass-hover)] flex items-center justify-center"><i class="ph ph-caret-left"></i></button>
+                        <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full hover:bg-[var(--glass-hover)] flex items-center justify-center"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 text-xs text-[var(--text-muted)] uppercase tracking-widest mb-1 font-bold text-center"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+                <div class="flex-1 grid grid-cols-7 gap-1 overflow-y-auto" id="calendar-grid"></div>
+            </div>
+            <!-- WEEK VIEW -->
+            <div id="cal-view-week" class="w-full h-full flex-col hidden">
+                <div class="flex justify-between mb-3 items-center">
+                    <h2 class="text-lg font-medium" id="cal-week-label">Week of …</h2>
+                    <div class="flex gap-1">
+                        <button onclick="changeWeek(-1)" class="w-8 h-8 rounded-full hover:bg-[var(--glass-hover)] flex items-center justify-center"><i class="ph ph-caret-left"></i></button>
+                        <button onclick="changeWeek(1)" class="w-8 h-8 rounded-full hover:bg-[var(--glass-hover)] flex items-center justify-center"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto" id="cal-week-container"></div>
+            </div>
+            <!-- AGENDA VIEW -->
+            <div id="cal-view-agenda" class="w-full h-full flex-col hidden overflow-y-auto">
+                <div class="mb-3"><h2 class="text-lg font-medium">Upcoming Events</h2></div>
+                <div id="cal-agenda-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NOTES ===== -->
+    <div id="view-notes" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+        <div class="notes-layout" id="notes-layout">
+            <!-- LEFT PANEL: sidebar -->
+            <div id="notes-left-panel">
+                <!-- Sidebar controls -->
+                <div class="flex gap-1.5 flex-wrap">
+                    <button onclick="createNewNote()" class="flex items-center gap-1.5 flex-1 py-2 px-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-xs font-semibold transition border border-[var(--glass-border)]"><i class="fa-solid fa-plus"></i> New Note</button>
+                    <button onclick="openPdfAnnotator()" class="flex items-center gap-1.5 py-2 px-3 bg-[var(--glass-panel)] hover:bg-[var(--accent)] hover:text-white rounded-xl text-xs font-semibold transition border border-[var(--glass-border)] text-[var(--accent)]" title="Annotate PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                    <button onclick="openModal('modal-note-group')" class="py-2 px-3 bg-[var(--glass-panel)] hover:bg-[var(--glass-hover)] rounded-xl text-xs transition border border-[var(--glass-border)]" title="New Group"><i class="fa-solid fa-folder-plus text-base"></i></button>
+                </div>
+                <div id="notes-sidebar" class="space-y-1 overflow-y-auto flex-1"></div>
+            </div>
+            <!-- RIGHT PANEL: editor -->
+            <div class="min-card p-0 flex flex-col overflow-hidden">
+                <!-- ===== COMPACT NOTES TOOLBAR ===== -->
+                <div class="note-toolbar-compact" id="note-toolbar">
+                    <!-- Title -->
+                    <input type="text" id="note-title" placeholder="Untitled" class="text-sm font-bold bg-transparent outline-none placeholder-[var(--text-muted)]" style="min-width:60px;max-width:150px;">
+                    <div class="note-section-divider"></div>
+
+                    <!-- Font Dropdown -->
+                    <div class="tbar-group" id="tbar-font-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-font-menu')">
+                            <i class="fa-solid fa-font"></i> Font <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-font-menu">
+                            <span class="tbar-dm-label">Font Family</span>
+                            <div class="tbar-dm-row">
+                                <button class="font-opt active-font tbar-dm-btn" id="font-sans" onclick="setNoteFont('Inter, sans-serif','font-sans');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Inter',sans-serif">Sans</button>
+                                <button class="font-opt tbar-dm-btn" id="font-serif" onclick="setNoteFont('Lora, serif','font-serif');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Lora',serif">Serif</button>
+                                <button class="font-opt tbar-dm-btn" id="font-mono" onclick="setNoteFont('JetBrains Mono, monospace','font-mono');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'JetBrains Mono',monospace">Mono</button>
+                                <button class="font-opt tbar-dm-btn" id="font-fun" onclick="setNoteFont('Nunito, sans-serif','font-fun');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Nunito',sans-serif">Fun</button>
+                                <button class="font-opt tbar-dm-btn" id="font-handwrite" onclick="setNoteFont('Caveat, cursive','font-handwrite');toggleToolbarDropdown('tbar-font-menu')" style="font-family:'Caveat',cursive">Hand</button>
+                            </div>
+                            <div class="tbar-dm-divider"></div>
+                            <span class="tbar-dm-label">Size</span>
+                            <div class="tbar-dm-row">
+                                <button onclick="formatDoc('fontSize','2')" class="tbar-dm-btn" style="font-size:.7rem">S</button>
+                                <button onclick="formatDoc('fontSize','3')" class="tbar-dm-btn" style="font-size:.85rem">M</button>
+                                <button onclick="formatDoc('fontSize','5')" class="tbar-dm-btn" style="font-size:1rem">L</button>
+                                <button onclick="formatDoc('fontSize','7')" class="tbar-dm-btn" style="font-size:1.1rem">XL</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Format Dropdown -->
+                    <div class="tbar-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-format-menu')">
+                            <i class="fa-solid fa-bold"></i> Format <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-format-menu">
+                            <span class="tbar-dm-label">Style</span>
+                            <div class="tbar-dm-row">
+                                <button class="tbar-dm-btn font-bold" onclick="formatDoc('bold')" title="Bold (Ctrl+B)">B</button>
+                                <button class="tbar-dm-btn italic" onclick="formatDoc('italic')" title="Italic">I</button>
+                                <button class="tbar-dm-btn underline" onclick="formatDoc('underline')" title="Underline">U</button>
+                                <button class="tbar-dm-btn line-through text-xs" onclick="formatDoc('strikeThrough')" title="Strike">S</button>
+                            </div>
+                            <div class="tbar-dm-divider"></div>
+                            <span class="tbar-dm-label">Lists & Structure</span>
+                            <div class="tbar-dm-row">
+                                <button class="tbar-dm-btn" onclick="formatDoc('insertUnorderedList')" title="Bullet list"><i class="fa-solid fa-list-ul"></i> Bullets</button>
+                                <button class="tbar-dm-btn" onclick="formatDoc('insertOrderedList')" title="Numbered"><i class="fa-solid fa-list-ol"></i> Numbered</button>
+                            </div>
+                            <div class="tbar-dm-row">
+                                <button class="tbar-dm-btn" onclick="noteInsertCheckbox()" title="Checkbox"><i class="fa-regular fa-square-check"></i> Checkbox</button>
+                                <button class="tbar-dm-btn" onclick="noteIndent()" title="Indent"><i class="fa-solid fa-indent"></i></button>
+                                <button class="tbar-dm-btn" onclick="noteOutdent()" title="Outdent"><i class="fa-solid fa-outdent"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Colors Dropdown -->
+                    <div class="tbar-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-color-menu')">
+                            <i class="fa-solid fa-highlighter"></i> Colors <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-color-menu" style="min-width:220px">
+                            <span class="tbar-dm-label">Highlight</span>
+                            <div class="tbar-color-row">
+                                <button class="tbar-color-dot" style="background:#fde047" onclick="noteHighlight('#fde047')" title="Yellow"></button>
+                                <button class="tbar-color-dot" style="background:#86efac" onclick="noteHighlight('#86efac')" title="Green"></button>
+                                <button class="tbar-color-dot" style="background:#f9a8d4" onclick="noteHighlight('#f9a8d4')" title="Pink"></button>
+                                <button class="tbar-color-dot" style="background:#93c5fd" onclick="noteHighlight('#93c5fd')" title="Blue"></button>
+                                <button class="tbar-color-dot" style="background:#fdba74" onclick="noteHighlight('#fdba74')" title="Orange"></button>
+                                <button class="tbar-color-dot" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteHighlight('transparent')" title="Remove">✕</button>
+                            </div>
+                            <div class="tbar-dm-divider"></div>
+                            <span class="tbar-dm-label">Text Color</span>
+                            <div class="tbar-color-row">
+                                <button class="tbar-color-dot" style="background:#ef4444" onclick="noteTextColor('#ef4444')"></button>
+                                <button class="tbar-color-dot" style="background:#3b82f6" onclick="noteTextColor('#3b82f6')"></button>
+                                <button class="tbar-color-dot" style="background:#22c55e" onclick="noteTextColor('#22c55e')"></button>
+                                <button class="tbar-color-dot" style="background:#f59e0b" onclick="noteTextColor('#f59e0b')"></button>
+                                <button class="tbar-color-dot" style="background:#8b5cf6" onclick="noteTextColor('#8b5cf6')"></button>
+                                <button class="tbar-color-dot" style="background:transparent;border:1.5px solid var(--text-muted);" onclick="noteTextColor('inherit')" title="Default">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Insert Dropdown -->
+                    <div class="tbar-group">
+                        <button class="tbar-dropdown-btn" onclick="toggleToolbarDropdown('tbar-insert-menu')">
+                            <i class="fa-solid fa-paperclip"></i> Insert <i class="fa-solid fa-caret-down" style="font-size:.6rem"></i>
+                        </button>
+                        <div class="tbar-dropdown-menu" id="tbar-insert-menu">
+                            <span class="tbar-dm-label">Insert</span>
+                            <div class="tbar-dm-row flex-col items-start">
+                                <button class="tbar-dm-btn w-full" onclick="document.getElementById('note-img-input').click();toggleToolbarDropdown('tbar-insert-menu')"><i class="fa-regular fa-image"></i> Image</button>
+                                <button class="tbar-dm-btn w-full" onclick="toggleStickerPanel(this)"><i class="fa-regular fa-face-smile"></i> Sticker</button>
+                                <div class="relative w-full">
+                                    <button class="tbar-dm-btn w-full" onclick="toggleTablePicker(this)"><i class="fa-solid fa-table-cells"></i> Table</button>
+                                    <div class="nt-dropdown-content" id="table-picker-popup">
+                                        <div class="text-xs text-[var(--text-muted)] mb-2 font-bold">Insert Table</div>
+                                        <div class="table-picker-grid" id="table-picker-grid"></div>
+                                        <div class="table-picker-label" id="table-picker-label">0 × 0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sticker panel remains here -->
+                        <div class="sticker-panel" id="sticker-panel">
+                            <div class="text-xs text-[var(--text-muted)] font-bold mb-1.5">Stickers</div>
+                            <div id="sticker-grid" class="flex flex-wrap gap-1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Right side: stats + sidebar toggle + delete -->
+                    <div class="ml-auto flex gap-1 items-center flex-shrink-0">
+                        <div class="text-xs text-[var(--text-muted)] font-mono hidden sm:block" id="note-stats">0 words</div>
+                        <div class="flex gap-1" id="note-tag-row"></div>
+                        <button onclick="toggleNotesSidebar()" id="notes-sidebar-toggle-btn" class="nt-btn" title="Toggle Sidebar (Ctrl+\)"><i class="ph ph-sidebar text-xs"></i></button>
+                        <button onclick="deleteCurrentNote()" class="nt-btn hover:text-red-400" title="Delete note"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                </div>
+                <div id="note-editor" contenteditable="true" class="flex-1 p-8 outline-none text-[var(--text-main)] leading-relaxed overflow-y-auto" placeholder="Start writing…" style="font-family:'Inter',sans-serif;font-size:1rem;line-height:1.8;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== WHITEBOARD ===== -->
+    <div id="view-whiteboard" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+        <!-- Row 1: Boards + Board actions -->
+        <div class="flex justify-between items-center mb-2 gap-2 flex-wrap">
+            <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-light" data-i18n="whiteboard">Whiteboard</h1>
+                <div class="flex gap-1 flex-wrap" id="wb-tabs"></div>
+                <button onclick="wbNewBoard()" class="w-8 h-8 rounded-lg bg-[var(--glass-panel)] border border-[var(--glass-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] flex items-center justify-center transition"><i class="fa-solid fa-plus text-sm"></i></button>
+            </div>
+        </div>
+        <!-- Row 2: Main Toolbar -->
+        <div class="wb-toolbar-row mb-2">
+            <!-- History -->
+            <div class="wb-tool-group">
+                <button onclick="wbUndo()" class="wb-tool" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+                <button onclick="wbRedo()" class="wb-tool" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+            <div class="wb-divider"></div>
+            <!-- Draw tools -->
+            <div class="wb-tool-group">
+                <button onclick="wbSetTool('select')" id="wb-tool-select" class="wb-tool" title="Select"><i class="fa-solid fa-arrow-pointer"></i></button>
+                <button onclick="wbSetTool('pen')" id="wb-tool-pen" class="wb-tool active-tool" title="Pen"><i class="fa-solid fa-pencil"></i></button>
+                <button onclick="wbSetTool('highlighter')" id="wb-tool-highlighter" class="wb-tool" title="Highlighter"><i class="fa-solid fa-highlighter"></i></button>
+                <button onclick="wbSetTool('eraser')" id="wb-tool-eraser" class="wb-tool" title="Eraser"><i class="fa-solid fa-eraser"></i></button>
+            </div>
+            <div class="wb-divider"></div>
+            <!-- Shapes -->
+            <div class="wb-tool-group">
+                <button onclick="wbSetTool('line')" id="wb-tool-line" class="wb-tool" title="Line"><i class="fa-solid fa-minus"></i></button>
+                <button onclick="wbSetTool('rect')" id="wb-tool-rect" class="wb-tool" title="Rectangle"><i class="fa-regular fa-square"></i></button>
+                <button onclick="wbSetTool('circle')" id="wb-tool-circle" class="wb-tool" title="Circle"><i class="fa-regular fa-circle"></i></button>
+                <button onclick="wbSetTool('arrow')" id="wb-tool-arrow" class="wb-tool" title="Arrow"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem"></i></button>
+                <button onclick="wbSetTool('text')" id="wb-tool-text" class="wb-tool" title="Text"><i class="fa-solid fa-t"></i></button>
+            </div>
+            <div class="wb-divider"></div>
+            <!-- Mind Map -->
+            <button onclick="wbToggleMindMap()" id="wb-tool-mindmap" class="wb-tool" title="Mind Map"><i class="fa-solid fa-diagram-project"></i></button>
+            <div class="wb-divider"></div>
+            <!-- Colors -->
+            <button onclick="setPenColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-[var(--glass-border)] flex-shrink-0" title="White"></button>
+            <button onclick="setPenColor('#1a1a1a')" class="w-5 h-5 rounded-full bg-[#1a1a1a] border border-[var(--glass-border)] flex-shrink-0" title="Black"></button>
+            <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#f59e0b')" class="w-5 h-5 rounded-full bg-amber-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#8b5cf6')" class="w-5 h-5 rounded-full bg-violet-500 flex-shrink-0"></button>
+            <button onclick="setPenColor('#fde047')" class="w-5 h-5 rounded-full bg-yellow-300 flex-shrink-0" title="Yellow"></button>
+            <input type="color" id="wb-custom-color" onchange="setPenColor(this.value)" title="Custom" style="width:20px;height:20px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;">
+            <div class="wb-divider"></div>
+            <!-- Size -->
+            <input type="range" id="wb-size" min="1" max="24" value="3" class="w-16 h-1 rounded-full appearance-none cursor-pointer accent-[var(--accent)]">
+            <span class="text-xs text-[var(--text-muted)] w-8" id="wb-size-display">3px</span>
+            <div class="wb-divider"></div>
+            <!-- Canvas bg -->
+            <button onclick="setWbBg('#ffffff')" id="wbbg-white" class="w-5 h-5 rounded-full wb-bg-circle bg-white border border-[var(--glass-border)]" title="White canvas"></button>
+            <button onclick="setWbBg('#09090b')" id="wbbg-dark" class="w-5 h-5 rounded-full wb-bg-circle bg-[#09090b] border border-[var(--glass-border)] wb-bg-active" title="Dark canvas"></button>
+            <button onclick="setWbBg('#fef3c7')" id="wbbg-cream" class="w-5 h-5 rounded-full wb-bg-circle bg-amber-100" title="Cream canvas"></button>
+            <button onclick="setWbBg('#f0fdf4')" id="wbbg-green" class="w-5 h-5 rounded-full wb-bg-circle bg-green-50" title="Green canvas"></button>
+            <button onclick="setWbBg('#eff6ff')" id="wbbg-blue" class="w-5 h-5 rounded-full wb-bg-circle bg-blue-50" title="Blue canvas"></button>
+            <div class="wb-divider"></div>
+            <!-- More actions -->
+            <div class="wb-tool-group">
+                <button onclick="wbToggleGrid()" id="wb-grid-btn" class="wb-tool" title="Toggle grid"><i class="fa-solid fa-border-all"></i></button>
+                <button onclick="document.getElementById('wb-img-input').click()" class="wb-tool" title="Insert image"><i class="fa-regular fa-image"></i></button>
+                <button onclick="wbToggleFullscreen()" class="wb-tool" title="Fullscreen"><i class="fa-solid fa-expand" id="wb-fs-icon"></i></button>
+                <button onclick="downloadWhiteboard()" class="wb-tool" title="Download PNG"><i class="fa-solid fa-download"></i></button>
+                <button onclick="wbDeleteBoard()" class="wb-tool hover:text-red-400" title="Delete board"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="clearCanvas()" class="wb-tool hover:text-red-400 text-xs px-2" data-i18n="clear">Clear</button>
+            </div>
+        </div>
+        <!-- Mind map status bar -->
+        <div id="mm-status" class="text-xs text-[var(--text-muted)] mb-1 flex gap-4 items-center">
+            <span>🗺️ <strong>Mind Map Mode</strong> — Click empty area to add node · Click node to select · Drag to move · Del to remove</span>
+            <button onclick="wbMindMapExport()" class="px-3 py-1 bg-[var(--accent)] text-white rounded-lg text-xs">Stamp to Canvas</button>
+            <button onclick="wbToggleMindMap()" class="px-3 py-1 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-lg text-xs">Exit Mind Map</button>
+        </div>
+        <!-- Select toolbar -->
+        <div class="flex items-center gap-2 mb-1.5 text-xs text-[var(--text-muted)]">
+            <div id="wb-select-toolbar" class="flex items-center gap-2 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-xl px-3 py-1.5" style="display:none!important;">
+                <span class="text-xs font-bold text-[var(--accent)]">Selection</span>
+                <button onclick="wbMoveSelection()" class="wb-tool text-xs px-2" title="Move selection"><i class="ph-bold ph-arrows-out-cardinal text-sm"></i></button>
+                <button onclick="wbDeleteSelection()" class="wb-tool text-xs px-2 hover:text-red-400" title="Delete selection"><i class="ph-bold ph-trash text-sm"></i></button>
+                <button onclick="wbClearSelection()" class="wb-tool text-xs px-2" title="Deselect"><i class="ph-bold ph-x text-sm"></i></button>
+            </div>
+        </div>
+        <div class="flex-1 min-card overflow-hidden relative border border-[var(--glass-border)]" id="wb-container">
+            <canvas id="wb-canvas" class="w-full h-full"></canvas>
+            <div id="wb-select-overlay"></div>
+            <!-- Mind map SVG overlay -->
+            <svg id="wb-mindmap-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+    </div>
+
+    <!-- ===== FLASHCARDS ===== -->
+    <div id="view-cards" class="hidden fade-in max-w-6xl mx-auto h-full flex flex-col">
+        <!-- Deck list -->
+        <div id="cards-deck-view" class="h-full flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-light" data-i18n="study_decks">Study Decks</h1>
+                <div class="flex gap-2">
+                    <button onclick="openModal('modal-add-group')" class="px-4 py-2 bg-[var(--glass-panel)] rounded-full text-sm hover:bg-[var(--glass-hover)] transition flex items-center gap-2 border border-[var(--glass-border)]"><i class="ph-bold ph-folder-plus"></i> New Group</button>
+                    <button onclick="openModal('modal-add-deck')" class="px-5 py-2 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-lg flex items-center gap-2"><i class="ph-bold ph-plus"></i> <span data-i18n="new_deck">New Deck</span></button>
+                </div>
+            </div>
+            <div class="overflow-y-auto flex-1" id="decks-container"></div>
+        </div>
+        <!-- Deck edit -->
+        <div id="cards-edit-view" class="hidden h-full flex flex-col">
+            <div class="flex justify-between items-center mb-5">
+                <div class="flex items-center gap-4">
+                    <button onclick="showDeckList()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition"><i class="ph-bold ph-arrow-left"></i></button>
+                    <div>
+                        <h1 class="text-2xl font-medium" id="edit-deck-title">Deck</h1>
+                        <p class="text-xs text-[var(--text-muted)]" id="edit-deck-stats">0 cards</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openAddCardModal()" class="px-4 py-2 bg-[var(--glass-panel)] rounded-lg text-sm hover:bg-[var(--glass-hover)]">+ Add Card</button>
+                    <button onclick="startStudy('shuffle')" class="px-4 py-2 bg-[var(--glass-panel)] text-[var(--accent)] border border-[var(--accent)]/30 rounded-lg text-sm hover:bg-[var(--glass-hover)] flex items-center gap-1"><i class="ph-bold ph-shuffle"></i> Shuffle</button>
+                    <button onclick="startStudy('all')" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90">Study All</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1 overflow-hidden">
+                <div class="md:col-span-3 min-card flex flex-col overflow-hidden">
+                    <div class="flex-1 overflow-y-auto p-4 space-y-2" id="cards-list-container"></div>
+                </div>
+                <div class="md:col-span-1 space-y-3">
+                    <div class="min-card p-4">
+                        <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Study Modes</h3>
+                        <button onclick="startStudy('all')" class="w-full py-2 mb-1.5 bg-[var(--glass-hover)] rounded-xl text-sm font-medium hover:bg-[var(--accent)] hover:text-white transition flex items-center justify-center gap-2"><i class="ph-bold ph-cards"></i> Flashcards</button>
+                        <button onclick="startStudy('write')" class="w-full py-2 mb-1.5 bg-[var(--glass-hover)] rounded-xl text-sm font-medium hover:bg-[var(--accent)] hover:text-white transition flex items-center justify-center gap-2"><i class="ph-bold ph-pencil"></i> Write Mode</button>
+                        <button onclick="startStudy('reverse')" class="w-full py-2 mb-1.5 bg-[var(--glass-hover)] rounded-xl text-sm font-medium hover:bg-[var(--accent)] hover:text-white transition flex items-center justify-center gap-2"><i class="ph-bold ph-arrows-left-right"></i> Reverse</button>
+                        <button onclick="startStudy('match')" class="w-full py-2 mb-1.5 bg-purple-500/15 text-purple-400 rounded-xl text-sm font-bold hover:bg-purple-500/25 transition flex items-center justify-center gap-2"><i class="ph-bold ph-squares-four"></i> Match Game</button>
+                        <button onclick="startWordSearch()" class="w-full py-2 mb-1.5 bg-[var(--glass-hover)] rounded-xl text-sm font-medium hover:bg-[var(--accent)] hover:text-white transition flex items-center justify-center gap-2"><i class="ph-bold ph-game-controller"></i> Word Search</button>
+                        <button onclick="exportDeck()" class="w-full py-2 bg-[var(--glass-hover)] rounded-xl text-sm font-medium transition flex items-center justify-center gap-2"><i class="ph-bold ph-upload-simple"></i> Export JSON</button>
+                    </div>
+                    <div class="min-card p-4">
+                        <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Practice Mode</h3>
+                        <button onclick="startStudy('hard')" class="w-full py-2 mb-1.5 bg-red-500/10 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/20 transition">Hard Only</button>
+                        <button onclick="startStudy('starred')" class="w-full py-2 bg-yellow-500/10 text-yellow-400 rounded-xl text-sm font-bold hover:bg-yellow-500/20 transition">Starred</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Study view (flashcard + write) -->
+        <div id="cards-study-view" class="hidden h-full flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <button onclick="showEditView()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition"><i class="ph-bold ph-x"></i></button>
+                    <div>
+                        <h1 class="text-xl font-medium">Studying</h1>
+                        <div class="text-[var(--text-muted)] text-xs" id="study-mode-label">All Cards</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-green-400 text-sm font-mono font-bold" id="study-correct">0 ✓</span>
+                    <span class="text-red-400 text-sm font-mono font-bold" id="study-wrong">0 ✗</span>
+                    <span class="text-[var(--text-muted)] text-sm font-mono bg-[var(--glass-panel)] px-3 py-1 rounded-full" id="study-counter">1/10</span>
+                </div>
+            </div>
+            <div class="study-progress-bar mb-4">
+                <div class="study-progress-fill" id="study-progress" style="width:0%"></div>
+            </div>
+            <!-- Flashcard flip mode -->
+            <div id="study-flip-mode" class="flex-1 flex flex-col items-center justify-center">
+                <div class="w-full max-w-2xl aspect-[3/2] perspective-1000 cursor-pointer" onclick="flipCard()">
+                    <div id="flashcard-inner" class="relative w-full h-full transform-style-3d transition-transform duration-500">
+                        <div class="absolute w-full h-full backface-hidden min-card p-10 flex flex-col items-center justify-center text-center shadow-2xl">
+                            <div class="text-xs text-[var(--accent)] font-bold uppercase tracking-widest mb-4" id="card-front-label">Question</div>
+                            <h2 class="text-3xl font-medium leading-snug" id="card-front">?</h2>
+                            <div class="absolute bottom-5 text-[var(--text-muted)] text-xs">Tap or Space to flip</div>
+                        </div>
+                        <div class="absolute w-full h-full backface-hidden rotate-y-180 min-card p-10 flex flex-col items-center justify-center text-center bg-[var(--bg-color)] border-2 border-[var(--accent)] shadow-2xl">
+                            <div class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mb-4" id="card-back-label">Answer</div>
+                            <h2 class="text-3xl font-medium text-[var(--accent)] leading-snug" id="card-back">!</h2>
+                            <div id="card-hint-area" class="mt-3 hidden"></div>
+                            <div class="absolute bottom-5 flex gap-6">
+                                <button onclick="event.stopPropagation();rateCard('hard')" class="px-5 py-2 bg-red-500/15 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/25 transition">✗ Hard</button>
+                                <button id="hint-btn" onclick="event.stopPropagation();showHint()" class="px-3 py-2 bg-[var(--glass-hover)] rounded-xl text-sm text-[var(--text-muted)] hover:bg-yellow-500/20 hover:text-yellow-400 transition hidden">💡 Hint</button>
+                                <button onclick="event.stopPropagation();rateCard('easy')" class="px-5 py-2 bg-green-500/15 text-green-400 rounded-xl text-sm font-bold hover:bg-green-500/25 transition">✓ Easy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-[var(--text-muted)]">← Hard &nbsp;|&nbsp; Space to flip &nbsp;|&nbsp; Easy →</div>
+            </div>
+            <!-- Write mode -->
+            <div id="study-write-mode" class="hidden flex-1 flex flex-col items-center justify-center gap-6">
+                <div class="w-full max-w-2xl min-card p-10 flex flex-col items-center text-center">
+                    <div class="text-xs text-[var(--accent)] font-bold uppercase tracking-widest mb-4">Write the Answer</div>
+                    <h2 class="text-3xl font-medium leading-snug mb-6" id="write-question">?</h2>
+                    <input id="write-answer-input" class="write-answer-input" placeholder="Type your answer…" onkeypress="if(event.key==='Enter')checkWriteAnswer()">
+                    <div id="write-feedback" class="mt-4 hidden"></div>
+                    <div id="write-hint-area" class="mt-3 hidden"></div>
+                    <div class="flex gap-4 mt-5">
+                        <button id="write-hint-btn" onclick="showWriteHint()" class="px-4 py-2 bg-[var(--glass-hover)] rounded-xl text-sm text-[var(--text-muted)] hover:text-yellow-400 transition hidden">💡 Hint</button>
+                        <button onclick="checkWriteAnswer()" class="px-8 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Match game -->
+        <div id="cards-match-view" class="hidden h-full flex flex-col">
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-4">
+                    <button onclick="showEditView()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition"><i class="ph-bold ph-arrow-left"></i></button>
+                    <div><h1 class="text-2xl font-medium">Match Game</h1><div class="text-[var(--text-muted)] text-xs">Connect questions to answers</div></div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-[var(--text-muted)]" id="match-progress">0/0 matched</span>
+                    <button onclick="startMatchGame()" class="px-4 py-2 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-lg text-sm hover:bg-[var(--glass-hover)] transition">Restart</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-8 flex-1 overflow-y-auto">
+                <div><div class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mb-3">Questions</div><div class="space-y-2" id="match-questions"></div></div>
+                <div><div class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mb-3">Answers</div><div class="space-y-2" id="match-answers"></div></div>
+            </div>
+        </div>
+        <!-- Word search -->
+        <div id="cards-wordsearch-view" class="hidden h-full flex flex-col">
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-4">
+                    <button onclick="showEditView()" class="w-10 h-10 rounded-full bg-[var(--glass-panel)] flex items-center justify-center hover:bg-[var(--glass-hover)] transition"><i class="ph-bold ph-arrow-left"></i></button>
+                    <h1 class="text-2xl font-medium">Word Search</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-[var(--text-muted)] text-sm">Click start, then end letter</span>
+                    <button onclick="startWordSearch()" class="px-4 py-2 bg-[var(--glass-panel)] rounded-lg text-sm hover:bg-[var(--glass-hover)] transition">Regenerate</button>
+                </div>
+            </div>
+            <div class="flex-1 flex gap-6 overflow-hidden">
+                <div class="flex-1 flex items-center justify-center overflow-auto"><div id="ws-grid-container" style="display:grid;gap:3px;"></div></div>
+                <div class="w-56 min-card p-5 overflow-y-auto">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Find Words</h3>
+                    <div id="ws-word-list" class="space-y-1 text-sm font-mono"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== GRADES ===== -->
+    <div id="view-grades" class="hidden fade-in max-w-5xl mx-auto h-full flex flex-col">
+        <div class="flex justify-between items-center mb-5">
+            <h1 class="text-3xl font-light" data-i18n="grades">Grades</h1>
+            <button onclick="openModal('modal-add-subject')" class="px-5 py-2 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition shadow-lg">+ Add Subject</button>
+        </div>
+        <div class="min-card p-5 mb-5 grid grid-cols-4 gap-5">
+            <div class="col-span-2">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-1">Overall Average</div>
+                <div class="text-5xl font-light tracking-tight" id="global-average">--</div>
+                <div class="text-xs text-[var(--text-muted)] mt-1" id="global-avg-label">No tests yet</div>
+                <div class="mt-2 h-2 bg-[var(--glass-hover)] rounded-full overflow-hidden w-full"><div id="global-bar" class="h-full rounded-full transition-all duration-700" style="width:0%;background:var(--accent)"></div></div>
+            </div>
+            <div class="text-center border-l border-[var(--glass-border)] pl-5">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-1">Practice Avg</div>
+                <div class="text-3xl font-light" id="global-practice-avg">--</div>
+                <div class="text-xs text-[var(--text-muted)] mt-1">practice only</div>
+            </div>
+            <div class="text-center border-l border-[var(--glass-border)] pl-5">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-1">Level</div>
+                <div class="text-3xl font-bold" id="global-letter" style="color:var(--accent)">--</div>
+                <div class="text-xs text-[var(--text-muted)] mt-1" id="global-be-label">--</div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8 overflow-y-auto" id="subjects-container"></div>
+    </div>
+
+    <!-- ===== CALCULATOR ===== -->
+    <div id="view-calc" class="hidden fade-in max-w-sm mx-auto h-full flex flex-col items-center justify-center">
+        <div class="min-card p-5 w-full shadow-2xl">
+            <div class="mb-3 text-right">
+                <div class="text-xs text-[var(--text-muted)] font-mono min-h-5" id="calc-history"></div>
+                <div class="text-4xl font-light tracking-tight mt-1 overflow-x-auto min-h-12 flex items-end justify-end" id="calc-result">0</div>
+            </div>
+            <div class="flex justify-end mb-3">
+                <button onclick="calcToggleSci()" id="calc-sci-btn" class="text-xs px-3 py-1 rounded-full bg-[var(--glass-hover)] text-[var(--text-muted)] hover:text-[var(--accent)] transition">Scientific</button>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5" id="calc-grid">
+                <button onclick="calcSciFunc('sin')" class="calc-key sci h-10 hidden sci-btn">sin</button>
+                <button onclick="calcSciFunc('cos')" class="calc-key sci h-10 hidden sci-btn">cos</button>
+                <button onclick="calcSciFunc('tan')" class="calc-key sci h-10 hidden sci-btn">tan</button>
+                <button onclick="calcSciFunc('log')" class="calc-key sci h-10 hidden sci-btn">log</button>
+                <button onclick="calcSciFunc('asin')" class="calc-key sci h-10 hidden sci-btn">sin⁻¹</button>
+                <button onclick="calcSciFunc('acos')" class="calc-key sci h-10 hidden sci-btn">cos⁻¹</button>
+                <button onclick="calcSciFunc('atan')" class="calc-key sci h-10 hidden sci-btn">tan⁻¹</button>
+                <button onclick="calcSciFunc('ln')" class="calc-key sci h-10 hidden sci-btn">ln</button>
+                <button onclick="calcSciFunc('sqrt')" class="calc-key sci h-10 hidden sci-btn">√</button>
+                <button onclick="calcAppend('**2')" class="calc-key sci h-10 hidden sci-btn">x²</button>
+                <button onclick="calcAppend('**')" class="calc-key sci h-10 hidden sci-btn">xʸ</button>
+                <button onclick="calcSciFunc('abs')" class="calc-key sci h-10 hidden sci-btn">|x|</button>
+                <button onclick="calcAppend(String(Math.PI))" class="calc-key sci h-10 hidden sci-btn">π</button>
+                <button onclick="calcAppend(String(Math.E))" class="calc-key sci h-10 hidden sci-btn">e</button>
+                <button onclick="calcAppend('(')" class="calc-key sci h-10 hidden sci-btn">(</button>
+                <button onclick="calcAppend(')')" class="calc-key sci h-10 hidden sci-btn">)</button>
+                <button onclick="calcClear()" class="calc-key accent h-12 col-span-2">AC</button>
+                <button onclick="calcBackspace()" class="calc-key h-12"><i class="ph ph-backspace text-xl"></i></button>
+                <button onclick="calcAppend('/')" class="calc-key accent h-12">÷</button>
+                <button onclick="calcAppend('7')" class="calc-key h-12">7</button>
+                <button onclick="calcAppend('8')" class="calc-key h-12">8</button>
+                <button onclick="calcAppend('9')" class="calc-key h-12">9</button>
+                <button onclick="calcAppend('*')" class="calc-key accent h-12">×</button>
+                <button onclick="calcAppend('4')" class="calc-key h-12">4</button>
+                <button onclick="calcAppend('5')" class="calc-key h-12">5</button>
+                <button onclick="calcAppend('6')" class="calc-key h-12">6</button>
+                <button onclick="calcAppend('-')" class="calc-key accent h-12">−</button>
+                <button onclick="calcAppend('1')" class="calc-key h-12">1</button>
+                <button onclick="calcAppend('2')" class="calc-key h-12">2</button>
+                <button onclick="calcAppend('3')" class="calc-key h-12">3</button>
+                <button onclick="calcAppend('+')" class="calc-key accent h-12">+</button>
+                <button onclick="calcAppend('0')" class="calc-key col-span-2 h-12">0</button>
+                <button onclick="calcAppend('.')" class="calc-key h-12">.</button>
+                <button onclick="calcSolve()" class="calc-key primary h-12">=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FOCUS ===== -->
+    <div id="view-focus" class="hidden fade-in max-w-xl mx-auto h-full flex flex-col justify-center items-center">
+        <div class="min-card p-8 w-full flex flex-col items-center shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-[var(--glass-hover)] rounded-full overflow-hidden">
+                <div class="h-full bg-[var(--accent)] transition-all duration-300" id="pomo-top-bar" style="width:0%"></div>
+            </div>
+            <!-- Session dots -->
+            <div class="flex gap-2 mb-5 mt-2" id="session-dots"></div>
+            <!-- Task selector -->
+            <div class="w-full mb-5">
+                <select id="focus-task-select" class="w-full bg-transparent border border-[var(--glass-border)] rounded-xl py-2 px-3 text-center outline-none text-sm appearance-none cursor-pointer hover:bg-[var(--glass-hover)] transition">
+                    <option value=""><i class="fa-solid fa-bullseye"></i> Select a Task to Focus On</option>
+                </select>
+            </div>
+            <!-- Timer display -->
+            <div class="text-center mb-6">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-[.3em] mb-2 font-bold flex items-center justify-center gap-2" id="timer-label">
+                    <i class="fa-solid fa-brain" id="pomo-mode-icon"></i> FOCUS SESSION
+                </div>
+                <div id="timer-display" class="text-8xl font-bold tracking-tighter tabular-nums" style="color:var(--clock-color)">25:00</div>
+                <div class="text-xs text-[var(--text-muted)] mt-2" id="pomo-session-info">Session 1 of 4</div>
+            </div>
+            <!-- Controls -->
+            <div class="flex gap-4 mb-5 items-center">
+                <button onclick="resetTimer()" class="w-12 h-12 rounded-full border border-[var(--glass-border)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition" title="Reset"><i class="fa-solid fa-rotate-left text-lg"></i></button>
+                <button onclick="toggleTimer()" id="btn-timer-toggle" class="w-20 h-20 rounded-full bg-[var(--text-main)] text-[var(--bg-color)] flex items-center justify-center text-3xl hover:scale-110 transition shadow-xl"><i class="fa-solid fa-play" id="icon-play"></i></button>
+                <button onclick="skipPomodoroSession()" class="w-12 h-12 rounded-full border border-[var(--glass-border)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--glass-hover)] hover:text-[var(--text-main)] transition" title="Skip session"><i class="fa-solid fa-forward-step text-lg"></i></button>
+            </div>
+            <!-- Mode presets -->
+            <div class="flex gap-2 flex-wrap justify-center mb-4">
+                <button onclick="setPomoMode('focus')" id="pomo-btn-focus" class="pomo-mode-btn focus-mode"><i class="fa-solid fa-brain mr-1"></i>Focus</button>
+                <button onclick="setPomoMode('short')" id="pomo-btn-short" class="pomo-mode-btn"><i class="fa-solid fa-mug-hot mr-1"></i>Short Break</button>
+                <button onclick="setPomoMode('long')" id="pomo-btn-long" class="pomo-mode-btn"><i class="fa-solid fa-leaf mr-1"></i>Long Break</button>
+            </div>
+            <!-- Bottom controls row -->
+            <div class="flex gap-2 flex-wrap justify-center mb-3">
+                <button onclick="toggleAutoBreak()" id="pomo-autobreak" class="pomo-autobreak-toggle">
+                    <i class="fa-solid fa-rotate text-xs"></i> Auto-break: <span id="pomo-autobreak-label">OFF</span>
+                </button>
+                <button onclick="togglePomoSettings()" class="pomo-autobreak-toggle" title="Timer settings">
+                    <i class="fa-solid fa-gear text-xs"></i> Settings <i class="fa-solid fa-caret-down text-xs" id="pomo-settings-chevron"></i>
+                </button>
+                <button onclick="togglePomoFocusMode()" class="pomo-focus-mode-btn" id="pomo-focus-btn" title="Focus Mode - hides all distractions">
+                    <i class="fa-solid fa-expand"></i> Focus Mode
+                </button>
+            </div>
+            <!-- Custom times - collapsible -->
+            <div class="pomo-settings-panel w-full" id="pomo-settings-panel">
+                <div class="flex gap-3 text-xs text-[var(--text-muted)] items-center justify-center pt-3 border-t border-[var(--glass-border)] flex-wrap">
+                    <span>Focus:</span>
+                    <input type="number" id="pomo-custom-work" value="25" min="1" max="120" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                    <span>min &nbsp; Short:</span>
+                    <input type="number" id="pomo-custom-short" value="5" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                    <span>min &nbsp; Long:</span>
+                    <input type="number" id="pomo-custom-long" value="15" min="1" max="60" class="w-12 text-center bg-[var(--glass-hover)] rounded-lg py-1 outline-none text-[var(--text-main)] text-xs" onchange="updatePomoTimes()">
+                    <span>min</span>
+                </div>
+                <div class="flex items-center justify-between pt-2 px-1">
+                    <span class="text-xs text-[var(--text-muted)]">Sessions today: <span id="pomo-sessions-today" class="font-bold text-[var(--text-main)]">0</span></span>
+                    <button onclick="toggleTimerSound()" class="flex items-center gap-2 text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition">
+                        <i class="fa-solid fa-volume-high text-xs"></i>
+                        <div class="w-9 h-5 bg-[var(--glass-hover)] rounded-full relative border border-[var(--glass-border)]">
+                            <div class="w-3 h-3 bg-white rounded-full absolute top-1 transition-all" id="timer-sound-dot" style="left:3px;"></div>
+                        </div>
+                    </button>
+                </div>
+            </div><!-- end pomo-settings-panel -->
+        </div><!-- end min-card -->
+    </div><!-- end view-focus -->
+    <div id="view-music" class="hidden fade-in">
+
+    <!-- Hidden audio iframe -->
+    <iframe id="music-player-frame" src="" allow="autoplay" allowfullscreen></iframe>
+
+    <div class="music-page-header">
+        <h1>Study <span>Music</span></h1>
+        <button class="music-custom-btn" onclick="musicOpenCustomModal()">
+            <i class="fa-solid fa-plus"></i> Add Custom URL
+        </button>
+    </div>
+
+    <!-- Now-playing bar -->
+    <div id="music-now-bar" class="hidden music-now-bar">
+        <div class="mnb-left">
+            <div class="mnb-icon-wrap" id="mnb-icon"><i class="fa-solid fa-music"></i></div>
+            <div>
+                <div class="mnb-title" id="mnb-title">Nothing playing</div>
+                <div class="mnb-sub" id="mnb-sub">Pick a playlist below</div>
+            </div>
+        </div>
+        <div class="mnb-controls">
+            <button class="mnb-btn mnb-play" id="mnb-play-btn" onclick="musicToggle()" title="Play / Pause">
+                <i class="fa-solid fa-pause" id="mnb-play-icon"></i>
+            </button>
+            <button class="mnb-btn mnb-stop" onclick="musicClose()" title="Stop">
+                <i class="fa-solid fa-stop"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="music-section-label">Presets</div>
+    <div id="music-grid"></div>
+
+    <div class="music-section-label" id="music-custom-label" style="display:none">My Stations</div>
+    <div id="music-custom-grid"></div>
+
+</div>
+ 
+ 
+<!-- ============================================================
+     ② FORMULA SHEETS VIEW
+     Add inside <main>, before </main>
+     ============================================================ -->
+<div id="view-formulas" class="hidden fade-in">
+ 
+    <div class="formula-topbar">
+        <h1>Formula <span>Sheets</span></h1>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="formula-search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search formulas…"
+                       oninput="formulaSearch(this.value)">
+            </div>
+            <button onclick="formulaOpenModal(null)"
+                    style="display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:12px;background:var(--accent);color:#fff;font-size:.82rem;font-weight:700;border:none;cursor:pointer;">
+                <i class="fa-solid fa-plus"></i> Add Formula
+            </button>
+        </div>
+    </div>
+ 
+    <div id="formula-subject-bar"></div>
+ 
+    <div id="formula-list">
+        <div class="formula-empty">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Loading…</p>
+        </div>
+    </div>
+
+</div><!-- end view-formulas -->
+
+<div id="view-forum" class="hidden fade-in h-full">
+
+    <!-- ── List view ── -->
+    <div id="forum-list-view">
+
+        <div class="forum-topbar">
+            <h1>Study <span>Forum</span></h1>
+            <div class="forum-sort-row">
+                <button class="forum-sort-btn active" data-sort="new"
+                        onclick="forumSetSort('new')">New</button>
+                <button class="forum-sort-btn" data-sort="top"
+                        onclick="forumSetSort('top')">Top</button>
+                <button class="forum-sort-btn" data-sort="unsolved"
+                        onclick="forumSetSort('unsolved')">Unsolved</button>
+            </div>
+        </div>
+
+        <!-- Subject filter -->
+        <div id="forum-subject-bar"></div>
+
+        <!-- New post panel (hidden until FAB clicked) -->
+        <div id="forum-new-panel" class="hidden">
+            <h3><i class="fa-solid fa-pen-to-square"></i> Ask a Question</h3>
+            <div id="forum-new-error"></div>
+            <input id="forum-new-title" type="text"
+                   placeholder="What's your question? (be specific)"
+                   onkeydown="if(event.key==='Enter')document.getElementById('forum-new-body').focus()">
+            <select id="forum-new-subject">
+                <option value="math">Maths</option>
+                <option value="science">Science</option>
+                <option value="english">English</option>
+                <option value="history">History</option>
+                <option value="it">IT &amp; CS</option>
+                <option value="other" selected>Other</option>
+            </select>
+            <textarea id="forum-new-body"
+                      placeholder="Describe your question in detail…"
+                      onkeydown="if(event.ctrlKey&&event.key==='Enter')forumSubmitPost()"></textarea>
+            <div class="forum-new-actions">
+                <p style="font-size:.7rem;color:var(--text-muted);margin-right:auto">
+                    Ctrl+Enter to post
+                </p>
+                <button class="forum-new-cancel" onclick="forumCancelNew()">Cancel</button>
+                <button id="forum-submit-btn" onclick="forumSubmitPost()">
+                    <i class="fa-solid fa-paper-plane"></i> Post Question
+                </button>
+            </div>
+        </div>
+
+        <!-- Posts -->
+        <div id="forum-post-list">
+            <div class="forum-empty">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Loading posts…</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Thread view (hidden by default) ── -->
+    <div id="forum-thread-view" class="hidden">
+        <div id="forum-thread-content"></div>
+
+        <!-- Reply box -->
+        <div class="ft-reply-box">
+            <div id="forum-reply-error"></div>
+            <textarea id="forum-reply-input"
+                      placeholder="Write a reply… (Ctrl+Enter to submit)"
+                      onkeydown="if(event.ctrlKey&&event.key==='Enter')forumSubmitReply()"></textarea>
+            <button id="forum-reply-btn" onclick="forumSubmitReply()">
+                <i class="fa-solid fa-reply"></i> Reply
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Floating "Ask" button (only shown on forum tab) -->
+<button id="forum-fab" class="hidden" onclick="forumOpenNew()">
+    <i class="fa-solid fa-plus"></i> Ask a Question
+</button>
+ 
+<script>
+// Stub auth + forum functions until modules load
+['signInWithGoogle','signInWithEmail','signUpWithEmail','resetPassword','initApp',
+ 'forumOpenPost','forumOpenNew','forumVote','forumDeletePost',
+ 'forumSubmitPost','forumCancelNew','forumSubmitReply'].forEach(function(name){
+    if (!window[name]) window[name] = function(){
+        window._stubQueue = window._stubQueue || {};
+        window._stubQueue[name] = arguments;
+    };
+});
+</script>
+
+<script>
+// Stub ALL onclick functions until module scripts finish loading.
+// When the real function is assigned to window.X, the stub is already
+// there so no ReferenceError fires. The real assignment overwrites it.
+(function() {
+    var ALL = [
+        // Navigation & core
+        'switchTab','openModal','closeModals','initApp','logOut',
+        // Auth
+        'signInWithGoogle','signInWithEmail','signUpWithEmail','resetPassword',
+        // Tasks
+        'addTask','dashAddTask','deleteTask','toggleTask','clearCompletedTasks',
+        'taskColorOff','startEditTask','saveEditTask','addSubtask',
+        'deleteSubtask','toggleSubtask','toggleSubtaskInput','requestTaskNotifications',
+        // Notes
+        'createNewNote','deleteCurrentNote','loadNote','saveNote',
+        'formatDoc','setNoteFont','noteHighlight','noteTextColor',
+        'noteIndent','noteOutdent','noteInsertCheckbox','noteInsertImage',
+        'toggleNotesSidebar','toggleToolbarDropdown','toggleStickerPanel',
+        'toggleTablePicker','saveNoteGroup','deleteNoteGroup','setNoteGroupColor',
+        'openPdfAnnotator','closePdfAnnotator','savePdfAnnotations',
+        'setPdfTool','setPdfColor','pdfUndo','loadPdfForAnnotation',
+        'confirmDeleteNote','quickNoteToNotes','saveQuickNote',
+        // Whiteboard
+        'wbSetTool','setPenColor','setWbBg','clearCanvas','wbUndo','wbRedo',
+        'wbNewBoard','wbDeleteBoard','wbToggleGrid','wbToggleFullscreen',
+        'wbToggleMindMap','wbClearSelection','wbDeleteSelection','wbMoveSelection',
+        'confirmWbText','downloadWhiteboard','wbMindMapExport','confirmMmNode',
+        'setMmNodeColor','wbInsertImage','wbPickColor','wbPickBg',
+        // Flashcards
+        'openDeck','showDeckList','showEditView','openAddCardModal',
+        'saveFlashcard','exportDeck','deleteDeck','saveDeck','saveGroup',
+        'deleteGroup','toggleGroupOpen','handleImportDeck','triggerImportDeck',
+        'flipCard','rateCard','showHint','checkWriteAnswer','startMatchGame',
+        'startStudy','startWordSearch','showWriteHint','p4OpenImport',
+        // Grades
+        'saveSubject','deleteSubject','openAddTestModal','saveTest','deleteTest',
+        'openEditSubject',
+        // Calendar
+        'switchCalView','calGoToday','changeMonth','changeWeek',
+        'clearCalendar','openCalNewTab','addCalendarUrl','saveCalEvent',
+        'requestCalNotifications',
+        // Focus/Timer
+        'toggleTimer','resetTimer','skipPomodoroSession','setPomoMode',
+        'toggleAutoBreak','togglePomoFocusMode','togglePomoSettings',
+        'toggleTimerSound','calcAppend','calcClear','calcBackspace',
+        'calcSolve','calcToggleSci','calcSciFunc',
+        // Settings & Profile
+        'setAccent','setFontScale','setClockColor','setBg','toggleTheme',
+        'setStudentName','syncSettingsName','setProfileEmoji','setAvatarBg',
+        'handleProfileImage','exportAllData','importAllData','resetAllData',
+        // Quick links
+        'openAddLinkModal','saveQuickLink',
+        // Goals
+        'addGoal',
+        // Forum
+        'forumOpenPost','forumOpenNew','forumVote','forumDeletePost',
+        'forumSubmitPost','forumCancelNew','forumSubmitReply','forumSetSort',
+        'forumSetSubject','forumCloseThread','forumMarkSolved','widgetForumPost',
+        // Features (music/formulas/exam)
+        'musicToggle','musicClose','musicOpenCustomModal','musicSaveCustom',
+        'formulaOpenModal','formulaSave','formulaEdit','examOpenModal','examSave',
+        'examDelete','ttSave','ttDeleteSlot','ttOpenAdd','ttEditSlot',
+        // Mobile nav
+        'toggleMobMenu','closeMobMenu',
+    ];
+    ALL.forEach(function(name) {
+        if (window[name]) return; // already defined, skip
+        window[name] = function() {
+            // Queue the call; drain when real function loads
+            if (!window._sos_queue) window._sos_queue = {};
+            if (!window._sos_queue[name]) window._sos_queue[name] = [];
+            window._sos_queue[name].push(Array.prototype.slice.call(arguments));
+        };
+    });
+
+    // Poll until modules are ready, then drain the queue
+    function drainQueue() {
+        if (!window._sos_queue) return;
+        Object.keys(window._sos_queue).forEach(function(name) {
+            // Only drain if the real function replaced the stub
+            // (real functions don't have the _sos_stub marker)
+            if (typeof window[name] === 'function' && !window[name]._sos_stub) {
+                var calls = window._sos_queue[name] || [];
+                delete window._sos_queue[name];
+                calls.forEach(function(args) {
+                    try { window[name].apply(window, args); } catch(e) {}
+                });
+            }
+        });
+    }
+    // Mark all stubs
+    ALL.forEach(function(name) {
+        if (window[name]) window[name]._sos_stub = true;
+    });
+    var _di = setInterval(drainQueue, 100);
+    setTimeout(function() { clearInterval(_di); }, 15000);
+})();
+</script>
+</main>
+
+<!-- ===== MODALS OVERLAY ===== -->
+<div id="modal-overlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center fade-in">
+
+    <div id="modal-alert" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]"><h3 id="alert-title" class="text-lg font-bold mb-2">Alert</h3><p id="alert-msg" class="text-sm text-[var(--text-muted)] mb-6">Message</p><button onclick="closeModals()" class="w-full py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">OK</button></div>
+    <div id="modal-confirm" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]"><h3 id="confirm-title" class="text-lg font-bold mb-2">Confirm</h3><p id="confirm-msg" class="text-sm text-[var(--text-muted)] mb-6">Sure?</p><div class="flex gap-3 justify-center"><button onclick="closeModals()" class="px-4 py-2 border border-[var(--glass-border)] text-[var(--text-muted)] rounded-lg text-sm">Cancel</button><button id="confirm-btn-action" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium">Yes</button></div></div>
+    <div id="modal-timer-done" class="hidden modal-panel min-card p-8 w-80 bg-[var(--bg-color)] text-center border border-[var(--glass-border)]">
+        <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center mx-auto mb-4 text-3xl"><i class="ph-fill ph-check"></i></div>
+        <h3 class="text-xl font-bold mb-1" id="timer-done-title">Time's Up!</h3>
+        <p class="text-sm text-[var(--text-muted)] mb-2" id="timer-done-msg">Great work!</p>
+        <p class="text-xs text-[var(--accent)] mb-6" id="timer-done-next"></p>
+        <button onclick="closeModals();autoStartBreak()" class="w-full py-2 bg-[var(--text-main)] text-[var(--bg-color)] rounded-lg text-sm font-bold" id="timer-done-action">Done</button>
+    </div>
+    <div id="modal-wb-text" class="hidden modal-panel min-card p-6 w-80 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-sm font-bold mb-3">Add Text</h3><input type="text" id="wb-text-input" class="bare-input w-full mb-2" placeholder="Type here…"><div class="flex items-center gap-2 mb-4"><label class="text-xs text-[var(--text-muted)]">Size:</label><input type="range" id="wb-text-size" min="10" max="72" value="18" class="w-24 accent-[var(--accent)]"><span id="wb-text-size-disp" class="text-xs text-[var(--text-muted)]">18px</span></div><div class="flex justify-end gap-2"><button onclick="closeModals()" class="text-xs text-[var(--text-muted)]">Cancel</button><button onclick="confirmWbText()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded">Add</button></div></div>
+
+    <!-- Mind Map node text input -->
+    <div id="modal-mm-node" class="hidden modal-panel min-card p-6 w-72 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-sm font-bold mb-3">Add Node</h3>
+        <input type="text" id="mm-node-text-input" class="bare-input w-full mb-2" placeholder="Node label…" onkeypress="if(event.key==='Enter')confirmMmNode()">
+        <div class="flex gap-2 mb-4 mt-2">
+            <button onclick="setMmNodeColor('#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-blue"></button>
+            <button onclick="setMmNodeColor('#22c55e')" class="w-6 h-6 rounded-full bg-green-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-green"></button>
+            <button onclick="setMmNodeColor('#ef4444')" class="w-6 h-6 rounded-full bg-red-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-red"></button>
+            <button onclick="setMmNodeColor('#8b5cf6')" class="w-6 h-6 rounded-full bg-violet-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-purple"></button>
+            <button onclick="setMmNodeColor('#f59e0b')" class="w-6 h-6 rounded-full bg-amber-500 hover:scale-110 transition border-2 border-transparent" id="mm-color-amber"></button>
+        </div>
+        <div class="flex justify-end gap-2"><button onclick="closeModals()" class="text-xs text-[var(--text-muted)]">Cancel</button><button onclick="confirmMmNode()" class="text-xs bg-[var(--accent)] text-white px-3 py-1 rounded">Add</button></div>
+    </div>
+
+    <!-- Settings modal -->
+    <div id="modal-settings" class="hidden modal-panel min-card p-0 w-[480px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[92vh] overflow-hidden flex flex-col">
+        <div class="px-8 py-5 border-b border-[var(--glass-border)] flex justify-between items-center flex-shrink-0">
+            <h3 class="text-xl font-medium">Settings</h3>
+            <button onclick="closeModals()" class="text-[var(--text-muted)] hover:text-[var(--text-main)]"><i class="ph-bold ph-x"></i></button>
+        </div>
+        <div class="overflow-y-auto flex-1 px-8 py-5 space-y-0">
+            <div class="settings-section">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Identity</div>
+                <div class="settings-row"><span class="text-sm">Student Name</span><input type="text" id="student-name-input" placeholder="Your name" class="bare-input text-sm text-right w-32" oninput="setStudentName(this.value)"></div>
+                <div class="settings-row"><span class="text-sm">Profile Picture</span><button onclick="closeModals();setTimeout(()=>openModal('modal-profile'),100)" class="text-xs text-[var(--accent)] hover:underline">Edit →</button></div>
+            </div>
+            <div class="settings-section">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Appearance</div>
+                <div class="settings-row"><span class="text-sm">Language</span><select id="lang-select" onchange="setLanguage(this.value)" class="bare-input text-sm bg-transparent w-28 text-right cursor-pointer"><option value="en">English</option><option value="nl">Nederlands</option></select></div>
+                <div class="settings-row"><span class="text-sm">Light Mode</span><button onclick="toggleTheme()" id="theme-toggle" class="w-12 h-6 rounded-full bg-[var(--glass-hover)] relative transition border border-[var(--glass-border)]"><div id="theme-dot" class="w-4 h-4 bg-[var(--text-main)] rounded-full absolute top-1 left-1 transition-transform"></div></button></div>
+                <div class="settings-row flex-col items-start gap-2">
+                    <span class="text-sm">Accent Color</span>
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="setAccent('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <button onclick="setAccent('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <button onclick="setAccent('#10b981')" class="w-8 h-8 rounded-full bg-emerald-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <button onclick="setAccent('#8b5cf6')" class="w-8 h-8 rounded-full bg-violet-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <button onclick="setAccent('#f59e0b')" class="w-8 h-8 rounded-full bg-amber-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <button onclick="setAccent('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <button onclick="setAccent('#14b8a6')" class="w-8 h-8 rounded-full bg-teal-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <button onclick="setAccent('#f97316')" class="w-8 h-8 rounded-full bg-orange-500 hover:scale-110 transition ring-2 ring-transparent hover:ring-white/40"></button>
+                        <input type="color" onchange="setAccent(this.value)" title="Custom accent" style="width:32px;height:32px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;">
+                    </div>
+                </div>
+                <div class="settings-row"><div><span class="text-sm block">Font Scale</span><span class="text-xs text-[var(--text-muted)]">App text size</span></div><div class="flex items-center gap-2"><button onclick="setFontScale(.85)" class="text-xs px-2 py-1 rounded-lg bg-[var(--glass-hover)] hover:bg-[var(--accent)] hover:text-white transition">S</button><button onclick="setFontScale(1)" class="text-xs px-2 py-1 rounded-lg bg-[var(--glass-hover)] hover:bg-[var(--accent)] hover:text-white transition">M</button><button onclick="setFontScale(1.12)" class="text-xs px-2 py-1 rounded-lg bg-[var(--glass-hover)] hover:bg-[var(--accent)] hover:text-white transition">L</button></div></div>
+                <div class="settings-row"><div><span class="text-sm block">Clock Color</span></div><input type="color" id="clock-color-picker" value="#ffffff" onchange="setClockColor(this.value)" style="width:32px;height:32px;border-radius:50%;padding:0;cursor:pointer;"></div>
+                <div class="settings-row"><span class="text-sm">Background Gradient</span><input type="color" onchange="setBg(this.value)" title="Pick bg color" style="width:32px;height:32px;border-radius:50%;padding:0;cursor:pointer;"></div>
+            </div>
+            <div class="settings-section">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Focus Timer</div>
+                <div class="settings-row"><span class="text-sm">Timer Sound</span><button onclick="toggleTimerSound()" id="timer-sound-toggle" class="w-12 h-6 rounded-full bg-[var(--glass-hover)] relative transition border border-[var(--glass-border)]"><div id="timer-sound-dot" class="w-4 h-4 bg-[var(--text-main)] rounded-full absolute top-1 left-1 transition-transform"></div></button></div>
+                <div class="settings-row"><div><span class="text-sm block">Custom Pomodoro</span><span class="text-xs text-[var(--text-muted)]">Minutes</span></div><input type="number" id="custom-pomodoro" value="25" min="1" max="120" onchange="setCustomPomodoro(this.value)" class="bare-input text-sm text-right w-16"></div>
+            </div>
+            <div class="settings-section">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Notifications</div>
+                <div class="settings-row"><span class="text-sm">Calendar Events</span><button onclick="requestCalNotifications()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Enable</button></div>
+                <div class="settings-row"><span class="text-sm">Task Reminders</span><button onclick="requestTaskNotifications()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Enable</button></div>
+            </div>
+            <div class="settings-section">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Data</div>
+                <div class="settings-row"><span class="text-sm">Export All Data</span><button onclick="exportAllData()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Export JSON</button></div>
+                <div class="settings-row"><span class="text-sm">Import Data</span><button onclick="document.getElementById('import-all-input').click()" class="text-xs px-3 py-1.5 bg-[var(--glass-hover)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition">Import JSON</button></div>
+                <div class="settings-row"><span class="text-sm text-red-400">Reset All Data</span><button onclick="resetAllData()" class="text-xs px-3 py-1.5 bg-red-500/15 text-red-400 rounded-lg hover:bg-red-500/25 transition">Reset</button></div>
+                <button onclick="logOut()"
+        class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80 mt-4"
+        style="background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2);">
+    <i class="ph-bold ph-sign-out"></i>
+    Sign Out
+</button>
+            </div>
+            <div class="settings-section">
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Shortcuts</div>
+                <div class="grid grid-cols-2 gap-1 text-xs text-[var(--text-muted)]">
+                    <div>Alt + 1–9 → Tabs</div><div>Alt + T → New Task</div>
+                    <div>Alt + N → New Note</div><div>Esc → Close modal</div>
+                    <div>Space → Flip card</div><div>← / → → Rate card</div>
+                    <div>Tab → Indent bullet</div><div>Shift+Tab → Outdent</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile modal -->
+    <div id="modal-profile" class="hidden modal-panel min-card p-0 w-[420px] bg-[var(--bg-color)] border border-[var(--glass-border)] overflow-hidden">
+        <div class="px-6 pt-6 pb-4 border-b border-[var(--glass-border)]">
+            <div class="flex items-center gap-4">
+                <div class="avatar-preview flex-shrink-0" id="avatar-preview" style="background:var(--accent);">🎓</div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold">Profile</h3>
+                    <input type="text" id="profile-name-input" placeholder="Your name…" class="bare-input text-sm w-full" oninput="setStudentName(this.value);syncSettingsName()">
+                </div>
+            </div>
+            <div class="mt-3 flex items-center gap-2 flex-wrap">
+                <span class="text-xs text-[var(--text-muted)]">Background:</span>
+                <button onclick="setAvatarBg('#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500 hover:scale-110 transition border-2 border-transparent hover:border-white/40"></button>
+                <button onclick="setAvatarBg('#8b5cf6')" class="w-6 h-6 rounded-full bg-violet-500 hover:scale-110 transition border-2 border-transparent hover:border-white/40"></button>
+                <button onclick="setAvatarBg('#ec4899')" class="w-6 h-6 rounded-full bg-pink-500 hover:scale-110 transition border-2 border-transparent hover:border-white/40"></button>
+                <button onclick="setAvatarBg('#10b981')" class="w-6 h-6 rounded-full bg-emerald-500 hover:scale-110 transition border-2 border-transparent hover:border-white/40"></button>
+                <button onclick="setAvatarBg('#f59e0b')" class="w-6 h-6 rounded-full bg-amber-500 hover:scale-110 transition border-2 border-transparent hover:border-white/40"></button>
+                <button onclick="setAvatarBg('#ef4444')" class="w-6 h-6 rounded-full bg-red-500 hover:scale-110 transition border-2 border-transparent hover:border-white/40"></button>
+                <button onclick="setAvatarBg('#1a1a2e')" class="w-6 h-6 rounded-full bg-[#1a1a2e] hover:scale-110 transition border-2 border-transparent hover:border-white/40"></button>
+                <input type="color" onchange="setAvatarBg(this.value)" title="Custom bg" style="width:24px;height:24px;border-radius:50%;padding:0;cursor:pointer;border:2px solid rgba(255,255,255,.2);">
+            </div>
+        </div>
+        <div class="px-6 pt-4 pb-2">
+            <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-2">Choose Emoji</div>
+            <div class="emoji-grid">
+                <div class="emoji-opt" onclick="setProfileEmoji('🎓')">🎓</div><div class="emoji-opt" onclick="setProfileEmoji('📚')">📚</div><div class="emoji-opt" onclick="setProfileEmoji('🧑‍💻')">🧑‍💻</div><div class="emoji-opt" onclick="setProfileEmoji('✏️')">✏️</div><div class="emoji-opt" onclick="setProfileEmoji('🦊')">🦊</div><div class="emoji-opt" onclick="setProfileEmoji('🐱')">🐱</div><div class="emoji-opt" onclick="setProfileEmoji('🐼')">🐼</div><div class="emoji-opt" onclick="setProfileEmoji('🦁')">🦁</div>
+                <div class="emoji-opt" onclick="setProfileEmoji('🌟')">🌟</div><div class="emoji-opt" onclick="setProfileEmoji('🚀')">🚀</div><div class="emoji-opt" onclick="setProfileEmoji('🎯')">🎯</div><div class="emoji-opt" onclick="setProfileEmoji('💡')">💡</div><div class="emoji-opt" onclick="setProfileEmoji('🎮')">🎮</div><div class="emoji-opt" onclick="setProfileEmoji('🔥')">🔥</div><div class="emoji-opt" onclick="setProfileEmoji('⚡')">⚡</div><div class="emoji-opt" onclick="setProfileEmoji('🧠')">🧠</div>
+                <div class="emoji-opt" onclick="setProfileEmoji('🎸')">🎸</div><div class="emoji-opt" onclick="setProfileEmoji('🌈')">🌈</div><div class="emoji-opt" onclick="setProfileEmoji('🦋')">🦋</div><div class="emoji-opt" onclick="setProfileEmoji('🌺')">🌺</div><div class="emoji-opt" onclick="setProfileEmoji('🐉')">🐉</div><div class="emoji-opt" onclick="setProfileEmoji('🦄')">🦄</div><div class="emoji-opt" onclick="setProfileEmoji('🏆')">🏆</div><div class="emoji-opt" onclick="setProfileEmoji('🎨')">🎨</div>
+                <div class="emoji-opt" onclick="setProfileEmoji('🧩')">🧩</div><div class="emoji-opt" onclick="setProfileEmoji('🎭')">🎭</div><div class="emoji-opt" onclick="setProfileEmoji('🌙')">🌙</div><div class="emoji-opt" onclick="setProfileEmoji('☀️')">☀️</div><div class="emoji-opt" onclick="setProfileEmoji('🍀')">🍀</div><div class="emoji-opt" onclick="setProfileEmoji('🦅')">🦅</div><div class="emoji-opt" onclick="setProfileEmoji('🐬')">🐬</div><div class="emoji-opt" onclick="setProfileEmoji('🌵')">🌵</div>
+            </div>
+        </div>
+        <div class="px-6 py-4 flex items-center justify-between border-t border-[var(--glass-border)] mt-2">
+            <button onclick="document.getElementById('profile-img-input').click()" class="px-4 py-2 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-xl text-sm hover:bg-[var(--glass-hover)] transition flex items-center gap-2"><i class="ph-bold ph-upload"></i> Upload Photo</button>
+            <button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-medium">Done</button>
+        </div>
+    </div>
+
+    <!-- Widget config -->
+    <div id="modal-widgets" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-medium mb-1">Customize Widgets</h3>
+        <p class="text-xs text-[var(--text-muted)] mb-5">Toggle and drag to reorder on dashboard.</p>
+        <div class="space-y-2">
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-links" checked onchange="setWidgetVisible('links',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-links">Quick Links</label></div><input type="color" id="wc-links" value="#3b82f6" onchange="setWidgetColor('links',this.value)" style="width:24px;height:24px;border-radius:50%;padding:0;cursor:pointer;" title="Tint"></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-goals" checked onchange="setWidgetVisible('goals',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-goals">Daily Goals</label></div><input type="color" id="wc-goals" value="#22c55e" onchange="setWidgetColor('goals',this.value)" style="width:24px;height:24px;border-radius:50%;padding:0;cursor:pointer;" title="Tint"></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-upnext" checked onchange="setWidgetVisible('upnext',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-upnext">Up Next</label></div><input type="color" id="wc-upnext" value="#f59e0b" onchange="setWidgetColor('upnext',this.value)" style="width:24px;height:24px;border-radius:50%;padding:0;cursor:pointer;" title="Tint"></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-studystats" checked onchange="setWidgetVisible('studystats',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-studystats">Study Stats</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-grades" checked onchange="setWidgetVisible('grades',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-grades">Grades Overview</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-minicalendar" checked onchange="setWidgetVisible('minicalendar',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-minicalendar">Upcoming Events</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-quicknote" checked onchange="setWidgetVisible('quicknote',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-quicknote">Quick Note</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-exams" checked onchange="setWidgetVisible('exams',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-exams">Exam Countdown</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-music" checked onchange="setWidgetVisible('music',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-music">Music Player</label></div></div>
+            <div class="flex items-center justify-between p-3 bg-[var(--glass-panel)] rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="wv-forum" checked onchange="setWidgetVisible('forum',this.checked)" class="w-4 h-4"><label class="text-sm" for="wv-forum">Forum Quick Ask</label></div></div>
+        </div>
+        <div class="flex justify-end mt-5"><button onclick="closeModals()" class="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm font-medium">Done</button></div>
+    </div>
+
+    <!-- Add Deck modal (with emoji picker) -->
+    <div id="modal-add-deck" class="hidden modal-panel min-card p-8 w-[420px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-light mb-4">New Deck</h3>
+        <input type="text" id="deck-name" placeholder="Deck Name" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')saveDeck()">
+        <div class="mb-4">
+            <label class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold block mb-2">Deck Icon</label>
+            <div id="deck-emoji-grid" class="grid gap-1 mb-1" style="grid-template-columns:repeat(10,1fr);"></div>
+            <input type="text" id="deck-emoji-custom" placeholder="Or type any emoji/symbol..." class="bare-input w-full text-sm mt-2" oninput="setDeckEmoji(this.value)">
+        </div>
+        <div class="mb-6">
+            <label class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold block mb-2">Group (optional)</label>
+            <select id="deck-group-select" class="bare-input w-full text-sm bg-transparent cursor-pointer"><option value="">No group</option></select>
+        </div>
+        <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-main)]">Cancel</button><button onclick="saveDeck()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button></div>
+    </div>
+
+    <!-- Add Group modal (flashcard groups) -->
+    <div id="modal-add-group" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-6">New Group</h3>
+        <input type="text" id="group-name" placeholder="Group Name (e.g. English)" class="bare-input w-full mb-8" onkeypress="if(event.key==='Enter')saveGroup()">
+        <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveGroup()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button></div>
+    </div>
+
+    <!-- Add Card modal -->
+    <div id="modal-add-card" class="hidden modal-panel min-card p-8 w-[420px] bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-1" id="add-card-modal-title">Add Card</h3>
+        <p class="text-xs text-[var(--text-muted)] mb-5">Deck: <span id="add-card-deck-name" class="font-bold"></span></p>
+        <input type="text" id="card-q-input" placeholder="Question / Term" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')document.getElementById('card-a-input').focus()">
+        <input type="text" id="card-a-input" placeholder="Answer / Definition" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')document.getElementById('card-tip-input').focus()">
+        <input type="text" id="card-tip-input" placeholder="💡 Hint (optional)" class="bare-input w-full mb-8 text-sm text-[var(--text-muted)]" onkeypress="if(event.key==='Enter')saveFlashcard()">
+        <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveFlashcard()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button></div>
+    </div>
+
+    <!-- Add Subject modal -->
+    <div id="modal-add-subject" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-6">New Subject</h3><input type="text" id="subject-name" placeholder="Subject Name" class="bare-input w-full mb-8" onkeypress="if(event.key==='Enter')saveSubject()"><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveSubject()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Add</button></div></div>
+
+    <!-- Add Test modal -->
+    <div id="modal-add-test" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-2">Add Result</h3>
+        <p class="text-xs text-[var(--text-muted)] mb-5">For <span id="add-test-subject-name" class="font-bold"></span></p>
+        <div class="flex gap-2 items-end mb-5">
+            <input type="number" id="test-score" placeholder="Score" class="bare-input w-20 text-center" step="0.5">
+            <span class="text-[var(--text-muted)] pb-2">/</span>
+            <input type="number" id="test-max" placeholder="Max" value="20" class="bare-input w-20 text-center">
+        </div>
+        <input type="text" id="test-name" placeholder="Test Name (Optional)" class="bare-input w-full mb-5 text-sm">
+        <div class="flex items-center gap-2 mb-8">
+            <input type="checkbox" id="test-practice" class="w-4 h-4">
+            <label for="test-practice" class="text-sm text-[var(--text-muted)]">Practice test (separate average)</label>
+        </div>
+        <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveTest()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button></div>
+    </div>
+
+    <!-- Calendar modals -->
+    <div id="modal-import-cal" class="hidden modal-panel min-card p-7 w-[420px] bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-1"><i class="fa-solid fa-calendar-plus text-[var(--accent)] mr-2"></i>Manage Calendars</h3>
+        <p class="text-xs text-[var(--text-muted)] mb-4">Add Google Calendar embed URLs. Each will appear as a tab.</p>
+        <!-- Existing calendar list -->
+        <div id="cal-url-list" class="mb-4 max-h-40 overflow-y-auto space-y-2"></div>
+        <!-- Add new -->
+        <div class="space-y-2 pt-3 border-t border-[var(--glass-border)]">
+            <input type="text" id="cal-label-input" placeholder="Calendar name (e.g. School)" class="bare-input w-full text-sm">
+            <input type="text" id="cal-url-input" placeholder="https://calendar.google.com/embed…" class="bare-input w-full text-xs">
+        </div>
+        <div class="flex justify-end gap-3 mt-4">
+            <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Done</button>
+            <button onclick="addCalendarUrl()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded-lg flex items-center gap-2"><i class="fa-solid fa-plus"></i> Add Calendar</button>
+        </div>
+    </div>
+
+    <div id="modal-add-event" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-1" id="event-modal-date">Add Event</h3>
+        <input type="text" id="event-input" placeholder="Event name" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')saveCalEvent()">
+        <div class="flex gap-4 mb-4">
+            <input type="time" id="event-time" class="bare-input w-full text-sm">
+            <select id="event-repeat" class="bare-input w-full text-sm bg-transparent"><option value="none">No Repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
+        </div>
+        <div class="flex items-center gap-2 mb-4">
+            <input type="checkbox" id="event-notify" class="w-4 h-4" checked>
+            <label for="event-notify" class="text-sm text-[var(--text-muted)]">Notify me for this event</label>
+        </div>
+        <div class="mb-5">
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Color</label>
+            <div class="flex gap-2"><input type="radio" name="eventColor" value="#3b82f6" class="color-radio bg-blue-500" checked><input type="radio" name="eventColor" value="#ef4444" class="color-radio bg-red-500"><input type="radio" name="eventColor" value="#22c55e" class="color-radio bg-green-500"><input type="radio" name="eventColor" value="#f59e0b" class="color-radio bg-amber-500"><input type="radio" name="eventColor" value="#8b5cf6" class="color-radio bg-purple-500"></div>
+        </div>
+        <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveCalEvent()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button></div>
+        <div class="mt-4 pt-4 border-t border-[var(--glass-border)] max-h-36 overflow-y-auto" id="event-list-day"></div>
+    </div>
+
+    <!-- Add Link modal -->
+    <div id="modal-add-link" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]"><h3 class="text-lg font-light mb-5">Add Link</h3><input type="text" id="link-name" placeholder="Name" class="bare-input w-full mb-4"><input type="text" id="link-url" placeholder="https://" class="bare-input w-full mb-4"><div class="mb-4"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Icon</label><select id="link-icon" class="bare-input w-full text-sm bg-transparent cursor-pointer"><option value="ph-fill ph-link">🔗 Default</option><optgroup label="— Study —"><option value="fa-solid fa-book">📖 Book</option><option value="fa-solid fa-graduation-cap">🎓 Course</option><option value="fa-solid fa-flask">🔬 Science</option><option value="fa-solid fa-calculator">🧮 Math</option><option value="fa-solid fa-globe">🌍 Language</option><option value="fa-solid fa-atom">⚛️ Physics</option><option value="fa-solid fa-dna">🧬 Biology</option><option value="fa-solid fa-music">🎵 Music</option><option value="fa-solid fa-code">💻 CS</option></optgroup><optgroup label="— Platforms —"><option value="fa-brands fa-google">Google</option><option value="fa-brands fa-google-drive">Google Drive</option><option value="fa-brands fa-youtube">YouTube</option><option value="fa-solid fa-envelope">Email</option></optgroup></select></div><div class="mb-5"><label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-2 block">Open In</label><div class="flex gap-4 text-sm"><label><input type="radio" name="linkMode" value="newtab" checked> New Tab</label><label><input type="radio" name="linkMode" value="iframe"> In App</label></div></div><div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveQuickLink()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Save</button></div></div>
+
+    <!-- Note group modal -->
+    <div id="modal-note-group" class="hidden modal-panel min-card p-8 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+        <h3 class="text-lg font-light mb-6">New Note Group</h3>
+        <input type="text" id="note-group-name" placeholder="Group name (e.g. Math, English…)" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')saveNoteGroup()">
+        <div class="flex gap-2 mb-6">
+            <button onclick="setNoteGroupColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 hover:scale-110 transition" id="ngc-blue"></button>
+            <button onclick="setNoteGroupColor('#22c55e')" class="w-8 h-8 rounded-full bg-green-500 hover:scale-110 transition" id="ngc-green"></button>
+            <button onclick="setNoteGroupColor('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 hover:scale-110 transition" id="ngc-red"></button>
+            <button onclick="setNoteGroupColor('#8b5cf6')" class="w-8 h-8 rounded-full bg-violet-500 hover:scale-110 transition" id="ngc-purple"></button>
+            <button onclick="setNoteGroupColor('#f59e0b')" class="w-8 h-8 rounded-full bg-amber-500 hover:scale-110 transition" id="ngc-amber"></button>
+            <button onclick="setNoteGroupColor('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 hover:scale-110 transition" id="ngc-pink"></button>
+        </div>
+        <div class="flex justify-end gap-4"><button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button><button onclick="saveNoteGroup()" class="text-sm font-medium bg-[var(--accent)] text-white px-4 py-2 rounded">Create</button></div>
+    </div>
+    <!-- Formula modal -->
+<div id="modal-formula" class="hidden modal-panel min-card p-7 w-[440px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[90vh] overflow-y-auto">
+    <h3 class="text-lg font-light mb-5" id="formula-modal-heading">Add Formula</h3>
+    <input type="hidden" id="formula-modal-id">
+    <div id="formula-modal-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+    <label>Title</label>
+    <input type="text" id="formula-modal-title" placeholder="e.g. Quadratic Formula"
+           class="bare-input w-full mb-4">
+    <label>Subject <span style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <input type="text" id="formula-modal-subject" placeholder="e.g. Mathematics" class="bare-input w-full mb-4">
+    <label>Formula</label>
+    <textarea id="formula-modal-formula" placeholder="e.g. x = (-b ± √(b²-4ac)) / 2a"
+              style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px 14px;font-family:'Courier New',monospace;font-size:.9rem;color:var(--text-main);outline:none;resize:none;min-height:80px;box-sizing:border-box;margin-bottom:12px;"
+              onkeydown="if(event.ctrlKey&&event.key==='Enter')formulaSave()"></textarea>
+    <label>Notes <span style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <textarea id="formula-modal-note" placeholder="When to use this, examples, tips…"
+              style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px 14px;font-size:.85rem;color:var(--text-main);outline:none;resize:none;min-height:60px;box-sizing:border-box;margin-bottom:16px;"></textarea>
+    <div class="flex justify-end gap-3">
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="formulaSave()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">
+            Save
+        </button>
+    </div>
+</div>
+ 
+<!-- Exam add/edit modal -->
+<div id="modal-exam" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+    <h3 class="text-lg font-light mb-5" id="exam-modal-heading">Add Exam</h3>
+    <input type="hidden" id="exam-modal-id">
+    <div id="exam-modal-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Exam Name</label>
+    <input type="text" id="exam-modal-title" placeholder="e.g. Mathematics — Chapter 4"
+           class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')examSave()">
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Subject <span style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <input type="text" id="exam-modal-subject" placeholder="e.g. Mathematics" class="bare-input w-full mb-4">
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Date</label>
+    <input type="date" id="exam-modal-date" class="bare-input w-full mb-6">
+    <div class="flex justify-end gap-3">
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="examSave()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">
+            Save
+        </button>
+    </div>
+</div>
+
+<!-- Exam manage list modal -->
+<div id="modal-exam-manage" class="hidden modal-panel min-card p-7 w-[440px] bg-[var(--bg-color)] border border-[var(--glass-border)] max-h-[80vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-light">All Exams</h3>
+        <button onclick="examOpenModal(null)"
+                class="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-white rounded-xl text-xs font-bold">
+            <i class="fa-solid fa-plus"></i> Add
+        </button>
+    </div>
+    <div id="exam-manage-list"></div>
+</div>
+ 
+<!-- Timetable slot modal -->
+<div id="modal-timetable" class="hidden modal-panel min-card p-7 w-96 bg-[var(--bg-color)] border border-[var(--glass-border)]">
+    <h3 class="text-lg font-light mb-5">Class Slot</h3>
+    <input type="hidden" id="tt-modal-id">
+    <div id="tt-modal-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+ 
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Class Name</label>
+    <input type="text" id="tt-modal-name" placeholder="e.g. Mathematics" class="bare-input w-full mb-4">
+ 
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Room (optional)</label>
+    <input type="text" id="tt-modal-room" placeholder="e.g. Room 12A" class="bare-input w-full mb-4">
+ 
+    <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Day</label>
+            <select id="tt-modal-day" class="bare-input w-full bg-transparent">
+                <option value="0">Monday</option>
+                <option value="1">Tuesday</option>
+                <option value="2">Wednesday</option>
+                <option value="3">Thursday</option>
+                <option value="4">Friday</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Colour</label>
+            <input type="color" id="tt-modal-color" value="#3b82f6"
+                   style="width:100%;height:38px;border-radius:8px;padding:2px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:transparent;">
+        </div>
+    </div>
+ 
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Start (hour)</label>
+            <input type="number" id="tt-modal-start" min="7" max="21" value="8" class="bare-input w-full">
+        </div>
+        <div>
+            <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">End (hour)</label>
+            <input type="number" id="tt-modal-end" min="8" max="22" value="9" class="bare-input w-full">
+        </div>
+    </div>
+ 
+    <div class="flex gap-3">
+        <button id="tt-delete-btn" onclick="ttDeleteSlot()"
+                class="px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition">
+            <i class="fa-solid fa-trash"></i> Delete
+        </button>
+        <div class="flex-1"></div>
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="ttSave()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">Save</button>
+    </div>
+</div>
+
+<!-- Custom Music URL Modal -->
+<div id="modal-music-custom" class="hidden modal-panel min-card p-7 w-[440px] bg-[var(--bg-color)] border border-[var(--glass-border)]">
+    <h3 class="text-lg font-light mb-2">Add Custom Station</h3>
+    <p class="text-xs text-[var(--text-muted)] mb-5 leading-relaxed">Paste a YouTube or SoundCloud URL. It will be embedded as a live station.</p>
+    <input type="hidden" id="music-custom-edit-id">
+    <div id="music-custom-error" style="color:#f87171;font-size:.75rem;min-height:16px;margin-bottom:4px;"></div>
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">Station Name</label>
+    <input type="text" id="music-custom-name" placeholder="e.g. My Chill Mix" class="bare-input w-full mb-4" onkeypress="if(event.key==='Enter')musicSaveCustom()">
+    <label class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest font-bold mb-1 block">YouTube or SoundCloud URL</label>
+    <input type="url" id="music-custom-url" placeholder="https://youtube.com/watch?v=..." class="bare-input w-full mb-6" onkeypress="if(event.key==='Enter')musicSaveCustom()">
+    <div class="flex justify-end gap-3">
+        <button onclick="closeModals()" class="text-sm text-[var(--text-muted)]">Cancel</button>
+        <button onclick="musicSaveCustom()" class="px-5 py-2 bg-[var(--accent)] text-white rounded-xl text-sm font-bold">Save</button>
+    </div>
+</div>
+
+</div><!-- end modal-overlay -->
+
+<!-- Mini music bar — lives OUTSIDE modal-overlay so modals don't reveal it -->
+<div id="music-minibar" class="hidden">
+
+<!-- Iframe browser -->
+<div id="modal-browser" class="hidden fixed inset-0 z-[150] bg-black flex flex-col fade-in" style="position:fixed;">
+    <div class="h-12 bg-[#1c1c1e] flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
+        <span class="text-sm font-medium text-white" id="browser-title">Web Viewer</span>
+        <button onclick="document.getElementById('modal-browser').classList.add('hidden')" class="text-white/50 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
+    </div>
+    <iframe id="browser-frame" class="flex-1 w-full border-none bg-white"></iframe>
+</div>
+
+<!-- ===== MOBILE BOTTOM NAV ===== -->
+<nav id="mobile-nav">
+    <div class="mob-nav-inner">
+        <button class="mob-nav-btn active" id="mob-btn-dashboard" onclick="switchTab('dashboard');closeMobMenu()">
+            <i class="fa-solid fa-house"></i><span>Home</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-tasks" onclick="switchTab('tasks');closeMobMenu()">
+            <i class="fa-solid fa-check-circle"></i><span>Tasks</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-notes" onclick="switchTab('notes');closeMobMenu()">
+            <i class="fa-solid fa-book-open"></i><span>Notes</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-cards" onclick="switchTab('cards');closeMobMenu()">
+            <i class="fa-solid fa-layer-group"></i><span>Study</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-btn-more" onclick="toggleMobMenu()">
+            <i class="fa-solid fa-ellipsis"></i><span>More</span>
+        </button>
+    </div>
+</nav>
+
+<!-- ================================================================
+     Replace your existing #mob-more-drawer block with this.
+     (The backdrop div above it stays the same.)
+     ================================================================ -->
+
+<div id="mob-more-drawer">
+
+    <!-- ── Apps ── -->
+    <div class="mbd-label">Apps</div>
+
+    <div class="mbd-featured">
+        <button class="mbd-feat" id="mob-btn-calendar"
+                style="--c:#3b82f6"
+                onclick="switchTab('calendar');closeMobMenu()">
+            <div class="mbd-feat-icon"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="mbd-feat-name">Calendar</div>
+        </button>
+        <button class="mbd-feat" id="mob-btn-whiteboard"
+                style="--c:#8b5cf6"
+                onclick="switchTab('whiteboard');closeMobMenu()">
+            <div class="mbd-feat-icon"><i class="fa-solid fa-pen-nib"></i></div>
+            <div class="mbd-feat-name">Whiteboard</div>
+        </button>
+    </div>
+
+    <div class="mbd-tools">
+        <button class="mbd-tool" id="mob-btn-grades"
+                style="--c:#22c55e"
+                onclick="switchTab('grades');closeMobMenu()">
+            <i class="fa-solid fa-chart-bar mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Grades</span>
+        </button>
+        <button class="mbd-tool" id="mob-btn-calc"
+                style="--c:#f59e0b"
+                onclick="switchTab('calc');closeMobMenu()">
+            <i class="fa-solid fa-calculator mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Calculator</span>
+        </button>
+        <button class="mbd-tool" id="mob-btn-focus"
+                style="--c:#ef4444"
+                onclick="switchTab('focus');closeMobMenu()">
+            <i class="fa-solid fa-brain mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Focus</span>
+        </button>
+    </div>
+
+    <div class="mbd-divider"></div>
+
+    <!-- ── Account ── -->
+    <div class="mbd-label">Account</div>
+
+    <div class="mbd-account">
+        <button class="mbd-account-btn"
+                onclick="openModal('modal-profile');closeMobMenu()">
+            <div class="mbd-acct-icon" style="--c:#3b82f6">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <span>Profile</span>
+        </button>
+        <button class="mbd-account-btn"
+                onclick="openModal('modal-settings');closeMobMenu()">
+            <div class="mbd-acct-icon" style="--c:#6b7280">
+                <i class="fa-solid fa-gear"></i>
+            </div>
+            <span>Settings</span>
+        </button>
+        <button class="mbd-account-btn mbd-acct-logout"
+                onclick="logOut()">
+            <div class="mbd-acct-icon" style="--c:#ef4444">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <span>Log Out</span>
+        </button>
+        <button class="mbd-tool" id="mob-btn-forum" style="--c:#3b82f6" onclick="switchTab('forum');closeMobMenu()">
+    <i class="fa-solid fa-comments mbd-tool-icon"></i>
+    <span class="mbd-tool-name">Forum</span>
+</button>
+    </div>
+
+
+</div>
+
+<!-- Toast notification -->
+<div id="sos-toast"></div>
+
+<script type="module" src="script.js?v=3"></script>
+<script type="module" src="features.js"></script>
+<script type="module" src="forum.js"></script>
+<script type="module" src="patches.js"></script>
+<script type="module" src="forum_fix.js"></script>   <!-- NEW -->
+<script type="module" src="patches3.js"></script>
+<script type="module" src="patches4.js"></script>
+<script type="module" src="patches5.js"></script>
+<script> (function() {
+
+    /* ── "More" button rotates when drawer is open ── */
+    var _origToggle = window.toggleMobMenu;
+    window.toggleMobMenu = function() {
+        _origToggle && _origToggle();
+        var btn    = document.getElementById('mob-btn-more');
+        var drawer = document.getElementById('mob-more-drawer');
+        var bk     = document.getElementById('mob-drawer-backdrop');
+        if (btn)    btn.classList.toggle('open',    drawer && drawer.classList.contains('open'));
+        if (bk)     bk .classList.toggle('open',    drawer && drawer.classList.contains('open'));
+    };
+
+    var _origClose = window.closeMobMenu;
+    window.closeMobMenu = function() {
+        _origClose && _origClose();
+        var btn = document.getElementById('mob-btn-more');
+        var bk  = document.getElementById('mob-drawer-backdrop');
+        if (btn) btn.classList.remove('open');
+        if (bk)  bk .classList.remove('open');
+    };
+
+    /* ── Active state on featured / tool buttons in drawer ── */
+    var _origActive = window.setMobActive;
+    window.setMobActive = function(tab) {
+        _origActive && _origActive(tab);
+        document.querySelectorAll('.mbd-feat, .mbd-tool')
+            .forEach(function(b) { b.classList.remove('active'); });
+        var b = document.getElementById('mob-btn-' + tab);
+        if (b && (b.classList.contains('mbd-feat') || b.classList.contains('mbd-tool'))) {
+            b.classList.add('active');
+        }
+    };
+
+})();</script>
+<script>
+if ('serviceWorker' in navigator) {
+    fetch('/sw.js', { method: 'HEAD' }).then(function(r) {
+        if (r.ok) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(){});
+    }).catch(function(){});
+}
+</script>
+
+</body>
+</html>

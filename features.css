@@ -1,0 +1,288 @@
+/* ================================================================
+   StudentOS — Features Pack CSS v2
+   Music · Formulas · Exam Countdown · Music Widget · Forum Widget
+   ================================================================ */
+
+@keyframes musicPulse {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:.4;transform:scale(.65)}
+}
+.music-pulse-dot { animation: musicPulse 1.3s ease-in-out infinite; }
+
+/* ================================================================
+   MUSIC TAB
+   ================================================================ */
+#view-music { max-width: 680px; margin: 0 auto; }
+
+.music-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 16px;
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background .15s, transform .12s, border-color .15s;
+}
+.music-card:hover { background: var(--glass-hover); transform: translateX(3px); }
+.music-card.active {
+    background: color-mix(in srgb, var(--mc) 11%, transparent);
+    border-color: color-mix(in srgb, var(--mc) 28%, transparent);
+}
+.mc-icon {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: color-mix(in srgb, var(--mc) 18%, transparent);
+    color: var(--mc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+}
+.mc-info { flex: 1; min-width: 0; }
+.mc-label { font-size: .88rem; font-weight: 600; }
+.mc-sub   { font-size: .7rem; color: var(--text-muted); margin-top: 2px; }
+.mc-play-btn {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: color-mix(in srgb, var(--mc) 18%, transparent);
+    color: var(--mc);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem;
+    transition: background .15s, transform .12s;
+}
+.music-card:hover .mc-play-btn { background: var(--mc); color: #fff; transform: scale(1.1); }
+
+/* Player iframe wrap animation */
+#music-player-wrap {
+    transition: opacity .2s;
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+/* ================================================================
+   FORMULA SHEETS
+   ================================================================ */
+#view-formulas {
+    max-width: 860px; margin: 0 auto;
+    height: 100%; display: flex; flex-direction: column;
+}
+.formula-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+.formula-topbar h1 { font-size: 1.8rem; font-weight: 300; letter-spacing: -.03em; }
+.formula-topbar h1 span { color: var(--accent); }
+.formula-search-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px; padding: 8px 14px;
+    flex: 1; max-width: 260px;
+}
+.formula-search-bar i { color: var(--text-muted); font-size: .85rem; }
+.formula-search-bar input { background:transparent;border:none;outline:none;color:var(--text-main);font-size:.85rem;width:100%; }
+
+#formula-subject-bar {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+    margin-bottom: 16px; scrollbar-width: none;
+}
+#formula-subject-bar::-webkit-scrollbar { display: none; }
+.formula-pill {
+    padding: 6px 14px; border-radius: 99px; font-size: .75rem; font-weight: 700;
+    white-space: nowrap; cursor: pointer; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,.08);
+    background: var(--glass-panel); color: var(--text-muted);
+    transition: all .15s;
+}
+.formula-pill.active,.formula-pill:hover { background:var(--accent);color:#fff;border-color:transparent; }
+
+#formula-list {
+    flex: 1; overflow-y: auto;
+    display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+    gap: 10px; align-content: start; padding-bottom: 24px;
+}
+.formula-card {
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 16px; padding: 16px;
+    transition: border-color .15s;
+}
+.formula-card:hover { border-color: rgba(255,255,255,.14); }
+.formula-card-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px; flex-wrap: wrap;
+}
+.formula-subject-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.formula-card-title { font-size:.9rem;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.formula-subject-tag { font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:99px;flex-shrink:0; }
+.formula-card-actions { display:flex;gap:4px;opacity:0;transition:opacity .15s;flex-shrink:0; }
+.formula-card:hover .formula-card-actions { opacity:1; }
+.formula-card-actions button { padding:4px 7px;border-radius:7px;background:transparent;border:none;color:var(--text-muted);font-size:.72rem;cursor:pointer;transition:color .15s,background .15s; }
+.formula-card-actions button:hover { background:var(--glass-hover);color:var(--text-main); }
+.formula-card-actions button:last-child:hover { color:#ef4444; }
+.formula-body {
+    font-family:'Courier New',Courier,monospace;font-size:1rem;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+    border-radius:10px;padding:10px 14px;color:var(--accent);
+    word-break:break-word;white-space:pre-wrap;margin-bottom:8px;line-height:1.5;
+}
+.formula-note { font-size:.78rem;color:var(--text-muted);line-height:1.55; }
+.formula-empty {
+    grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:12px;padding:60px 20px;color:var(--text-muted);
+}
+.formula-empty i { font-size:2.5rem;opacity:.35; }
+
+/* Formula modal */
+#modal-formula label { display:block;font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px; }
+#formula-modal-formula { font-family:'Courier New',Courier,monospace;font-size:.9rem; }
+
+/* ================================================================
+   EXAM COUNTDOWN WIDGET
+   ================================================================ */
+.exam-manage-btn {
+    display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--accent);
+    background:none;border:none;cursor:pointer;padding:0;margin-top:8px;font-weight:600;
+}
+.exam-cd-item { display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05); }
+.exam-cd-item:last-child { border-bottom:none; }
+.exam-cd-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.exam-cd-info { flex:1;min-width:0; }
+.exam-cd-title { font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.exam-cd-sub   { font-size:.68rem;color:var(--text-muted); }
+.exam-cd-days  { font-size:.72rem;font-weight:800;flex-shrink:0; }
+
+/* ================================================================
+   MUSIC WIDGET
+   ================================================================ */
+#widget-music #widget-music-info { display:flex;flex-direction:column;justify-content:center; }
+
+/* ================================================================
+   FORUM WIDGET
+   ================================================================ */
+.wf-post-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    cursor: pointer;
+    transition: background .1s;
+    border-radius: 6px;
+}
+.wf-post-row:last-child { border-bottom:none; }
+.wf-post-row:hover { background: var(--glass-hover); padding-left: 4px; }
+.wf-tag {
+    font-size:.6rem;font-weight:800;letter-spacing:.03em;
+    padding:2px 7px;border-radius:99px;flex-shrink:0;white-space:nowrap;
+}
+.wf-title {
+    flex:1;font-size:.78rem;font-weight:500;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.wf-replies { font-size:.7rem;color:var(--text-muted);flex-shrink:0; }
+
+/* ================================================================
+   MOBILE
+   ================================================================ */
+@media (max-width: 768px) {
+    .music-card { padding: 11px 12px; gap: 10px; }
+    .mc-icon { width:38px;height:38px; }
+    #formula-list { grid-template-columns:1fr; }
+    .formula-card-actions { opacity:1; }
+    #view-formulas { height:auto; }
+}
+
+/* ================================================================
+   NEW IN-TAB MUSIC PLAYER STYLES
+   ================================================================ */
+
+/* Hidden player iframe */
+#music-player-frame {
+    position: fixed; top: -9999px; left: -9999px;
+    width: 1px; height: 1px; opacity: 0; pointer-events: none;
+}
+
+/* Add custom station button */
+.music-custom-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 16px; border-radius: 12px;
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.09);
+    color: var(--text-muted); font-size: .8rem; font-weight: 700;
+    cursor: pointer; transition: all .15s;
+}
+.music-custom-btn:hover { background: var(--glass-hover); color: var(--text-main); }
+
+/* Section headings */
+.music-section-label {
+    font-size: .62rem; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin: 0 0 10px; padding-top: 8px;
+}
+#music-grid, #music-custom-grid { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+
+/* Now-playing bar (inside the music tab) */
+.music-now-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 18px; padding: 14px 18px; margin-bottom: 20px;
+}
+.mnb-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.mnb-icon-wrap {
+    width: 44px; height: 44px; border-radius: 13px; flex-shrink: 0;
+    background: rgba(255,255,255,.06); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.mnb-title { font-size: .95rem; font-weight: 700; }
+.mnb-sub   { font-size: .72rem; color: var(--text-muted); margin-top: 2px; display:flex;align-items:center;gap:6px; }
+.mnb-sub::before { content:'';display:block;width:7px;height:7px;border-radius:50%;background:#22c55e;animation:musicPulse 1.2s ease-in-out infinite; }
+.mnb-controls { display: flex; gap: 8px; flex-shrink: 0; }
+.mnb-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.1); background: var(--glass-panel);
+    color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+    font-size: .85rem; cursor: pointer; transition: all .15s;
+}
+.mnb-play:hover { background: var(--accent); border-color: transparent; color: #fff; }
+.mnb-stop:hover { background: #ef4444;  border-color: transparent; color: #fff; }
+
+/* Card delete btn (custom stations) */
+.mc-delete-btn {
+    width: 28px; height: 28px; border-radius: 8px; border: none;
+    background: transparent; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .72rem; cursor: pointer; transition: all .15s; flex-shrink: 0;
+    opacity: 0;
+}
+.music-card:hover .mc-delete-btn { opacity: 1; background: rgba(239,68,68,.1); color: #ef4444; }
+
+/* Dashboard music widget */
+.wmb-playing {
+    display: flex; align-items: center; gap: 10px;
+    background: color-mix(in srgb, var(--wmc) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--wmc) 25%, transparent);
+    border-radius: 14px; padding: 10px 12px;
+}
+.wmb-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    background: color-mix(in srgb, var(--wmc) 20%, transparent); color: var(--wmc);
+    display: flex; align-items: center; justify-content: center; font-size: .9rem;
+}
+.wmb-info { flex: 1; min-width: 0; }
+.wmb-name   { font-size: .82rem; font-weight: 700; white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.wmb-status { font-size: .68rem; color: var(--text-muted); margin-top: 2px; }
+.wmb-stop {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.1); background: transparent;
+    color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; cursor: pointer; transition: all .15s; flex-shrink: 0;
+}
+.wmb-stop:hover { background: #ef4444; color: #fff; border-color: transparent; }
+.wmb-picks { display: flex; flex-direction: column; gap: 6px; }
+.wmb-pick {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; border-radius: 11px;
+    background: color-mix(in srgb, var(--wmc) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--wmc) 20%, transparent);
+    color: var(--wmc); font-size: .78rem; font-weight: 700;
+    cursor: pointer; transition: all .15s; text-align: left; width: 100%;
+}
+.wmb-pick:hover { background: color-mix(in srgb, var(--wmc) 20%, transparent); transform: translateX(2px); }
+.wmb-pick i { font-size: .85rem; flex-shrink: 0; }
