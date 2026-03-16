@@ -1,22 +1,66 @@
 # 🎓 Student OS
 
-A minimalist, glassmorphism-inspired productivity dashboard for students! See screenshots [here](SCREENSHOTS.md)!
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=flat-square&logo=html5&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat-square&logo=tailwind-css&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=flat-square&logo=javascript&logoColor=%23F7DF1E)
+![Firebase](https://img.shields.io/badge/firebase-%23039BE5.svg?style=flat-square&logo=firebase)
 
-### ✨ What it does
-* **Tasks & Notes:** Stay organized with a clean, distraction-free interface.
-* **Flashcards:** Integrated study decks for active recall.
-* **Whiteboard:** A built-in canvas for diagrams and quick sketches.
-* **Cloud Sync:** Securely save data via Google or email login.
-* **More Features:** Inside the app there are more features to explore!
+A minimalist, glassmorphism-inspired productivity dashboard built specifically for students. No bloat, no ads—just a clean space to get your work done.
 
-### 🛠️ Tech
-* **Frontend:** HTML, Tailwind CSS, JS.
-* **Backend:** Firebase (Auth & Firestore).
+**🚀 [View the live version](https://ld-beepbeep.github.io/SCHOOL/)** or take a look at some awesome **[screenshots!](SCREENSHOTS.md)** 📸
 
-### 💡 The Vibe
-Built by a fellow tinkerer who wanted a study tool that actually looked good. No bloat, no ads—just a clean space to get work done. If you want to [contribute](CONTRIBUTE.md)!
+<img width="1365" height="594" alt="Student OS Dashboard Screenshot" src="https://github.com/user-attachments/assets/a5b9b8b0-0b91-47d2-a51f-bfdcbdf01e93" />
 
 ---
-[View Live Demo!](https://ld-beepbeep.github.io/SCHOOL/)
 
-<img width="1365" height="594" alt="Screenshot 2026-03-12 15 06 57" src="https://github.com/user-attachments/assets/a5b9b8b0-0b91-47d2-a51f-bfdcbdf01e93" />
+### ✨ Features
+
+* **Tasks & Notes:** Manage your daily to-dos and jot down lecture notes in a beautifully clean, distraction-free interface.
+* **Flashcards:** Ace your exams with integrated study decks designed around active recall principles.
+* **Whiteboard:** A built-in, free-draw canvas perfect for mapping out diagrams, mind-mapping concepts, or doing quick sketches.
+* **Cloud Sync:** Never lose your progress. Securely save and sync your data across devices using Google Auth or standard email login.
+* **More Inside:** Dive into the app to discover even more productivity tools tailored for your workflow!
+
+---
+
+### 🛠️ Tech Stack
+
+* **Frontend:** HTML5, Tailwind CSS for the glassmorphism UI, and Vanilla JavaScript.
+* **Backend:** Firebase (Authentication for secure login & Firestore for real-time database syncing).
+
+---
+
+### 📚 Project Documentation
+
+Want to see more, help out, or understand how this project is run? Check out the links below:
+
+* 📸 **[Screenshots Gallery](SCREENSHOTS.md):** See more angles and features of the UI.
+* 🤝 **[Contributing Guidelines](CONTRIBUTING.md):** Want to add a feature? Read this first!
+* 📜 **[Code of Conduct](CODE_OF_CONDUCT.md):** Our standards for a welcoming community.
+* 🔒 **[Security Policy](SECURITY.md):** How to report vulnerabilities safely.
+
+---
+
+### 💡 The Vibe
+
+Built by a fellow tinkerer who wanted a study tool that actually looked good. The goal of Student OS is to prove that productivity software doesn't have to be overwhelming to be powerful. 
+
+---
+
+### 🎓 Citation
+
+If you use Student OS in your research, academic work, or project, please give credit by citing it:
+
+**APA:**
+> Dehairs, L. (2026). Student OS: A minimalist productivity dashboard! (Version 1.0.0) [Computer software]. https://github.com/LD-beepbeep/SCHOOL
+
+**BibTeX:**
+```bibtex
+@software{Dehairs_Student_OS_A_2026,
+  author = {Dehairs, Lars},
+  month = mar,
+  title = {{Student OS: A minimalist productivity dashboard!}},
+  url = {[https://github.com/LD-beepbeep/SCHOOL](https://github.com/LD-beepbeep/SCHOOL)},
+  version = {1.0.0},
+  year = {2026}
+}
