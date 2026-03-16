@@ -4,6 +4,7 @@
 ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat-square&logo=tailwind-css&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=flat-square&logo=javascript&logoColor=%23F7DF1E)
 ![Firebase](https://img.shields.io/badge/firebase-%23039BE5.svg?style=flat-square&logo=firebase)
+![Help Wanted](https://img.shields.io/badge/Maintained%3F-Help%20Wanted-brightgreen.svg)
 
 A minimalist, glassmorphism-inspired productivity dashboard built specifically for students. No bloat, no ads—just a clean space to get your work done.
 
