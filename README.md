@@ -9,7 +9,7 @@ A minimalist, glassmorphism-inspired productivity dashboard built specifically f
 
 **🚀 [View the live version](https://ld-beepbeep.github.io/SCHOOL/)** or take a look at some **[screenshots!](SCREENSHOTS.md)** 📸
 
-<img width="1365" height="594" alt="Student OS Dashboard Screenshot" src="https://github.com/user-attachments/assets/a5b9b8b0-0b91-47d2-a51f-bfdcbdf01e93" />
+<img width="1365" height="594" alt="Student OS Dashboard Screenshot" src="screenshots/school-screenshot1.png" />
 
 ---
 
