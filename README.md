@@ -44,7 +44,7 @@ Want to see more, help out, or understand how this project is run? Check out the
 
 ### 💡 The Vibe
 
-Built by a fellow tinkerer who wanted a study tool that actually looked good. The goal of Student OS is to prove that productivity software doesn't have to be overwhelming to be powerful. 
+Built by a fellow tinkerer who wanted a study tool that actually looked good. The goal of Student OS is to prove that productivity software doesn't have to be overwhelming to be powerful. Used Claude for some bug fixes, and some code: but it's primarily built by myself :)
 
 ---
 
