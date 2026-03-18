@@ -8,7 +8,7 @@
 
 A minimalist, glassmorphism-inspired productivity dashboard built specifically for students. No bloat, no ads—just a clean space to get your work done.
 
-**🚀 [View the live version](https://ld-beepbeep.github.io/SCHOOL/)** or take a look at some **[screenshots!](SCREENSHOTS.md)** 📸
+**🚀 [View the live version](https://ld-beepbeep.github.io/SCHOOL/)** or take a look at some **[screenshots!](docs/SCREENSHOTS.md)** 📸
 
 <img width="1365" height="594" alt="Student OS Dashboard Screenshot" src="screenshots/school-screenshot1.png" />
 
@@ -35,10 +35,10 @@ A minimalist, glassmorphism-inspired productivity dashboard built specifically f
 
 Want to see more, help out, or understand how this project is run? Check out the links below:
 
-* 📸 **[Screenshots Gallery](SCREENSHOTS.md):** See more angles and features of the UI.
-* 🤝 **[Contributing Guidelines](CONTRIBUTING.md):** Want to add a feature? Read this first!
-* 📜 **[Code of Conduct](CODE_OF_CONDUCT.md):** Our standards for a welcoming community.
-* 🔒 **[Security Policy](SECURITY.md):** How to report vulnerabilities safely.
+* 📸 **[Screenshots Gallery](docs/SCREENSHOTS.md):** See more angles and features of the UI.
+* 🤝 **[Contributing Guidelines](docs/CONTRIBUTING.md):** Want to add a feature? Read this first!
+* 📜 **[Code of Conduct](docs/CODE_OF_CONDUCT.md):** Our standards for a welcoming community.
+* 🔒 **[Security Policy](docs/SECURITY.md):** How to report vulnerabilities safely.
 
 ---
 
