@@ -39,7 +39,7 @@ Want to see more, help out, or understand how this project is run? Check out the
 * 🤝 **[Contributing Guidelines](docs/CONTRIBUTING.md):** Want to add a feature? Read this first!
 * 📜 **[Code of Conduct](docs/CODE_OF_CONDUCT.md):** Our standards for a welcoming community.
 * 🔒 **[Security Policy](docs/SECURITY.md):** How to report vulnerabilities safely.
-* 📝 **[Licence](LICENCE):** Take a look at the open-source licence!
+* 📝 **[Licence](./LICENCE):** Take a look at the open-source licence!
 * 📚 **[Citation](CITATION.cff):** Easily citate this repository.
 
 ---
@@ -47,6 +47,16 @@ Want to see more, help out, or understand how this project is run? Check out the
 ### 💡 The Vibe
 
 Built by a fellow tinkerer who wanted a study tool that actually looked good. The goal of Student OS is to prove that productivity software doesn't have to be overwhelming to be powerful. Used Claude for some bug fixes, and some code: but it's primarily built by myself :)
+
+---
+
+### ⚖️ Legal & Branding
+
+This project is licenced under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. 
+
+* **Transparency:** If you host a public version of this app, you **should** provide a link to the source code of your version (including any changes you made) as per the AGPLv3 terms.
+* **Identity:** The logo of Student OS and the site's specific UI design are personal brand assets. You are welcome to fork the code, but please remove original branding or clearly state that your version is a fork.
+* You are welcome to contribute and try things with my code, I am just a fellow developer!
 
 ---
 
