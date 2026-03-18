@@ -39,7 +39,7 @@ Want to see more, help out, or understand how this project is run? Check out the
 * 🤝 **[Contributing Guidelines](docs/CONTRIBUTING.md):** Want to add a feature? Read this first!
 * 📜 **[Code of Conduct](docs/CODE_OF_CONDUCT.md):** Our standards for a welcoming community.
 * 🔒 **[Security Policy](docs/SECURITY.md):** How to report vulnerabilities safely.
-* 📝 **[Licence](LICENCE.md):** Take a look at the open-source licence!
+* 📝 **[Licence](LICENCE):** Take a look at the open-source licence!
 * 📚 **[Citation](CITATION.cff):** Easily citate this repository.
 
 ---
