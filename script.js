@@ -58,7 +58,7 @@ var DB = (function() {
     };
 })();
 
-
+window.DB = DB;
 
 // ===== AUTH FUNCTIONS =====
 
