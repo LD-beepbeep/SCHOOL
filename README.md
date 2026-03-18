@@ -56,7 +56,7 @@ This project is licenced under the **GNU Affero General Public License v3.0 (AGP
 
 * **Transparency:** If you host a public version of this app, you **should** provide a link to the source code of your version (including any changes you made) as per the AGPLv3 terms.
 * **Identity:** The logo of Student OS and the site's specific UI design are personal brand assets. You are welcome to fork the code, but please remove original branding or clearly state that your version is a fork.
-* You are welcome to contribute and try things with my code, I am just a fellow developer!
+* **Side Note:** You are welcome to contribute and try things with my code, I am just a fellow developer!
 
 ---
 
