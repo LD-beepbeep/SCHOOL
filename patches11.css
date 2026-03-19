@@ -1,0 +1,375 @@
+/* ================================================================
+   StudentOS — patches11.css
+   ================================================================ */
+
+/* ================================================================
+   1. FORUM FAB — hide when not on forum tab
+   ================================================================ */
+/* Default: hidden unless body says forum is active */
+body:not(.p11-tab-forum) #forum-fab {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(12px) !important;
+    transition: opacity .2s, transform .2s !important;
+}
+body.p11-tab-forum #forum-fab {
+    opacity: 1 !important;
+    pointer-events: all !important;
+    transform: none !important;
+    transition: opacity .2s, transform .2s, box-shadow .15s !important;
+}
+
+/* ================================================================
+   2. WIDGET ICON CONSISTENCY
+   Exams widget uses fa-graduation-cap / fa-list-ul — fix with CSS
+   ================================================================ */
+/* Standardize all widget header label icons to accent color */
+.widget-item h3 i[class*="fa-"],
+.widget-item h3 i[class*="ph "],
+.widget-item h3 i[class*="ph-"] {
+    color: var(--accent);
+}
+
+/* ================================================================
+   3. NOTES SIDEBAR TOGGLE — BIGGER BUTTON
+   ================================================================ */
+#notes-sidebar-toggle-btn {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    font-size: 1rem !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--glass-panel) !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    transition: all .15s !important;
+}
+[data-theme="light"] #notes-sidebar-toggle-btn {
+    border-color: rgba(0,0,0,.09) !important;
+}
+#notes-sidebar-toggle-btn:hover {
+    background: var(--glass-hover) !important;
+    color: var(--text-main) !important;
+}
+#notes-sidebar-toggle-btn i {
+    font-size: 1.05rem !important;
+}
+
+/* ================================================================
+   4. GLOBAL SEARCH (Ctrl+K)
+   ================================================================ */
+#p11-search-overlay {
+    position: fixed; inset: 0; z-index: 800;
+    background: rgba(0,0,0,.62);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 10vh;
+    opacity: 0; transition: opacity .18s; pointer-events: none;
+}
+#p11-search-overlay.show { opacity: 1; pointer-events: all; }
+
+#p11-search-box {
+    width: 100%; max-width: 620px;
+    background: var(--bg-color);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 22px;
+    box-shadow: 0 24px 80px rgba(0,0,0,.5);
+    overflow: hidden;
+    transform: translateY(-14px) scale(.97);
+    transition: transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+[data-theme="light"] #p11-search-box {
+    border-color: rgba(0,0,0,.1);
+    box-shadow: 0 24px 80px rgba(0,0,0,.18);
+}
+#p11-search-overlay.show #p11-search-box { transform: none; }
+
+#p11-search-input-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+}
+[data-theme="light"] #p11-search-input-row { border-bottom-color: rgba(0,0,0,.07); }
+#p11-search-input-row i { color: var(--text-muted); font-size: 1rem; flex-shrink: 0; }
+#p11-search-input {
+    flex: 1; background: none; border: none; outline: none;
+    font-size: 1rem; color: var(--text-main); font-family: inherit;
+}
+#p11-search-input::placeholder { color: var(--text-muted); }
+#p11-search-kbd {
+    font-size: .7rem; padding: 2px 8px;
+    background: var(--glass-hover); border-radius: 6px;
+    color: var(--text-muted); white-space: nowrap;
+    border: 1px solid rgba(255,255,255,.09); flex-shrink: 0;
+    font-family: monospace;
+}
+[data-theme="light"] #p11-search-kbd { border-color: rgba(0,0,0,.1); }
+
+#p11-search-results {
+    max-height: 52vh; overflow-y: auto;
+    padding: 8px 0;
+}
+#p11-search-results:empty { display: none; }
+
+.p11-result-group-lbl {
+    font-size: .58rem; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text-muted);
+    padding: 10px 20px 4px;
+}
+.p11-result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 20px; cursor: pointer;
+    transition: background .1s; border-radius: 0;
+}
+.p11-result-item:hover,
+.p11-result-item.selected {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.p11-result-icon {
+    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem;
+}
+.p11-result-text { flex: 1; min-width: 0; }
+.p11-result-title {
+    font-size: .88rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.p11-result-sub {
+    font-size: .72rem; color: var(--text-muted); margin-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.p11-result-arrow { color: var(--text-muted); font-size: .75rem; flex-shrink: 0; }
+.p11-result-mark { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--accent); border-radius: 3px; padding: 0 2px; }
+
+.p11-search-empty {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 36px 20px; color: var(--text-muted);
+}
+.p11-search-empty i { font-size: 2rem; opacity: .3; }
+.p11-search-empty span { font-size: .82rem; }
+
+.p11-search-footer {
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 20px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    font-size: .68rem; color: var(--text-muted);
+}
+[data-theme="light"] .p11-search-footer { border-top-color: rgba(0,0,0,.06); }
+.p11-sf-key {
+    background: var(--glass-hover); border-radius: 5px;
+    padding: 1px 6px; font-family: monospace; font-size: .65rem;
+    border: 1px solid rgba(255,255,255,.09);
+}
+[data-theme="light"] .p11-sf-key { border-color: rgba(0,0,0,.1); }
+
+/* Search trigger button in nav */
+#p11-search-trigger {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 14px; border-radius: 12px;
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.08);
+    color: var(--text-muted); font-size: .8rem;
+    cursor: pointer; transition: all .15s;
+    white-space: nowrap;
+}
+[data-theme="light"] #p11-search-trigger { border-color: rgba(0,0,0,.09); }
+#p11-search-trigger:hover { background: var(--glass-hover); color: var(--text-main); }
+#p11-search-trigger kbd {
+    font-size: .65rem; padding: 1px 5px; border-radius: 4px;
+    background: var(--glass-hover); border: 1px solid rgba(255,255,255,.09);
+    font-family: monospace;
+}
+[data-theme="light"] #p11-search-trigger kbd { border-color: rgba(0,0,0,.1); }
+
+/* ================================================================
+   5. TASK PRIORITY
+   ================================================================ */
+.p11-task-priority {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    cursor: pointer; transition: transform .15s;
+    border: 2px solid transparent;
+}
+.p11-task-priority:hover { transform: scale(1.3); }
+.p11-task-priority[data-p="none"]   { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); }
+.p11-task-priority[data-p="low"]    { background: #22c55e; }
+.p11-task-priority[data-p="medium"] { background: #f59e0b; }
+.p11-task-priority[data-p="high"]   { background: #ef4444; box-shadow: 0 0 6px #ef444488; }
+[data-theme="light"] .p11-task-priority[data-p="none"] { background: rgba(0,0,0,.1); border-color: rgba(0,0,0,.18); }
+
+/* Priority legend popup */
+.p11-priority-popup {
+    position: absolute; z-index: 100;
+    background: var(--bg-color);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px; padding: 6px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 120px;
+}
+[data-theme="light"] .p11-priority-popup {
+    border-color: rgba(0,0,0,.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+.p11-pp-opt {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 8px; cursor: pointer;
+    font-size: .8rem; transition: background .1s;
+}
+.p11-pp-opt:hover { background: var(--glass-hover); }
+.p11-pp-dot {
+    width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* ================================================================
+   6. CONFETTI CANVAS
+   ================================================================ */
+#p11-confetti-canvas {
+    position: fixed; inset: 0; z-index: 900;
+    pointer-events: none; width: 100%; height: 100%;
+}
+
+/* ================================================================
+   7. "WHAT'S TODAY" MORNING CARD (new dashboard widget)
+   ================================================================ */
+#widget-today {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--accent) 18%, transparent),
+        color-mix(in srgb, var(--accent) 6%, transparent)) !important;
+    border-color: color-mix(in srgb, var(--accent) 25%, transparent) !important;
+}
+[data-theme="light"] #widget-today {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--accent) 10%, #fff),
+        color-mix(in srgb, var(--accent) 4%, #fff)) !important;
+}
+.p11-today-greeting {
+    font-size: 1.05rem; font-weight: 300; letter-spacing: -.02em;
+    line-height: 1.4;
+}
+.p11-today-greeting strong { font-weight: 700; }
+.p11-today-chips {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+}
+.p11-today-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 99px; font-size: .72rem; font-weight: 600;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.12);
+}
+[data-theme="light"] .p11-today-chip {
+    background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.09);
+}
+
+/* ================================================================
+   8. FORMULA SUBJECT PILLS — COLORED ICONS
+   ================================================================ */
+.formula-pill[data-subj="Math"]      { --pill-accent: #3b82f6; }
+.formula-pill[data-subj="Physics"]   { --pill-accent: #8b5cf6; }
+.formula-pill[data-subj="Chemistry"] { --pill-accent: #22c55e; }
+.formula-pill[data-subj="Biology"]   { --pill-accent: #f59e0b; }
+.formula-pill[data-subj="Economics"] { --pill-accent: #ec4899; }
+.formula-pill[data-subj="Other"]     { --pill-accent: #6b7280; }
+
+.formula-pill:not(.active) i {
+    color: var(--pill-accent, var(--text-muted));
+}
+
+/* ================================================================
+   9. GENERAL POLISH
+   ================================================================ */
+
+/* Smoother modal transitions */
+.modal-panel {
+    transition: opacity .18s, transform .18s !important;
+}
+
+/* Better toast */
+#sos-toast {
+    border-radius: 14px !important;
+    padding: 10px 20px !important;
+    font-size: .84rem !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,.35) !important;
+}
+
+/* Slightly bigger nav-btn hit area */
+.nav-btn {
+    width: 46px !important; height: 46px !important;
+    border-radius: 14px !important;
+}
+
+/* Scroll indicator on widgets-grid */
+#widgets-grid {
+    scroll-padding: 12px;
+}
+
+/* Reduce jarring on tab switches */
+[id^="view-"] { transition: opacity .12s ease; }
+[id^="view-"].hidden { opacity: 0; }
+
+/* ================================================================
+   10. LIGHT MODE — FINAL PASS
+   ================================================================ */
+
+/* Notes toolbar */
+[data-theme="light"] .notes-toolbar {
+    background: rgba(255,255,255,.92) !important;
+    border-color: rgba(0,0,0,.08) !important;
+}
+[data-theme="light"] .tbar-dm-btn {
+    color: #4b5563 !important;
+}
+[data-theme="light"] .tbar-dm-btn:hover { 
+    background: rgba(0,0,0,.05) !important; 
+    color: #111 !important;
+}
+[data-theme="light"] #note-editor {
+    color: #16161a !important;
+}
+[data-theme="light"] .notes-toolbar select,
+[data-theme="light"] .notes-toolbar input[type="color"] {
+    background: rgba(255,255,255,.85) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: var(--text-main) !important;
+}
+
+/* Task checkboxes & task list */
+[data-theme="light"] .task-item input[type="checkbox"] {
+    accent-color: var(--accent);
+}
+
+/* Calendar */
+[data-theme="light"] .cal-day {
+    background: rgba(255,255,255,.6) !important;
+}
+[data-theme="light"] .cal-day:hover {
+    background: rgba(255,255,255,.92) !important;
+}
+[data-theme="light"] .cal-event {
+    filter: brightness(.95);
+}
+
+/* Calculator */
+[data-theme="light"] .calc-btn {
+    background: rgba(255,255,255,.78) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    color: var(--text-main) !important;
+}
+[data-theme="light"] .calc-btn:hover { background: #fff !important; }
+[data-theme="light"] #calc-display {
+    background: rgba(0,0,0,.04) !important;
+    color: var(--text-main) !important;
+}
+
+/* Music stations */
+[data-theme="light"] .music-station-btn {
+    background: rgba(255,255,255,.7) !important;
+    border-color: rgba(0,0,0,.08) !important;
+}
+
+/* Grades table */
+[data-theme="light"] .grade-test-row {
+    background: rgba(0,0,0,.02) !important;
+    border-color: rgba(0,0,0,.06) !important;
+}
