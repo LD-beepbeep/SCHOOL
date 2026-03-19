@@ -10,7 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="mobile.css">  <!-- add this -->
+    <link rel="stylesheet" href="patches10.css">
+    <link rel="stylesheet" href="patches9.css">
+    <link rel="stylesheet" href="mobile.css">
+    <link rel="stylesheet" href="patches11.css">
+    <link rel="stylesheet" href="patches12.css">
+    <link rel="stylesheet" href="patches13.css">
     <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon.png"><meta name="theme-color" content="#0f1117">
     <link rel="icon" type="image/x-icon" href="icon.png">
     <link rel="stylesheet" href="features.css">
@@ -246,7 +251,7 @@
             <div class="col-span-1 min-card p-5 flex flex-col widget-item" id="widget-studystats" draggable="true">
                 <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Study Stats</h3>
                 <div class="flex-1 flex flex-col justify-center gap-2">
-                    <div class="flex justify-between text-sm"><span class="text-[var(--text-muted)]">Cards today</span><span class="font-bold" id="stat-cards-today">0</span></div>
+                    <div class="flex justify-between text-sm"><span class="text-[var(--text-muted)]">Total Cards</span><span class="font-bold" id="stat-cards-today">0</span></div>
                     <div class="flex justify-between text-sm"><span class="text-[var(--text-muted)]">Total decks</span><span class="font-bold" id="stat-decks">0</span></div>
                     <div class="flex justify-between text-sm"><span class="text-[var(--text-muted)]">Best streak</span><span class="font-bold text-[var(--accent)]" id="stat-best-streak">0</span></div>
                 </div>
@@ -1719,6 +1724,12 @@
 <script type="module" src="fix_banned.js"></script>
 <script type="module" src="fix_localstorage.js"></script>
 <script type="module" src="fix_subthreads.js"></script>
+<script type="module" src="patches9.js"></script>
+<script type="module" src="patches10.js"></script>
+<script type="module" src="patches11.js"></script>
+<script type="module" src="patches12.js"></script>
+<script type="module" src="patches13.js"></script>
+<script type="module" src="widgets_patch.js"></script>
 <script> (function() {
 
     /* ── "More" button rotates when drawer is open ── */
