@@ -7,19 +7,7 @@
    <script type="module" src="patches.js"></script>
    ================================================================ */
 
-/* ── Load KaTeX for math rendering ── */
-(function loadKaTeX() {
-    if (document.getElementById('katex-css')) return;
-    const link = document.createElement('link');
-    link.id   = 'katex-css';
-    link.rel  = 'stylesheet';
-    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
-    document.head.appendChild(link);
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
-    script.defer = true;
-    document.head.appendChild(script);
-})();
+
 
 /* ================================================================
    1. CLOCK COLOR — actually applies to the main clock + focus timer
@@ -297,63 +285,6 @@ function _escapeForMath(str) {
     _try();
 })();
 
-/* ================================================================
-   7. MATH PREVIEW IN FORMULA MODAL
-   ================================================================ */
-(function patchFormulaModalPreview() {
-    function _addPreview() {
-        const formulaInput = document.getElementById('formula-modal-formula');
-        if (!formulaInput || formulaInput.dataset.previewAdded) return;
-        formulaInput.dataset.previewAdded = 'true';
-
-        const preview = document.createElement('div');
-        preview.id = 'formula-math-preview';
-        preview.style.cssText = `
-            min-height: 40px; padding: 10px 14px; margin: 8px 0 12px;
-            background: rgba(59,130,246,.07); border: 1px solid rgba(59,130,246,.2);
-            border-radius: 10px; font-size: .9rem; color: var(--text-main);
-            display: none; overflow-x: auto;
-        `;
-        formulaInput.parentNode.insertBefore(preview, formulaInput.nextSibling);
-
-        formulaInput.addEventListener('input', function() {
-            if (typeof window.katex === 'undefined') return;
-            const raw = this.value.trim();
-            if (!raw) { preview.style.display = 'none'; return; }
-            let rendered = false;
-            let html = '';
-            /* Try display math */
-            const displayMatch = raw.match(/^\$\$([\s\S]+)\$\$$/);
-            const inlineMatch  = raw.match(/^\$(.+)\$$/);
-            try {
-                if (displayMatch) {
-                    html = katex.renderToString(displayMatch[1], { displayMode: true, throwOnError: false });
-                    rendered = true;
-                } else if (inlineMatch) {
-                    html = katex.renderToString(inlineMatch[1], { displayMode: false, throwOnError: false });
-                    rendered = true;
-                } else {
-                    /* Try rendering entire input as math */
-                    html = katex.renderToString(raw, { displayMode: true, throwOnError: false });
-                    rendered = true;
-                }
-            } catch(e) { /* not valid math */ }
-
-            if (rendered) {
-                preview.innerHTML = '<span style="font-size:.6rem;color:var(--text-muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;">Voorbeeld</span>' + html;
-                preview.style.display = 'block';
-            } else {
-                preview.style.display = 'none';
-            }
-        });
-    }
-
-    const obs = new MutationObserver(() => {
-        const modal = document.getElementById('modal-formula');
-        if (modal && !modal.classList.contains('hidden')) _addPreview();
-    });
-    obs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
-})();
 
 /* ================================================================
    8. MOBILE NAV — add missing tabs + active state improvements
