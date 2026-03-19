@@ -1,0 +1,615 @@
+/* ================================================================
+   StudentOS — patches10.css
+   Light Mode · Settings Tab · Location Modal · Formula Categories ·
+   Quote Fix · Delete Modal · General Polish
+   ================================================================ */
+
+/* ================================================================
+   1. GLOBAL LIGHT MODE OVERHAUL
+   ================================================================ */
+
+/* Root surface & text */
+[data-theme="light"] {
+    --bg-color:    #f0f2f7;
+    --glass-panel: rgba(255,255,255,.88);
+    --glass-hover: rgba(255,255,255,.96);
+    --glass-border: rgba(0,0,0,.09);
+    --text-main:   #16161a;
+    --text-muted:  #6b7280;
+}
+
+/* Sidebar nav */
+[data-theme="light"] nav {
+    background: rgba(255,255,255,.78) !important;
+    border-right-color: rgba(0,0,0,.09) !important;
+}
+[data-theme="light"] .nav-btn {
+    color: #6b7280 !important;
+}
+[data-theme="light"] .nav-btn:hover,
+[data-theme="light"] .nav-btn.active {
+    background: color-mix(in srgb, var(--accent) 13%, transparent) !important;
+    color: var(--accent) !important;
+}
+
+/* Main content background */
+[data-theme="light"] #main-scroll,
+[data-theme="light"] main { background: transparent !important; }
+
+/* All glass cards */
+[data-theme="light"] .min-card {
+    background: rgba(255,255,255,.85) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    box-shadow: 0 1px 8px rgba(0,0,0,.06) !important;
+}
+[data-theme="light"] .min-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,.09) !important;
+}
+
+/* Widget items */
+[data-theme="light"] .widget-item {
+    background: rgba(255,255,255,.88) !important;
+    border-color: rgba(0,0,0,.08) !important;
+}
+
+/* Modal panels */
+[data-theme="light"] .modal-panel {
+    background: rgba(255,255,255,.97) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    box-shadow: 0 12px 60px rgba(0,0,0,.16) !important;
+}
+[data-theme="light"] #modal-overlay {
+    background: rgba(0,0,0,.38) !important;
+}
+
+/* Bare inputs */
+[data-theme="light"] .bare-input {
+    color: var(--text-main) !important;
+    border-bottom-color: rgba(60,60,67,.2) !important;
+}
+[data-theme="light"] .bare-input::placeholder { color: rgba(60,60,67,.35) !important; }
+[data-theme="light"] .bare-input:focus { border-bottom-color: var(--accent) !important; }
+
+/* Textareas & inputs with glass style */
+[data-theme="light"] textarea,
+[data-theme="light"] input[type="text"]:not(.bare-input):not(.p9-input),
+[data-theme="light"] input[type="number"],
+[data-theme="light"] input[type="email"] {
+    background: rgba(0,0,0,.03) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: var(--text-main) !important;
+}
+[data-theme="light"] textarea::placeholder,
+[data-theme="light"] input::placeholder { color: rgba(60,60,67,.35) !important; }
+
+/* Select dropdowns */
+[data-theme="light"] select:not(.p9-select) {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: var(--text-main) !important;
+}
+
+/* Dashboard clock */
+[data-theme="light"] #clock-time {
+    color: #16161a !important;
+}
+[data-theme="light"] #clock-date {
+    color: #6b7280 !important;
+}
+
+/* Task items */
+[data-theme="light"] .task-item {
+    background: rgba(255,255,255,.85) !important;
+    border-color: rgba(0,0,0,.07) !important;
+}
+[data-theme="light"] .task-item:hover { background: rgba(255,255,255,.97) !important; }
+
+/* Notes sidebar */
+[data-theme="light"] #notes-sidebar { background: rgba(255,255,255,.5) !important; }
+[data-theme="light"] .note-item { color: var(--text-muted) !important; }
+[data-theme="light"] .note-item.active,
+[data-theme="light"] .note-item:hover {
+    background: rgba(0,0,0,.05) !important;
+    color: var(--text-main) !important;
+}
+
+/* Study cards */
+[data-theme="light"] .flashcard {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.09) !important;
+}
+
+/* Grades */
+[data-theme="light"] .grade-subject-row {
+    background: rgba(255,255,255,.7) !important;
+    border-color: rgba(0,0,0,.07) !important;
+}
+
+/* Focus timer */
+[data-theme="light"] #focus-display { color: #16161a !important; }
+[data-theme="light"] #focus-label   { color: #6b7280 !important; }
+[data-theme="light"] .pomo-session-dot { background: rgba(0,0,0,.12) !important; }
+[data-theme="light"] .pomo-session-dot.done { background: var(--accent) !important; }
+
+/* Forum improvements (supplement patches9.css) */
+[data-theme="light"] #forum-list-view { background: transparent !important; }
+[data-theme="light"] .forum-sort-row,
+[data-theme="light"] .forum-filter-row { background: transparent !important; }
+[data-theme="light"] #ft-post-view {
+    background: rgba(255,255,255,.92) !important;
+    border-color: rgba(0,0,0,.09) !important;
+}
+[data-theme="light"] #ft-post-view .fpc-title { color: #16161a !important; }
+[data-theme="light"] #ft-post-view p { color: rgba(22,22,26,.8) !important; }
+[data-theme="light"] .wf-reply-input,
+[data-theme="light"] #forum-reply-input {
+    background: rgba(0,0,0,.04) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: var(--text-main) !important;
+}
+
+/* Formula tab */
+[data-theme="light"] .formula-card {
+    background: rgba(255,255,255,.88) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,.06) !important;
+}
+[data-theme="light"] .formula-body {
+    background: rgba(0,0,0,.03) !important;
+    border-color: rgba(0,0,0,.08) !important;
+}
+[data-theme="light"] #formula-subject-bar { background: transparent !important; }
+[data-theme="light"] .formula-pill {
+    background: rgba(0,0,0,.05) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    color: var(--text-muted) !important;
+}
+[data-theme="light"] .formula-pill.active,
+[data-theme="light"] .formula-pill:hover {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+[data-theme="light"] .formula-search-bar {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.1) !important;
+}
+[data-theme="light"] .formula-topbar h1 { color: #16161a !important; }
+
+/* Ambient background for light mode */
+[data-theme="light"] #ambient-bg { opacity: .25 !important; }
+
+/* Scrollbar for light mode */
+[data-theme="light"] ::-webkit-scrollbar-track { background: rgba(0,0,0,.04); }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.16); border-radius: 6px; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.25); }
+
+/* Toast */
+[data-theme="light"] #sos-toast {
+    background: #16161a !important;
+    color: #fff !important;
+}
+
+/* Fix whiteboard in light mode */
+[data-theme="light"] #whiteboard-canvas { background: #fff !important; }
+
+/* ================================================================
+   2. SETTINGS AS A TAB  (replaces patches9 fullscreen overlay)
+   ================================================================ */
+#view-settings {
+    max-width: 860px; margin: 0 auto;
+    display: none; /* shown via switchTab */
+    animation: p10FadeIn .2s ease;
+}
+#view-settings.active { display: flex; gap: 0; }
+@keyframes p10FadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* Settings sidebar */
+#p10-stab-sidebar {
+    width: 210px; flex-shrink: 0;
+    padding: 4px 8px;
+    border-right: 1px solid rgba(255,255,255,.07);
+    position: sticky; top: 0; align-self: flex-start;
+    max-height: calc(100vh - 80px); overflow-y: auto;
+}
+[data-theme="light"] #p10-stab-sidebar { border-right-color: rgba(0,0,0,.08); }
+
+.p10-stab-section-lbl {
+    font-size: .56rem; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text-muted);
+    padding: 16px 10px 4px;
+}
+.p10-stab-nav-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 11px;
+    background: none; border: none; width: 100%;
+    text-align: left; cursor: pointer;
+    font-size: .84rem; font-weight: 500;
+    color: var(--text-muted); transition: background .15s, color .15s;
+    font-family: inherit;
+}
+.p10-stab-nav-btn i { width: 17px; text-align: center; font-size: .85rem; flex-shrink: 0; }
+.p10-stab-nav-btn:hover { background: var(--glass-hover); color: var(--text-main); }
+.p10-stab-nav-btn.active {
+    background: color-mix(in srgb, var(--accent) 13%, transparent);
+    color: var(--accent); font-weight: 700;
+}
+
+/* Settings content */
+#p10-stab-content {
+    flex: 1; min-width: 0; padding: 4px 0 4px 28px;
+    overflow-y: auto;
+}
+
+.p10-s-page { display: none; }
+.p10-s-page.active { display: block; animation: p10FadeIn .18s ease; }
+
+.p10-page-title {
+    font-size: 1.45rem; font-weight: 300;
+    letter-spacing: -.03em; margin-bottom: 24px;
+    color: var(--text-main);
+}
+.p10-page-title span { color: var(--accent); }
+
+/* Section card */
+.p10-section {
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 18px; padding: 4px 20px;
+    margin-bottom: 16px;
+}
+[data-theme="light"] .p10-section {
+    background: rgba(255,255,255,.88) !important;
+    border-color: rgba(0,0,0,.08) !important;
+}
+.p10-section-title {
+    font-size: .57rem; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text-muted);
+    padding: 14px 0 4px;
+}
+.p10-row {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+}
+[data-theme="light"] .p10-row { border-bottom-color: rgba(0,0,0,.06); }
+.p10-row:last-child { border-bottom: none; }
+.p10-row-lbl { font-size: .87rem; }
+.p10-row-sub { font-size: .7rem; color: var(--text-muted); margin-top: 2px; }
+
+/* Reuse p9 UI components */
+.p10-toggle { width:46px; height:26px; border-radius:13px;
+    background:var(--glass-hover); border:1px solid rgba(255,255,255,.1);
+    position:relative; cursor:pointer; transition:background .2s,border-color .2s; flex-shrink:0; }
+[data-theme="light"] .p10-toggle { border-color:rgba(0,0,0,.12); }
+.p10-toggle.on { background:var(--accent); border-color:transparent; }
+.p10-toggle::after { content:''; position:absolute; width:20px; height:20px; border-radius:50%;
+    background:#fff; top:2px; left:3px; transition:transform .2s; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+.p10-toggle.on::after { transform:translateX(20px); }
+
+.p10-btn { padding:8px 18px; border-radius:11px; font-size:.82rem; font-weight:700;
+    border:none; cursor:pointer; transition:all .15s; font-family:inherit; }
+.p10-btn-primary { background:var(--accent); color:#fff; }
+.p10-btn-primary:hover { opacity:.88; transform:translateY(-1px); }
+.p10-btn-ghost { background:var(--glass-hover); border:1px solid rgba(255,255,255,.09); color:var(--text-main); }
+[data-theme="light"] .p10-btn-ghost { border-color:rgba(0,0,0,.1); }
+.p10-btn-ghost:hover { background:var(--glass-panel); }
+.p10-btn-danger { background:rgba(239,68,68,.1); color:#f87171; border:1px solid rgba(239,68,68,.2); }
+.p10-btn-danger:hover { background:rgba(239,68,68,.2); }
+
+.p10-input { background:var(--glass-panel); border:1px solid rgba(255,255,255,.08);
+    border-radius:10px; padding:8px 12px; color:var(--text-main); font-size:.85rem;
+    outline:none; font-family:inherit; transition:border-color .15s; }
+[data-theme="light"] .p10-input { border-color:rgba(0,0,0,.1); background:rgba(255,255,255,.9) !important; }
+.p10-input:focus { border-color:var(--accent); }
+.p10-num-input { width:68px; text-align:right; }
+
+.p10-select { background:var(--glass-panel); border:1px solid rgba(255,255,255,.08);
+    border-radius:10px; padding:8px 12px; color:var(--text-main); font-size:.85rem;
+    cursor:pointer; outline:none; font-family:inherit; }
+[data-theme="light"] .p10-select { border-color:rgba(0,0,0,.1); background:rgba(255,255,255,.9) !important; }
+
+.p10-accent-grid { display:flex; gap:8px; flex-wrap:wrap; padding-bottom:14px; }
+.p10-accent-swatch { width:30px; height:30px; border-radius:50%;
+    border:3px solid transparent; cursor:pointer; transition:transform .15s,border-color .15s; }
+.p10-accent-swatch:hover { transform:scale(1.18); }
+.p10-accent-swatch.active { border-color:var(--text-main); }
+
+.p10-font-btns { display:flex; gap:6px; }
+.p10-font-btn { padding:5px 12px; border-radius:8px; font-size:.8rem; font-weight:700;
+    cursor:pointer; transition:all .15s; background:var(--glass-hover);
+    border:1px solid rgba(255,255,255,.09); color:var(--text-muted); }
+[data-theme="light"] .p10-font-btn { border-color:rgba(0,0,0,.1); }
+.p10-font-btn.active,.p10-font-btn:hover { background:var(--accent); color:#fff; border-color:transparent; }
+
+.p10-textarea { width:100%; padding:12px 14px; background:var(--glass-panel);
+    border:1px solid rgba(255,255,255,.08); border-radius:12px; color:var(--text-main);
+    font-size:.85rem; resize:vertical; min-height:110px; font-family:inherit;
+    outline:none; transition:border-color .15s; box-sizing:border-box; }
+[data-theme="light"] .p10-textarea { border-color:rgba(0,0,0,.1); background:rgba(255,255,255,.9) !important; }
+.p10-textarea:focus { border-color:var(--accent); }
+
+.p10-kbd { background:var(--glass-hover); border:1px solid rgba(255,255,255,.1);
+    border-radius:6px; padding:2px 8px; font-size:.7rem;
+    font-family:'JetBrains Mono',monospace; color:var(--text-main); }
+[data-theme="light"] .p10-kbd { border-color:rgba(0,0,0,.12); }
+
+/* Profile in settings tab */
+.p10-avatar-display {
+    width: 72px; height: 72px; border-radius: 18px;
+    flex-shrink: 0; overflow: hidden; cursor: pointer;
+    border: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    transition: border-color .2s, transform .15s;
+}
+.p10-avatar-display:hover { transform: scale(1.05); border-color: var(--accent); }
+.p10-emoji-grid {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin: 10px 0;
+}
+.p10-emoji-opt {
+    width: 32px; height: 32px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 1.1rem;
+    cursor: pointer; transition: background .12s; background: none;
+    border: none;
+}
+.p10-emoji-opt:hover { background: var(--glass-hover); }
+.p10-bg-swatches { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 6px; }
+.p10-bg-swatch {
+    width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: transform .15s, border-color .15s;
+}
+.p10-bg-swatch:hover { transform: scale(1.2); }
+
+/* About card */
+.p10-about-card {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    border-radius: 18px; padding: 20px 22px;
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 18px;
+}
+.p10-about-icon {
+    width: 58px; height: 58px; border-radius: 17px;
+    background: var(--accent); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.55rem; color: #fff;
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.p10-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.p10-stat-card { background:var(--glass-panel); border:1px solid rgba(255,255,255,.07);
+    border-radius:14px; padding:16px; text-align:center; }
+[data-theme="light"] .p10-stat-card { background:rgba(255,255,255,.88) !important; border-color:rgba(0,0,0,.07) !important; }
+.p10-stat-val { font-size:1.5rem; font-weight:700; color:var(--accent); }
+.p10-stat-lbl { font-size:.65rem; color:var(--text-muted); margin-top:3px; }
+
+#p10-feedback-status { font-size:.78rem; margin-top:8px; font-weight:600; min-height:18px; }
+#p10-feedback-status.ok  { color:#22c55e; }
+#p10-feedback-status.err { color:#f87171; }
+
+/* Mobile responsive settings tab */
+@media (max-width: 680px) {
+    #view-settings.active { flex-direction: column; gap: 0; }
+    #p10-stab-sidebar { width: 100%; max-height: none; border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,.07);
+        display: flex; flex-wrap: wrap; gap: 2px; padding: 8px; }
+    [data-theme="light"] #p10-stab-sidebar { border-bottom-color: rgba(0,0,0,.08); }
+    .p10-stab-section-lbl { display: none; }
+    .p10-stab-nav-btn { width: auto; flex: 0 0 auto; padding: 8px 12px; font-size: .75rem; }
+    #p10-stab-content { padding: 16px 0 0; }
+    .p10-stat-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ================================================================
+   3. LOCATION PERMISSION MODAL
+   ================================================================ */
+#p10-location-modal {
+    position: fixed; inset: 0; z-index: 700;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+#p10-location-modal.show { opacity: 1; pointer-events: all; }
+.p10-loc-box {
+    background: var(--bg-color);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 24px; padding: 36px 32px;
+    max-width: 400px; width: 90%;
+    box-shadow: 0 20px 80px rgba(0,0,0,.4);
+    text-align: center;
+    transform: translateY(10px); transition: transform .25s;
+}
+[data-theme="light"] .p10-loc-box {
+    border-color: rgba(0,0,0,.09);
+    box-shadow: 0 20px 80px rgba(0,0,0,.15);
+}
+#p10-location-modal.show .p10-loc-box { transform: none; }
+.p10-loc-icon {
+    width: 72px; height: 72px; border-radius: 22px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px; font-size: 2rem;
+}
+.p10-loc-title {
+    font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;
+}
+.p10-loc-desc {
+    font-size: .85rem; color: var(--text-muted); line-height: 1.65;
+    margin-bottom: 24px;
+}
+.p10-loc-desc strong { color: var(--text-main); }
+.p10-loc-note {
+    font-size: .72rem; color: var(--text-muted);
+    background: var(--glass-panel); border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 22px; line-height: 1.55;
+    border: 1px solid rgba(255,255,255,.06); text-align: left;
+}
+[data-theme="light"] .p10-loc-note { border-color: rgba(0,0,0,.07); }
+.p10-loc-note i { color: var(--accent); margin-right: 5px; }
+.p10-loc-btns { display: flex; gap: 10px; }
+.p10-loc-btn-yes {
+    flex: 1; padding: 12px; border-radius: 13px;
+    background: var(--accent); color: #fff;
+    border: none; cursor: pointer; font-size: .9rem;
+    font-weight: 700; font-family: inherit; transition: all .15s;
+}
+.p10-loc-btn-yes:hover { opacity: .88; transform: translateY(-1px); }
+.p10-loc-btn-no {
+    flex: 1; padding: 12px; border-radius: 13px;
+    background: var(--glass-hover);
+    border: 1px solid rgba(255,255,255,.09); color: var(--text-muted);
+    cursor: pointer; font-size: .9rem; font-family: inherit; transition: all .15s;
+}
+[data-theme="light"] .p10-loc-btn-no { border-color: rgba(0,0,0,.1); }
+.p10-loc-btn-no:hover { color: var(--text-main); }
+
+/* ================================================================
+   4. CUSTOM DELETE CONFIRM MODAL
+   ================================================================ */
+#p10-confirm-modal {
+    position: fixed; inset: 0; z-index: 700;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.5);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity .18s; pointer-events: none;
+}
+#p10-confirm-modal.show { opacity: 1; pointer-events: all; }
+.p10-confirm-box {
+    background: var(--bg-color);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 20px; padding: 28px 28px 22px;
+    max-width: 360px; width: 90%;
+    box-shadow: 0 16px 60px rgba(0,0,0,.4);
+    transform: translateY(8px) scale(.97);
+    transition: transform .22s;
+}
+[data-theme="light"] .p10-confirm-box {
+    border-color: rgba(0,0,0,.09);
+    box-shadow: 0 16px 60px rgba(0,0,0,.14);
+}
+#p10-confirm-modal.show .p10-confirm-box { transform: none; }
+.p10-confirm-icon {
+    width: 52px; height: 52px; border-radius: 16px;
+    background: rgba(239,68,68,.1);
+    border: 2px solid rgba(239,68,68,.2);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; font-size: 1.3rem; color: #ef4444;
+}
+.p10-confirm-title { font-size: 1rem; font-weight: 700; margin-bottom: 7px; }
+.p10-confirm-desc  { font-size: .82rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 22px; }
+.p10-confirm-btns  { display: flex; justify-content: flex-end; gap: 10px; }
+.p10-confirm-cancel {
+    padding: 9px 20px; border-radius: 11px;
+    background: var(--glass-hover); border: 1px solid rgba(255,255,255,.09);
+    color: var(--text-muted); cursor: pointer;
+    font-size: .85rem; font-family: inherit; transition: all .15s;
+}
+[data-theme="light"] .p10-confirm-cancel { border-color: rgba(0,0,0,.1); }
+.p10-confirm-cancel:hover { color: var(--text-main); }
+.p10-confirm-ok {
+    padding: 9px 20px; border-radius: 11px;
+    background: rgba(239,68,68,.12); color: #ef4444;
+    border: 1px solid rgba(239,68,68,.22); cursor: pointer;
+    font-size: .85rem; font-weight: 700; font-family: inherit; transition: all .15s;
+}
+.p10-confirm-ok:hover { background: rgba(239,68,68,.22); }
+
+/* ================================================================
+   5. QUOTE WIDGET — BIGGER & BETTER
+   ================================================================ */
+#widget-quote .quote-text {
+    font-size: .98rem !important;
+    -webkit-line-clamp: 6 !important;
+    line-height: 1.7 !important;
+    color: var(--text-main) !important;
+    opacity: .88;
+}
+#widget-quote .quote-author {
+    font-size: .78rem !important;
+    margin-top: 10px !important;
+}
+#widget-quote { min-height: 130px; }
+
+/* ================================================================
+   6. FORMULA MODAL — CATEGORY DROPDOWN
+   ================================================================ */
+#formula-modal-subject-wrap {
+    position: relative; margin-bottom: 16px;
+}
+#p10-formula-subj-select {
+    width: 100%;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-bottom: 1px solid rgba(255,255,255,.2);
+    border-radius: 0; border-top: none; border-left: none; border-right: none;
+    padding: 8px 0 8px 0;
+    color: var(--text-main); font-size: .9rem; font-family: inherit;
+    outline: none; cursor: pointer;
+    background: transparent;
+    appearance: none; -webkit-appearance: none;
+}
+[data-theme="light"] #p10-formula-subj-select {
+    border-bottom-color: rgba(60,60,67,.2);
+    color: var(--text-main);
+}
+#p10-formula-subj-select:focus { border-bottom-color: var(--accent); }
+#p10-formula-subj-select option {
+    background: var(--bg-color); color: var(--text-main);
+}
+
+/* Kill KaTeX live preview */
+#formula-math-preview { display: none !important; }
+
+/* ================================================================
+   7. FORMULA SUBJECT CATEGORY PILLS (enhanced)
+   ================================================================ */
+#formula-subject-bar {
+    display: flex; gap: 7px; flex-wrap: wrap;
+    padding: 2px 0 14px;
+}
+.formula-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 99px;
+    border: 1px solid rgba(255,255,255,.09);
+    background: var(--glass-panel);
+    font-size: .78rem; font-weight: 600; cursor: pointer;
+    transition: all .15s; color: var(--text-muted);
+    white-space: nowrap;
+}
+.formula-pill i { font-size: .7rem; }
+.formula-pill.active,
+.formula-pill:hover {
+    background: var(--accent); color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* ================================================================
+   8. MISC / POLISH
+   ================================================================ */
+
+/* Remove settings gear from nav since it's now a tab */
+#nav-btn-settings-old { display: none !important; }
+
+/* Smooth tab transition for settings view */
+#view-settings { padding-bottom: 40px; }
+
+/* Fix: p9-settings overlay should be hidden since we use tab now */
+#p9-settings { display: none !important; }
+
+/* Settings tab nav button */
+#btn-settings { margin-top: 4px; }
+
+/* Formula subject dropdown arrow fix */
+.formula-modal-subj-arrow {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--text-muted); font-size: .7rem;
+}
+
+/* Radio-style accent selection in settings */
+.p10-accent-custom-input {
+    width: 30px; height: 30px; border-radius: 50%; padding: 0;
+    border: 3px solid rgba(255,255,255,.2); cursor: pointer;
+}
+[data-theme="light"] .p10-accent-custom-input { border-color: rgba(0,0,0,.15); }
