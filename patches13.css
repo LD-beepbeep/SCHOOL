@@ -1,0 +1,301 @@
+/* ================================================================
+   StudentOS — patches13.css
+   ================================================================ */
+
+/* ================================================================
+   1.  LIGHT MODE — complete, final pass
+       Covers every remaining element that was still dark-themed.
+   ================================================================ */
+
+/* ── Quick Links ── */
+[data-theme="light"] .link-card {
+    background: rgba(0,0,0,.05) !important;
+    color: #1c1c1e !important;
+}
+[data-theme="light"] .link-card:hover {
+    background: var(--accent) !important;
+    color: #fff !important;
+}
+
+/* ── Grades ── */
+[data-theme="light"] #subjects-container .min-card {
+    background: rgba(255,255,255,.95) !important;
+}
+[data-theme="light"] #subjects-container .h-2.bg-\[var\(--glass-hover\)\] {
+    background: rgba(0,0,0,.07) !important;
+}
+[data-theme="light"] .flex.items-center.justify-between.py-1\.5.border-b {
+    border-bottom-color: rgba(0,0,0,.07) !important;
+}
+[data-theme="light"] #view-grades {
+    color: #1c1c1e !important;
+}
+[data-theme="light"] #global-average,
+[data-theme="light"] #global-letter { color: var(--accent) !important; }
+[data-theme="light"] .practice-avg-row { color: rgba(60,60,67,.7) !important; }
+[data-theme="light"] #view-grades .bg-\[var\(--glass-hover\)\] {
+    background: rgba(0,0,0,.07) !important;
+}
+/* Grade progress bar track */
+[data-theme="light"] #view-grades .h-2 {
+    background: rgba(0,0,0,.08) !important;
+}
+/* Add Result button */
+[data-theme="light"] #subjects-container .bg-\[var\(--glass-hover\)\] {
+    background: rgba(0,0,0,.05) !important;
+    color: #1c1c1e !important;
+}
+[data-theme="light"] #subjects-container .bg-\[var\(--glass-hover\)\]:hover {
+    background: var(--accent) !important;
+    color: #fff !important;
+}
+/* Overall grade card at top */
+[data-theme="light"] #view-grades > div:first-child .min-card,
+[data-theme="light"] #grades-overview-card {
+    background: rgba(255,255,255,.95) !important;
+}
+
+/* ── Flashcards / Decks ── */
+[data-theme="light"] #deck-list .min-card {
+    background: rgba(255,255,255,.92) !important;
+    border-color: rgba(0,0,0,.08) !important;
+}
+[data-theme="light"] .deck-group-header {
+    color: #1c1c1e !important;
+}
+[data-theme="light"] .deck-group-header:hover {
+    background: rgba(0,0,0,.05) !important;
+}
+/* Study card face */
+[data-theme="light"] #cards-study-view .min-card,
+[data-theme="light"] .study-card-wrap {
+    background: rgba(255,255,255,.97) !important;
+    border-color: rgba(0,0,0,.07) !important;
+}
+[data-theme="light"] #card-front-text,
+[data-theme="light"] #card-back-text,
+[data-theme="light"] #card-hint-text { color: #1c1c1e !important; }
+[data-theme="light"] .rate-btn {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    color: #1c1c1e !important;
+}
+
+/* ── Music ── */
+[data-theme="light"] .music-card {
+    background: rgba(255,255,255,.82) !important;
+    border-color: rgba(0,0,0,.07) !important;
+}
+[data-theme="light"] .music-card:hover {
+    background: rgba(255,255,255,.98) !important;
+}
+[data-theme="light"] .music-card.active {
+    border-color: color-mix(in srgb, var(--mc, var(--accent)) 35%, transparent) !important;
+}
+[data-theme="light"] .mc-label { color: #1c1c1e !important; }
+[data-theme="light"] .wmb-pick {
+    background: rgba(0,0,0,.05) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    color: #1c1c1e !important;
+}
+[data-theme="light"] .wmb-pick:hover { background: color-mix(in srgb, var(--wmc) 18%, #fff) !important; }
+[data-theme="light"] #music-custom-grid .min-card {
+    background: rgba(255,255,255,.82) !important;
+    border-color: rgba(0,0,0,.07) !important;
+}
+
+/* ── Focus / Pomodoro ── */
+[data-theme="light"] #view-focus .min-card { background: rgba(255,255,255,.92) !important; }
+[data-theme="light"] #focus-display { color: #1c1c1e !important; font-size: inherit; }
+[data-theme="light"] #focus-arc-bg  { stroke: rgba(0,0,0,.08) !important; }
+[data-theme="light"] .focus-mode-btn {
+    background: rgba(255,255,255,.8) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    color: rgba(60,60,67,.7) !important;
+}
+[data-theme="light"] .focus-mode-btn.active {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+[data-theme="light"] #focus-task-select {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: #1c1c1e !important;
+}
+[data-theme="light"] .pomo-controls button {
+    background: rgba(255,255,255,.82) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    color: #1c1c1e !important;
+}
+
+/* ── Calculator ── */
+[data-theme="light"] #calc-display-expr { color: rgba(60,60,67,.5) !important; }
+[data-theme="light"] #calc-display      { background: rgba(255,255,255,.7) !important; border-color: rgba(0,0,0,.08) !important; }
+[data-theme="light"] .calc-key          { background: rgba(255,255,255,.88) !important; border: 1px solid rgba(0,0,0,.07) !important; color: #1c1c1e !important; }
+[data-theme="light"] .calc-key:hover    { filter: brightness(1) !important; background: rgba(255,255,255,.98) !important; }
+[data-theme="light"] .calc-key.sci      { color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .calc-key.accent   { color: var(--accent) !important; }
+[data-theme="light"] .calc-key.primary  { background: var(--accent) !important; color: #fff !important; }
+[data-theme="light"] #calc-history      { color: rgba(60,60,67,.45) !important; }
+
+/* ── Calendar deeper fixes ── */
+[data-theme="light"] .cal-month-grid { background: transparent !important; }
+[data-theme="light"] .cal-day-num    { color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .cal-day.today .cal-day-num { color: var(--accent) !important; font-weight: 700; }
+[data-theme="light"] .cal-week-col-header { color: rgba(60,60,67,.55) !important; border-bottom-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .cal-time-label { color: rgba(60,60,67,.4) !important; border-right-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .cal-week-cell  { border-color: rgba(0,0,0,.04) !important; }
+[data-theme="light"] .cal-week-cell:hover { background: rgba(0,0,0,.03) !important; }
+[data-theme="light"] .agenda-item    { background: rgba(255,255,255,.8) !important; border-left-color: var(--accent) !important; }
+[data-theme="light"] #cal-import-panel { background: rgba(255,255,255,.9) !important; border-color: rgba(0,0,0,.08) !important; }
+
+/* ── Whiteboard deeper ── */
+[data-theme="light"] .wb-color-btn  { border-color: rgba(0,0,0,.1) !important; }
+[data-theme="light"] .wb-size-btn   { background: rgba(255,255,255,.7) !important; border-color: rgba(0,0,0,.08) !important; }
+[data-theme="light"] .mm-node       { background: rgba(255,255,255,.9) !important; border-color: rgba(0,0,0,.12) !important; color: #1c1c1e !important; }
+[data-theme="light"] .mm-node-input { background: rgba(255,255,255,.98) !important; color: #1c1c1e !important; }
+
+/* ── Tasks ── */
+[data-theme="light"] .subtask-item { color: rgba(60,60,67,.7) !important; }
+[data-theme="light"] .task-edit-form { background: rgba(255,255,255,.7) !important; border-radius: 10px; padding: 8px !important; }
+[data-theme="light"] .add-subtask-row { background: rgba(0,0,0,.03) !important; border-radius: 8px; }
+[data-theme="light"] #task-filter-row button {
+    background: rgba(255,255,255,.75) !important;
+    border-color: rgba(0,0,0,.08) !important;
+    color: rgba(60,60,67,.7) !important;
+}
+[data-theme="light"] #task-filter-row button.active {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+/* ── Timetable ── */
+[data-theme="light"] .tt-slot {
+    background: rgba(255,255,255,.8) !important;
+    border-color: rgba(0,0,0,.07) !important;
+}
+[data-theme="light"] .tt-slot:hover { background: rgba(255,255,255,.97) !important; }
+[data-theme="light"] .tt-header-cell { color: rgba(60,60,67,.55) !important; border-color: rgba(0,0,0,.06) !important; }
+[data-theme="light"] .tt-time-label  { color: rgba(60,60,67,.4) !important; }
+
+/* ── Settings panels ── */
+[data-theme="light"] #view-settings { background: transparent !important; }
+[data-theme="light"] #p10-stab-sidebar {
+    background: rgba(255,255,255,.5) !important;
+    border-right-color: rgba(0,0,0,.08) !important;
+}
+[data-theme="light"] .p10-stab-nav-btn { color: rgba(60,60,67,.65) !important; }
+[data-theme="light"] .p10-stab-nav-btn:hover { background: rgba(0,0,0,.05) !important; color: #1c1c1e !important; }
+[data-theme="light"] .p10-stab-nav-btn.active {
+    background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+    color: var(--accent) !important;
+}
+[data-theme="light"] .p10-section {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.07) !important;
+}
+[data-theme="light"] .p10-row { border-bottom-color: rgba(0,0,0,.05) !important; }
+[data-theme="light"] .p10-toggle { background: rgba(0,0,0,.1) !important; border-color: rgba(0,0,0,.12) !important; }
+[data-theme="light"] .p10-toggle.on { background: var(--accent) !important; border-color: transparent !important; }
+[data-theme="light"] .p10-btn-ghost {
+    background: rgba(255,255,255,.85) !important;
+    border-color: rgba(0,0,0,.09) !important;
+    color: #1c1c1e !important;
+}
+[data-theme="light"] .p10-input,
+[data-theme="light"] .p10-select {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: #1c1c1e !important;
+}
+
+/* ── Custom CSS textarea in settings ── */
+[data-theme="light"] .p12-custom-css-area {
+    background: rgba(0,0,0,.04) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: #16a34a !important;
+}
+
+/* ── Library overlay ── */
+[data-theme="light"] #p9-formula-library { background: #eef0f5 !important; }
+[data-theme="light"] .p9-fl-subjects { background: rgba(255,255,255,.5) !important; border-right-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .p9-fl-subj-btn { color: rgba(60,60,67,.65) !important; }
+[data-theme="light"] .p9-fl-subj-btn:hover { background: rgba(0,0,0,.05) !important; color: #1c1c1e !important; }
+[data-theme="light"] .p9-fl-subj-btn.active { background: color-mix(in srgb, var(--accent) 12%, transparent) !important; color: var(--accent) !important; }
+[data-theme="light"] .p9-fl-card { background: rgba(255,255,255,.92) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .p9-fl-card-formula { background: rgba(0,0,0,.03) !important; border-color: rgba(0,0,0,.07) !important; color: var(--accent) !important; }
+[data-theme="light"] .p9-fl-header { background: rgba(255,255,255,.7) !important; border-bottom-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .p9-fl-search { background: rgba(255,255,255,.9) !important; border-color: rgba(0,0,0,.1) !important; }
+
+/* ── Modal confirm / p10 confirm ── */
+[data-theme="light"] #p10-confirm-modal > .p10-confirm-box,
+[data-theme="light"] #p11-confirm-fallback > div {
+    background: rgba(255,255,255,.98) !important;
+    border-color: rgba(0,0,0,.09) !important;
+    box-shadow: 0 16px 60px rgba(0,0,0,.14) !important;
+}
+
+/* ── Global search ── */
+[data-theme="light"] #p11-search-box {
+    background: rgba(255,255,255,.98) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    box-shadow: 0 24px 80px rgba(0,0,0,.18) !important;
+}
+[data-theme="light"] #p11-search-input-row { border-bottom-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .p11-result-group-lbl { color: rgba(60,60,67,.5) !important; }
+[data-theme="light"] .p11-result-item:hover,
+[data-theme="light"] .p11-result-item.selected {
+    background: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+[data-theme="light"] .p11-search-footer { border-top-color: rgba(0,0,0,.06) !important; }
+[data-theme="light"] .p11-sf-key,
+[data-theme="light"] #p11-search-kbd { background: rgba(0,0,0,.06) !important; border-color: rgba(0,0,0,.1) !important; color: rgba(60,60,67,.7) !important; }
+
+/* ── Location modal ── */
+[data-theme="light"] .p10-loc-box {
+    background: rgba(255,255,255,.98) !important;
+    border-color: rgba(0,0,0,.09) !important;
+}
+
+/* ── Weather widget ── */
+[data-theme="light"] .wfc { background: rgba(255,255,255,.8) !important; border-color: rgba(0,0,0,.07) !important; }
+
+/* ── PDF annotator ── */
+[data-theme="light"] #pdf-annotator-overlay { background: #f5f5f7 !important; }
+
+/* ================================================================
+   2.  PERSONALISE — custom CSS textarea & new visual options
+   ================================================================ */
+.p12-custom-css-area {
+    width: 100%; min-height: 130px; resize: vertical;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px; padding: 12px 14px;
+    color: #4ade80;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: .78rem; line-height: 1.7; outline: none;
+    transition: border-color .15s; box-sizing: border-box;
+}
+.p12-custom-css-area:focus { border-color: var(--accent); }
+
+/* Accent preview dot */
+.p12-accent-live-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-block;
+    background: var(--accent);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 45%, transparent);
+    flex-shrink: 0;
+}
+
+/* ================================================================
+   3.  SEARCH RESULT OPEN ANIMATION
+   ================================================================ */
+.p11-result-item {
+    transition: background .1s !important;
+}
+.p11-result-item.opening {
+    background: color-mix(in srgb, var(--accent) 20%, transparent) !important;
+    transition: background .05s !important;
+}
