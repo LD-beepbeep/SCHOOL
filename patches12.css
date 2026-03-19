@@ -1,0 +1,239 @@
+/* ================================================================
+   StudentOS — patches12.css
+   Pure Light Mode · Sidebar Search · Drag Fix · More Settings
+   ================================================================ */
+
+/* ================================================================
+   1. COMPREHENSIVE LIGHT MODE — ground-up, every surface
+   ================================================================ */
+[data-theme="light"] body { background: #f0f2f7 !important; }
+
+/* ── Sidebar ── */
+[data-theme="light"] nav {
+    background: rgba(255,255,255,.84) !important;
+    border-right: 1px solid rgba(0,0,0,.08) !important;
+}
+[data-theme="light"] .nav-btn { color: rgba(60,60,67,.5) !important; background: none !important; }
+[data-theme="light"] .nav-btn:hover { color: #1c1c1e !important; background: rgba(0,0,0,.055) !important; }
+[data-theme="light"] .nav-btn.active { color: #fff !important; background: var(--accent) !important; }
+[data-theme="light"] .nav-btn:hover::after {
+    background: #fff !important; color: #1c1c1e !important;
+    border: 1px solid rgba(0,0,0,.1) !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,.1) !important;
+}
+[data-theme="light"] .profile-btn:hover { box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent) !important; }
+
+/* ── Cards / panels ── */
+[data-theme="light"] .min-card {
+    background: rgba(255,255,255,.88) !important;
+    border: 1px solid rgba(0,0,0,.07) !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,.06) !important;
+}
+[data-theme="light"] .widget-item { background: rgba(255,255,255,.88) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .widget-item:hover { box-shadow: 0 4px 22px rgba(0,0,0,.09) !important; }
+
+/* ── Modals ── */
+[data-theme="light"] .modal-panel {
+    background: #fff !important;
+    border: 1px solid rgba(0,0,0,.09) !important;
+    box-shadow: 0 16px 60px rgba(0,0,0,.14) !important;
+}
+[data-theme="light"] #modal-overlay { background: rgba(0,0,0,.36) !important; }
+
+/* ── Inputs ── */
+[data-theme="light"] .bare-input { color: #1c1c1e !important; border-bottom-color: rgba(60,60,67,.2) !important; background: transparent !important; }
+[data-theme="light"] .bare-input::placeholder { color: rgba(60,60,67,.36) !important; }
+[data-theme="light"] .bare-input:focus { border-bottom-color: var(--accent) !important; }
+[data-theme="light"] input[type="text"]:not(.bare-input):not(.p9-input):not(.p10-input),
+[data-theme="light"] input[type="email"],
+[data-theme="light"] input[type="number"],
+[data-theme="light"] input[type="password"],
+[data-theme="light"] textarea:not(.p9-textarea):not(.p10-textarea) {
+    background: rgba(0,0,0,.04) !important;
+    border-color: rgba(0,0,0,.09) !important;
+    color: #1c1c1e !important;
+}
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder { color: rgba(60,60,67,.38) !important; }
+[data-theme="light"] select { background: rgba(255,255,255,.92) !important; border-color: rgba(0,0,0,.1) !important; color: #1c1c1e !important; }
+[data-theme="light"] select option { background: #fff !important; color: #1c1c1e !important; }
+
+/* ── Clock / greeting ── */
+[data-theme="light"] #clock-time { color: #1c1c1e !important; }
+[data-theme="light"] #date-display { color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] #dash-greeting { color: var(--accent) !important; }
+
+/* ── Tasks ── */
+[data-theme="light"] .task-row { border-bottom-color: rgba(0,0,0,.05) !important; }
+[data-theme="light"] .task-row:hover { background: rgba(0,0,0,.025) !important; border-radius: 10px; }
+
+/* ── Notes ── */
+[data-theme="light"] #notes-sidebar { background: rgba(0,0,0,.025) !important; border-right: 1px solid rgba(0,0,0,.07) !important; }
+[data-theme="light"] .note-item { color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .note-item:hover, [data-theme="light"] .note-item.active { background: rgba(0,0,0,.05) !important; color: #1c1c1e !important; }
+[data-theme="light"] #note-editor { color: #1c1c1e !important; caret-color: var(--accent); }
+[data-theme="light"] #note-title-input { color: #1c1c1e !important; }
+[data-theme="light"] .notes-toolbar { background: rgba(255,255,255,.92) !important; border-bottom: 1px solid rgba(0,0,0,.07) !important; }
+[data-theme="light"] .nt-btn { color: rgba(60,60,67,.55) !important; }
+[data-theme="light"] .nt-btn:hover { background: rgba(0,0,0,.06) !important; color: #1c1c1e !important; }
+[data-theme="light"] .nt-btn.active { background: var(--accent) !important; color: #fff !important; }
+[data-theme="light"] .tbar-dm-btn { color: rgba(60,60,67,.65) !important; }
+[data-theme="light"] .tbar-dm-btn:hover { background: rgba(0,0,0,.05) !important; color: #1c1c1e !important; }
+[data-theme="light"] .nt-dropdown-content { background: #fff !important; border: 1px solid rgba(0,0,0,.1) !important; box-shadow: 0 8px 28px rgba(0,0,0,.11) !important; }
+
+/* ── Whiteboard ── */
+[data-theme="light"] #whiteboard-canvas { background: #fafafa !important; }
+[data-theme="light"] .wb-tool { color: rgba(60,60,67,.55) !important; }
+[data-theme="light"] .wb-tool:hover { background: rgba(0,0,0,.05) !important; color: #1c1c1e !important; }
+[data-theme="light"] .wb-tool.active-tool { background: var(--accent) !important; color: #fff !important; }
+[data-theme="light"] .wb-tab { color: rgba(60,60,67,.55) !important; }
+[data-theme="light"] .wb-tab.active-tab { color: var(--accent) !important; }
+
+/* ── Cards ── */
+[data-theme="light"] .deck-item { background: rgba(255,255,255,.82) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .deck-item:hover { background: #fff !important; }
+[data-theme="light"] .fc-front, [data-theme="light"] .fc-back { background: rgba(255,255,255,.9) !important; border-color: rgba(0,0,0,.08) !important; color: #1c1c1e !important; }
+
+/* ── Grades ── */
+[data-theme="light"] .grade-subject-row, [data-theme="light"] .grade-subject-card { background: rgba(255,255,255,.82) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .grade-test-row { background: rgba(0,0,0,.02) !important; }
+[data-theme="light"] .grade-test-row:hover { background: rgba(0,0,0,.04) !important; }
+
+/* ── Calculator ── */
+[data-theme="light"] .calc-key { background: rgba(255,255,255,.82) !important; border-color: rgba(0,0,0,.08) !important; color: #1c1c1e !important; }
+[data-theme="light"] .calc-key:hover { background: #fff !important; }
+[data-theme="light"] #calc-display, [data-theme="light"] #calc-result { color: #1c1c1e !important; background: rgba(0,0,0,.03) !important; }
+
+/* ── Focus timer ── */
+[data-theme="light"] #focus-display { color: #1c1c1e !important; }
+[data-theme="light"] #focus-label { color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .pomo-session-dot { background: rgba(0,0,0,.12) !important; }
+[data-theme="light"] .pomo-session-dot.done { background: var(--accent) !important; }
+
+/* ── Music ── */
+[data-theme="light"] .wmb-pick { background: rgba(255,255,255,.7) !important; border-color: rgba(0,0,0,.08) !important; }
+[data-theme="light"] .wmb-pick:hover { background: #fff !important; }
+
+/* ── Forum (full fix) ── */
+[data-theme="light"] .forum-post-card { background: rgba(255,255,255,.88) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .forum-post-card:hover { background: #fff !important; box-shadow: 0 4px 20px rgba(0,0,0,.09) !important; }
+[data-theme="light"] .fpc-title { color: #1c1c1e !important; }
+[data-theme="light"] .fpc-excerpt, [data-theme="light"] .fpc-footer { color: rgba(60,60,67,.55) !important; }
+[data-theme="light"] .fpc-vote { background: rgba(0,0,0,.05) !important; border-color: rgba(0,0,0,.1) !important; color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .fpc-vote.voted, [data-theme="light"] .fpc-vote:hover { background: color-mix(in srgb, var(--accent) 10%, transparent) !important; color: var(--accent) !important; }
+[data-theme="light"] #forum-new-panel { background: rgba(255,255,255,.96) !important; border-color: rgba(0,0,0,.09) !important; }
+[data-theme="light"] #forum-new-title, [data-theme="light"] #forum-new-body, [data-theme="light"] #forum-reply-input { background: rgba(0,0,0,.04) !important; border-color: rgba(0,0,0,.09) !important; color: #1c1c1e !important; }
+[data-theme="light"] .forum-sort-btn { background: rgba(0,0,0,.05) !important; border-color: rgba(0,0,0,.09) !important; color: rgba(60,60,67,.65) !important; }
+[data-theme="light"] .forum-sort-btn.active, [data-theme="light"] .forum-sort-btn:hover { background: var(--accent) !important; color: #fff !important; border-color: transparent !important; }
+[data-theme="light"] .forum-subject-pill { background: rgba(0,0,0,.05) !important; border-color: rgba(0,0,0,.09) !important; color: rgba(60,60,67,.65) !important; }
+[data-theme="light"] .forum-subject-pill.active, [data-theme="light"] .forum-subject-pill:hover { background: var(--accent) !important; color: #fff !important; border-color: transparent !important; }
+[data-theme="light"] #ft-post-view { background: rgba(255,255,255,.9) !important; border-color: rgba(0,0,0,.08) !important; }
+[data-theme="light"] .forum-reply-card { background: rgba(255,255,255,.82) !important; border-color: rgba(0,0,0,.07) !important; }
+
+/* ── Formulas ── */
+[data-theme="light"] .formula-card { background: rgba(255,255,255,.88) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .formula-card-title { color: #1c1c1e !important; }
+[data-theme="light"] .formula-body { background: rgba(0,0,0,.03) !important; border-color: rgba(0,0,0,.07) !important; color: #1c1c1e !important; }
+[data-theme="light"] .formula-note { color: rgba(60,60,67,.65) !important; }
+[data-theme="light"] .formula-pill { background: rgba(255,255,255,.82) !important; border-color: rgba(0,0,0,.08) !important; color: rgba(60,60,67,.65) !important; }
+[data-theme="light"] .formula-pill.active, [data-theme="light"] .formula-pill:hover { background: var(--accent) !important; color: #fff !important; border-color: transparent !important; }
+[data-theme="light"] .formula-search-bar { background: rgba(255,255,255,.9) !important; border-color: rgba(0,0,0,.09) !important; }
+[data-theme="light"] .formula-empty { color: rgba(60,60,67,.45) !important; }
+
+/* ── Settings view (p10) ── */
+[data-theme="light"] #p10-stab-sidebar { border-right-color: rgba(0,0,0,.08) !important; }
+[data-theme="light"] .p10-stab-nav-btn { color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .p10-stab-nav-btn:hover { background: rgba(0,0,0,.05) !important; color: #1c1c1e !important; }
+[data-theme="light"] .p10-stab-nav-btn.active { background: color-mix(in srgb, var(--accent) 11%, transparent) !important; color: var(--accent) !important; }
+[data-theme="light"] .p10-section { background: rgba(255,255,255,.88) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .p10-row { border-bottom-color: rgba(0,0,0,.05) !important; }
+[data-theme="light"] .p10-toggle { border-color: rgba(0,0,0,.12) !important; background: rgba(0,0,0,.09) !important; }
+[data-theme="light"] .p10-input, [data-theme="light"] .p10-select, [data-theme="light"] .p10-textarea { background: rgba(255,255,255,.9) !important; border-color: rgba(0,0,0,.1) !important; color: #1c1c1e !important; }
+[data-theme="light"] .p10-btn-ghost { background: rgba(0,0,0,.05) !important; border-color: rgba(0,0,0,.1) !important; color: #1c1c1e !important; }
+[data-theme="light"] .p10-stat-card { background: rgba(255,255,255,.88) !important; border-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .p10-kbd { border-color: rgba(0,0,0,.12) !important; background: rgba(0,0,0,.05) !important; }
+[data-theme="light"] .p10-about-card { border-color: color-mix(in srgb, var(--accent) 25%, transparent) !important; }
+[data-theme="light"] .p10-font-btn { border-color: rgba(0,0,0,.1) !important; background: rgba(0,0,0,.05) !important; }
+
+/* ── Search overlay (p11) ── */
+[data-theme="light"] #p11-search-box { background: #fff !important; border-color: rgba(0,0,0,.1) !important; box-shadow: 0 24px 80px rgba(0,0,0,.15) !important; }
+[data-theme="light"] #p11-search-input-row { border-bottom-color: rgba(0,0,0,.07) !important; }
+[data-theme="light"] .p11-result-item:hover, [data-theme="light"] .p11-result-item.selected { background: color-mix(in srgb, var(--accent) 9%, transparent) !important; }
+[data-theme="light"] .p11-search-footer { border-top-color: rgba(0,0,0,.06) !important; }
+[data-theme="light"] .p11-sf-key, [data-theme="light"] #p11-search-kbd { background: rgba(0,0,0,.05) !important; border-color: rgba(0,0,0,.1) !important; }
+
+/* ── Calendar widget ── */
+[data-theme="light"] .cal-day { background: rgba(255,255,255,.55) !important; }
+[data-theme="light"] .cal-day:hover { background: rgba(255,255,255,.9) !important; }
+[data-theme="light"] .cal-day.today { background: color-mix(in srgb, var(--accent) 11%, #fff) !important; }
+[data-theme="light"] .cal-view-btn { color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .cal-view-btn.active { background: var(--accent) !important; color: #fff !important; }
+[data-theme="light"] .ws-cell { background: rgba(255,255,255,.7) !important; border-color: rgba(0,0,0,.07) !important; color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .agenda-item { background: rgba(255,255,255,.7) !important; }
+
+/* ── Misc ── */
+[data-theme="light"] #ambient-bg { opacity: .18 !important; }
+[data-theme="light"] #sos-toast { background: #1c1c1e !important; color: #fff !important; }
+[data-theme="light"] .notif-btn { background: rgba(255,255,255,.72) !important; border-color: rgba(0,0,0,.09) !important; color: rgba(60,60,67,.6) !important; }
+[data-theme="light"] .sticker-panel, [data-theme="light"] .table-picker-popup { background: #fff !important; border: 1px solid rgba(0,0,0,.1) !important; box-shadow: 0 8px 28px rgba(0,0,0,.1) !important; }
+[data-theme="light"] ::-webkit-scrollbar { width: 5px; height: 5px; }
+[data-theme="light"] ::-webkit-scrollbar-track { background: rgba(0,0,0,.04); }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.16); border-radius: 3px; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.26); }
+
+/* ── Drag and drop feedback in light ── */
+[data-theme="light"] .widget-dragging { opacity: .42 !important; border: 2px dashed var(--accent) !important; }
+[data-theme="light"] .widget-drag-over { border: 2px dashed var(--accent) !important; background: color-mix(in srgb, var(--accent) 7%, #fff) !important; }
+
+/* ================================================================
+   2. SIDEBAR SEARCH BUTTON
+   ================================================================ */
+#p12-nav-search {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: all .2s;
+    position: relative; cursor: pointer;
+    background: none; border: none;
+    font-size: 1.25rem;
+}
+#p12-nav-search:hover {
+    color: var(--text-main);
+    background: var(--glass-hover);
+}
+#p12-nav-search::after {
+    content: 'Search  Ctrl K';
+    position: absolute; left: 56px;
+    background: var(--glass-panel);
+    backdrop-filter: blur(10px);
+    border: var(--glass-border);
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 11px; color: var(--text-main);
+    white-space: nowrap; z-index: 50; font-weight: 500;
+    opacity: 0; pointer-events: none; transition: opacity .15s;
+}
+#p12-nav-search:hover::after { opacity: 1; }
+
+/* Hide the old dashboard-header search trigger if it was injected by p11 */
+#p11-search-trigger { display: none !important; }
+
+/* ================================================================
+   3. CUSTOM CSS TEXTAREA (in settings)
+   ================================================================ */
+.p12-custom-css-area {
+    width: 100%; padding: 12px 14px;
+    background: var(--glass-panel);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: .78rem;
+    resize: vertical; min-height: 90px;
+    outline: none; transition: border-color .15s;
+    box-sizing: border-box; line-height: 1.6;
+}
+[data-theme="light"] .p12-custom-css-area {
+    background: rgba(255,255,255,.9) !important;
+    border-color: rgba(0,0,0,.1) !important;
+    color: #2563eb !important;
+}
+.p12-custom-css-area:focus { border-color: var(--accent); }
