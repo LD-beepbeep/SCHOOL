@@ -824,28 +824,9 @@ function _p10settingsHTML(){
                 <div class="p10-about-icon"><i class="ph-bold ph-student"></i></div>
                 <div>
                     <div style="font-size:1.05rem;font-weight:700;">StudentOS</div>
-                    <div style="font-size:.72rem;color:var(--text-muted);margin-top:3px;">Version 10.0 · patches10.js</div>
+                    <div style="font-size:.72rem;color:var(--text-muted);margin-top:3px;">Version 1.2</div>
                     <div style="font-size:.78rem;color:var(--text-muted);margin-top:2px;">Your all-in-one student workspace 🎓</div>
                 </div>
-            </div>
-            <div class="p10-stat-grid">
-                <div class="p10-stat-card"><div class="p10-stat-val">50+</div><div class="p10-stat-lbl">Daily Users</div></div>
-                <div class="p10-stat-card"><div class="p10-stat-val">10</div><div class="p10-stat-lbl">Patch Updates</div></div>
-                <div class="p10-stat-card"><div class="p10-stat-val">120+</div><div class="p10-stat-lbl">Formulas</div></div>
-            </div>
-            <div class="p10-section">
-                <div class="p10-section-title">Developer</div>
-                <div class="p10-row">
-                    <div class="p10-row-lbl">Contact</div>
-                    <a href="mailto:lars.dehairs@gmail.com" style="color:var(--accent);font-size:.85rem;">lars.dehairs@gmail.com</a>
-                </div>
-            </div>
-            <div class="p10-section">
-                <div class="p10-section-title">Features</div>
-                ${['Tasks & Calendar','Flashcards & Study','Rich Notes','Whiteboard','Forum (50+ users!)','Formula Library (120+)','Grades Tracker','Pomodoro Timer','Music Player','Weather Widget','Offline-first + Firebase Sync'].map(f=>
-                    `<div class="p10-row" style="padding:8px 0;"><div style="font-size:.82rem;"><i class="fa-solid fa-check" style="color:#22c55e;margin-right:8px;"></i>${f}</div></div>`
-                ).join('')}
-            </div>
         </div>
 
     </div><!-- /p10-stab-content -->
