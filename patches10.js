@@ -752,19 +752,19 @@ function _p10settingsHTML(){
                 <div class="p10-section-title">Visible Widgets</div>
                 <div id="p10-widget-list">
                     ${[
-                        {id:'links',key:'links',label:'🔗 Quick Links'},
-                        {id:'goals',key:'goals',label:'✅ Daily Goals'},
-                        {id:'upnext',key:'upnext',label:'📅 Up Next'},
-                        {id:'studystats',key:'studystats',label:'📊 Study Stats'},
-                        {id:'grades',key:'grades',label:'🏅 Grades Overview'},
-                        {id:'minicalendar',key:'minicalendar',label:'📆 Upcoming Events'},
-                        {id:'quicknote',key:'quicknote',label:'📝 Quick Note'},
-                        {id:'exams',key:'exams',label:'📌 Exam Countdown'},
-                        {id:'music',key:'music',label:'🎵 Music Player'},
-                        {id:'forum',key:'forum',label:'💬 Forum Quick Ask'},
-                        {id:'weather',key:'weather',label:'🌤️ Weather'},
-                        {id:'quote',key:'quote',label:'💡 Quote of the Day'},
-                        {id:'habits',key:'habits',label:'🔥 Study Habits'},
+                        {id:'links',key:'links',label:'Quick Links'},
+                        {id:'goals',key:'goals',label:'Daily Goals'},
+                        {id:'upnext',key:'upnext',label:'Up Next'},
+                        {id:'studystats',key:'studystats',label:'Study Stats'},
+                        {id:'grades',key:'grades',label:'Grades Overview'},
+                        {id:'minicalendar',key:'minicalendar',label:'Upcoming Events'},
+                        {id:'quicknote',key:'quicknote',label:'Quick Note'},
+                        {id:'exams',key:'exams',label:'Exam Countdown'},
+                        {id:'music',key:'music',label:'Music Player'},
+                        {id:'forum',key:'forum',label:'Forum Quick Ask'},
+                        {id:'weather',key:'weather',label:'Weather'},
+                        {id:'quote',key:'quote',label:'Quote of the Day'},
+                        {id:'habits',key:'habits',label:'Study Habits'},
                     ].map(w=>`
                         <div class="p10-row">
                             <div class="p10-row-lbl">${w.label}</div>
