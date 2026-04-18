@@ -35,9 +35,9 @@ A minimalist, glassmorphism-inspired productivity dashboard built specifically f
 
 Want to see more, help out, or understand how this project is run? Check out the links below:
 
-* 📸 **[Screenshots Gallery](docs/SCREENSHOTS.md):** See more angles and features of the UI.
+* 📸 **[Screenshots Gallery](docs/SCREENSHOTS.md):** See more angles and features of the UI!
 * 🤝 **[Contributing Guidelines](docs/CONTRIBUTING.md):** Want to add a feature? Read this first!
-* 📜 **[Code of Conduct](docs/CODE_OF_CONDUCT.md):** Our standards for a welcoming community.
+* 📜 **[Code of Conduct](docs/CODE_OF_CONDUCT.md):** Our standards for a welcoming community :)
 * 🔒 **[Security Policy](docs/SECURITY.md):** How to report vulnerabilities safely.
 * 📝 **[Licence](./LICENSE):** Take a look at the open-source licence!
 * 📚 **[Citation](CITATION.cff):** Easily citate this repository.
