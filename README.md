@@ -41,6 +41,7 @@ Want to see more, help out, or understand how this project is run? Check out the
 * 🔒 **[Security Policy](docs/SECURITY.md):** How to report vulnerabilities safely.
 * 📝 **[Licence](./LICENSE):** Take a look at the open-source licence!
 * 📚 **[Citation](CITATION.cff):** Easily citate this repository.
+* 🛠 **[Beta Repository](https://github.com/LD-beepbeep/SCHOOL-BETA):** Check out the newest version of Student OS!
 
 ---
 
