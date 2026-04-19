@@ -1,0 +1,93 @@
+/* ================================================================
+   StudentOS — patches43.css
+   1.  Worksheet block overflow — prevent content from bleeding into
+       adjacent blocks when a block is manually resized smaller.
+   2.  Settings inline profile editor — style the profile section
+       embedded directly in the settings modal.
+   ================================================================ */
+
+/* ================================================================
+   1.  WORKSHEET BLOCK OVERFLOW FIX
+   ================================================================ */
+
+/*
+ * patches31 changed .p28-checklist-block and .p28-code-block from
+ * overflow:hidden (patches28) to overflow:visible so content would
+ * not be clipped.  However overflow:visible causes content to bleed
+ * into adjacent blocks in the flex column layout when a block has
+ * a user-set minHeight smaller than its content.
+ *
+ * Fix: use overflow-y:auto so the inner container scrolls when
+ * content exceeds the block boundary, without clipping or bleeding.
+ */
+.p28-checklist-block,
+.p28-code-block {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/*
+ * For the outer .p19-ws-block container: when it has a user-set
+ * height (JS adds .p43-has-height), ensure content doesn't
+ * overflow the block boundary.
+ */
+.p19-ws-block.p43-has-height {
+    overflow: hidden;
+}
+
+/*
+ * Note blocks can also overflow when resized.  Their textarea
+ * should scroll.
+ */
+.p19-ws-block.note-block.p43-has-height .p19-ws-note-textarea {
+    overflow-y: auto;
+}
+
+/* ================================================================
+   2.  SETTINGS INLINE PROFILE EDITOR
+   ================================================================ */
+
+.p43-settings-profile {
+    padding: 8px 0 4px;
+}
+
+.p43-settings-profile .avatar-preview {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.p43-settings-profile .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+}
+
+.p43-settings-profile .emoji-opt {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .12s;
+    border: 2px solid transparent;
+}
+
+.p43-settings-profile .emoji-opt:hover {
+    background: var(--glass-hover);
+    transform: scale(1.1);
+}
+
+.p43-settings-profile .emoji-opt.selected {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+}

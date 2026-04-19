@@ -1,0 +1,30 @@
+/* ================================================================
+   StudentOS — patches62.css
+   Styles for whiteboard colour swatches in the p10 Appearance page.
+   ================================================================ */
+
+.p62-wb-preset-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, .2);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform .15s, border-color .15s;
+    padding: 0;
+}
+
+.p62-wb-preset-btn:hover {
+    transform: scale(1.2);
+    border-color: rgba(255, 255, 255, .6);
+}
+
+.p62-wb-color-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, .2);
+    cursor: pointer;
+    flex-shrink: 0;
+}

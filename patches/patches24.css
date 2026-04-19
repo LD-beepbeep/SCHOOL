@@ -1,0 +1,275 @@
+/* ================================================================
+   StudentOS — patches24.css
+   1.  Task DnD         — drag state visuals (simplified)
+   2.  Formula modal    — clean single-column layout
+   3.  Worksheet draw   — canvas drawing block
+   4.  Worksheet picker — formula search bar
+   5.  Attendance       — 2-column responsive layout, polish
+   6.  Print            — reliable print CSS for worksheet
+   ================================================================ */
+
+/* ================================================================
+   1.  TASK DnD — VISUALS
+   ================================================================ */
+.task-row[data-dragstate="src"] {
+    opacity: .4;
+    transform: scale(.98);
+    transition: opacity .1s, transform .1s;
+}
+.task-row[data-dragstate="over"] {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 10px;
+}
+.task-drag-handle {
+    cursor: grab;
+    color: var(--text-muted);
+    opacity: .4;
+    padding: 2px 4px;
+    margin-right: 2px;
+    flex-shrink: 0;
+    font-size: .75rem;
+    transition: opacity .15s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+.task-drag-handle:hover,
+.task-row:hover .task-drag-handle { opacity: .75; }
+.task-drag-handle:active { cursor: grabbing; }
+
+/* ================================================================
+   2.  FORMULA MODAL — CLEAN
+   ================================================================ */
+/* Aggressively hide the variable metadata section and unit/cat
+   selects that patches16 injects. patches24 JS removes them from
+   the DOM entirely on every open. */
+#modal-formula .p16-formula-vars,
+#modal-formula #p16-fv-rows,
+#modal-formula .p16-fv-hint,
+#modal-formula [onclick*="p16_addVar"],
+#modal-formula .p16-fv-add-btn,
+#modal-formula .p16-fv-row .p16-fv-ci,
+#modal-formula .p16-fv-row .p16-fv-ui,
+#modal-formula .p16-fv-row .p16-fv-ni {
+    display: none !important;
+}
+
+/* ================================================================
+   3.  WORKSHEET DRAW BLOCK
+   ================================================================ */
+.p24-draw-block {
+    position: relative;
+    background: var(--glass-panel);
+    border: 1.5px solid var(--glass-border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color .15s;
+}
+.p24-draw-block:hover { border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+.p24-draw-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+}
+.p24-draw-toolbar input[type="color"] {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    cursor: pointer;
+    padding: 2px;
+}
+.p24-draw-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    font-size: .72rem;
+    cursor: pointer;
+    transition: all .12s;
+    white-space: nowrap;
+}
+.p24-draw-tool-btn:hover { background: var(--glass-panel); color: var(--text-main); }
+.p24-draw-tool-btn.active {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    color: var(--accent);
+}
+.p24-draw-size-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 70px;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--glass-border);
+    outline: none;
+    cursor: pointer;
+}
+.p24-draw-size-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+}
+.p24-draw-canvas {
+    display: block;
+    width: 100%;
+    background: transparent;
+    cursor: crosshair;
+    touch-action: none;
+}
+.p24-draw-canvas.p24-eraser-mode { cursor: cell; }
+
+/* ================================================================
+   4.  WORKSHEET PICKER — FORMULA SEARCH
+   ================================================================ */
+.p24-formula-search {
+    padding: 0 0 10px 0;
+}
+.p24-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.p24-search-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--text-muted);
+    font-size: .72rem;
+    pointer-events: none;
+}
+.p24-formula-search input {
+    width: 100%;
+    padding: 7px 10px 7px 28px;
+    border-radius: 9px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-main);
+    font-size: .78rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color .15s;
+}
+.p24-formula-search input:focus { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.p24-formula-search input::placeholder { color: var(--text-muted); }
+
+/* ================================================================
+   5.  ATTENDANCE — RESPONSIVE 2-COLUMN GRID + POLISH
+   ================================================================ */
+/* Wrap the courses list in a responsive grid.
+   Override the Tailwind space-y-3 margin-based stacking. */
+#p16-att-courses {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+/* Remove Tailwind space-y-3 margins inside grid (margins don't compose with grid gap) */
+#p16-att-courses > * { margin-top: 0 !important; }
+
+/* The empty-state message should span full width */
+#p16-att-courses > div[style*="text-align:center"] { grid-column: 1 / -1; }
+
+/* Attendance header bar with summary stats */
+.p24-att-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    flex-wrap: wrap;
+}
+.p24-att-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.p24-att-summary-val {
+    font-size: 1.1rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-main);
+}
+.p24-att-summary-lbl {
+    font-size: .6rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+.p24-att-summary-div {
+    width: 1px;
+    height: 28px;
+    background: var(--glass-border);
+}
+
+/* Card refresh: use accent border on left */
+.p21-att-course-card {
+    border-left: 3px solid var(--c, var(--accent)) !important;
+    transition: transform .12s, box-shadow .12s !important;
+}
+.p21-att-course-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+
+/* Week labels above the calendar grid */
+.p24-cal-month-label {
+    font-size: .58rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+/* ================================================================
+   6.  PRINT — RELIABLE WORKSHEET PDF
+       Override patches21 print CSS with a cleaner approach
+   ================================================================ */
+#p24-ws-print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: .74rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    transition: all .14s;
+    white-space: nowrap;
+    margin-left: auto;
+}
+#p24-ws-print-btn:hover {
+    background: var(--glass-hover);
+    color: var(--text-main);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* ================================================================
+   7.  MISC QOL
+   ================================================================ */
+/* Slightly widen formula modal */
+#modal-formula { width: 460px !important; }
+
+/* Worksheet picker sheet formula grid: tighter items */
+#p19-picker-formula-grid .p19-picker-formula-card { transition: background .12s; }
+#p19-picker-formula-grid .p19-picker-formula-card[style*="none"] { display: none !important; }

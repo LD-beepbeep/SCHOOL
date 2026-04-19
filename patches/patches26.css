@@ -1,0 +1,256 @@
+/* ================================================================
+   StudentOS — patches26.css
+   1.  Attendance month calendar — full calendar with navigation
+   2.  Worksheet picker — built-in formula library
+   ================================================================ */
+
+/* ================================================================
+   1.  ATTENDANCE — MONTH CALENDAR
+   ================================================================ */
+
+/* Month calendar container inside each card */
+.p26-att-month-cal {
+    background: var(--glass-hover);
+    border-radius: 10px;
+    padding: 9px 10px 8px;
+    overflow: hidden;
+}
+
+/* Navigation row: < Month Year > */
+.p26-att-month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+    gap: 4px;
+}
+.p26-att-month-nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 2px 7px;
+    border-radius: 7px;
+    font-size: .72rem;
+    line-height: 1;
+    transition: background .12s, color .12s;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+.p26-att-month-nav-btn:hover:not(:disabled) {
+    background: var(--glass-panel);
+    color: var(--text-main);
+}
+.p26-att-month-nav-btn:disabled {
+    opacity: .25;
+    cursor: default;
+}
+.p26-att-month-label {
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-align: center;
+    flex: 1;
+    white-space: nowrap;
+}
+
+/* Day-of-week header row */
+.p26-att-dow-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 3px;
+}
+.p26-att-dow-lbl {
+    font-size: .5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 1px 0;
+}
+
+/* Calendar grid */
+.p26-att-month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+.p26-att-day-cell {
+    aspect-ratio: 1;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color .1s, background .1s, transform .1s;
+    position: relative;
+    background: var(--glass-panel);
+}
+.p26-att-day-cell span {
+    font-size: .55rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    line-height: 1;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+}
+.p26-att-day-cell.empty {
+    cursor: default;
+    background: transparent;
+    border-color: transparent;
+}
+.p26-att-day-cell.future {
+    opacity: .22;
+    cursor: default;
+    pointer-events: none;
+}
+.p26-att-day-cell:not(.empty):not(.future):hover {
+    border-color: var(--accent);
+    transform: scale(1.12);
+    z-index: 2;
+}
+.p26-att-day-cell.today {
+    box-shadow: 0 0 0 2px var(--accent);
+    z-index: 1;
+}
+.p26-att-day-cell.today span {
+    color: var(--accent);
+    font-weight: 800;
+}
+.p26-att-day-cell.attended {
+    background: rgba(34, 197, 94, .55);
+    border-color: rgba(34, 197, 94, .75);
+}
+.p26-att-day-cell.attended span { color: #fff; font-weight: 700; }
+.p26-att-day-cell.missed {
+    background: rgba(239, 68, 68, .5);
+    border-color: rgba(239, 68, 68, .65);
+}
+.p26-att-day-cell.missed span { color: #fff; font-weight: 700; }
+
+/* ================================================================
+   2.  WORKSHEET PICKER — BUILT-IN FORMULA LIBRARY
+   ================================================================ */
+
+/* Library section inside the picker sheet */
+#p26-picker-lib-sec {
+    border-top: 1px solid var(--glass-border);
+    padding-top: 14px;
+    margin-top: 4px;
+}
+
+/* Search + subject filter row */
+.p26-lib-controls {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 9px;
+    align-items: center;
+}
+.p26-lib-search {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-main);
+    font-size: .75rem;
+    outline: none;
+    font-family: inherit;
+    transition: border-color .15s;
+    min-width: 0;
+}
+.p26-lib-search:focus { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.p26-lib-search::placeholder { color: var(--text-muted); }
+
+.p26-lib-subject-select {
+    padding: 6px 8px;
+    border-radius: 9px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-main);
+    font-size: .72rem;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    max-width: 130px;
+    transition: border-color .15s;
+}
+.p26-lib-subject-select:focus { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+
+/* Formula card grid */
+.p26-lib-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.p26-lib-grid::-webkit-scrollbar { width: 4px; }
+.p26-lib-grid::-webkit-scrollbar-track { background: transparent; }
+.p26-lib-grid::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 99px; }
+
+.p26-lib-card {
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 9px 10px 8px;
+    cursor: pointer;
+    transition: border-color .12s, background .12s;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.p26-lib-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    background: var(--glass-panel);
+}
+.p26-lib-card-title {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.p26-lib-card-subj {
+    font-size: .58rem;
+    color: var(--accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.p26-lib-card-expr {
+    font-size: .65rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+/* No-results message */
+.p26-lib-empty {
+    grid-column: 1 / -1;
+    font-size: .75rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 18px 0;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 600px) {
+    .p26-lib-grid { grid-template-columns: 1fr; }
+    .p26-lib-controls { flex-wrap: wrap; }
+    .p26-lib-subject-select { max-width: 100%; }
+}

@@ -1,0 +1,46 @@
+/* ================================================================
+   StudentOS — patches34.css
+   Support styles for patches34.js fixes.
+   ================================================================ */
+
+/* ================================================================
+   1.  STICKY-NOTE PICKER — ADD NOTE ON COLOUR CLICK
+       Visual cue that clicking a colour places a note.
+   ================================================================ */
+
+/* Give each colour dot a subtle "+" cursor hint */
+#wb-sticky-color-picker .wb-stk-color-dot {
+    cursor: cell;
+    position: relative;
+}
+
+#wb-sticky-color-picker .wb-stk-color-dot::after {
+    content: '+';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: .55rem;
+    font-weight: 700;
+    line-height: 1;
+    background: var(--accent, #6366f1);
+    color: #fff;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+#wb-sticky-color-picker.open .wb-stk-color-dot::after {
+    display: flex;
+}
+
+/* ================================================================
+   2.  MIND-MAP SELECTED NODE — slightly more visible action hint
+   ================================================================ */
+
+/* Keep the selected-node stroke visible at all times */
+#wb-mindmap-svg rect[stroke="#fff"] {
+    filter: drop-shadow(0 0 4px rgba(255,255,255,.35));
+}

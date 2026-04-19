@@ -1,0 +1,77 @@
+/* ================================================================
+   StudentOS — patches61.css
+   1.  Export PDF button — hide #p24-ws-print-btn (patches24's button
+       was not covered by patches35.css which only hid p21 and p25).
+   2.  Whiteboard settings in Widgets tab — hide #p36-wb-section which
+       patches36 injects into #p10-page-widgets.  Earlier patches only
+       targeted #p48-whiteboard-section and #p46-widgets-section rows.
+   3.  Formula block — neutralise ALL remaining accent-coloured elements
+       that patches54/57/58/59/60 did not yet cover:
+         • variable input focus border
+         • result copy-button hover
+         • @ref autocomplete item name
+         • solve-for chip hover border
+   ================================================================ */
+
+/* ================================================================
+   1.  WORKSHEET TOOLBAR — HIDE EXPORT PDF BUTTON (patches24)
+   ================================================================ */
+
+#p24-ws-print-btn {
+    display: none !important;
+}
+
+/* Belt-and-braces: also hide the p21 and p25 variants in case any
+   other mechanism un-hides them after patches35.css applies. */
+#p21-ws-print-btn,
+#p25-ws-pdf-btn {
+    display: none !important;
+}
+
+/* ================================================================
+   2.  WHITEBOARD SETTINGS — HIDE #p36-wb-section
+       patches36 injects this into #p10-page-widgets (the tabbed
+       settings view).  No previous patch targeted it.
+   ================================================================ */
+
+#p36-wb-section {
+    display: none !important;
+}
+
+/* ================================================================
+   3.  FORMULA BLOCK — NEUTRALISE REMAINING ACCENT COLOURS
+   ================================================================ */
+
+/* Variable input wrapper: focus border stays neutral */
+.p29-var-inp-wrap:focus-within {
+    border-color: var(--glass-border) !important;
+}
+
+/* Result copy button: no accent on hover */
+.p29-result-copy-btn:hover {
+    border-color: var(--glass-border) !important;
+    color:        var(--text-muted)   !important;
+}
+
+/* @ref autocomplete dropdown: item names stay neutral */
+.p29-ref-item-name {
+    color: var(--text-muted) !important;
+}
+
+/* Solve-for chip: hover border stays neutral */
+.p29-solve-for-chip:hover:not(.active) {
+    border-color: var(--glass-border) !important;
+}
+
+/* p19-ws-var-input solve-for state (patches19 formula builder, sets
+   an inline style; CSS !important overrides inline styles) */
+.p19-ws-block.formula-block .p19-ws-var-input {
+    color: var(--text-main) !important;
+}
+
+/* Auto-compute green badge — neutralise to match the rest */
+.p29-autocompute-badge {
+    background:   var(--glass-hover)   !important;
+    border-color: var(--glass-border)  !important;
+    color:        var(--text-muted)    !important;
+}

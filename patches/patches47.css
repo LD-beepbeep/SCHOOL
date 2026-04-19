@@ -1,0 +1,157 @@
+/* ================================================================
+   StudentOS — patches47.css
+   1.  In-app toast notification styles
+   2.  In-app notification toggle switch styles
+   3.  Settings profile parity — margin/padding fixes so the
+       Identity section in Settings looks identical to the
+       profile modal.
+   ================================================================ */
+
+/* ================================================================
+   1.  TOAST CONTAINER + INDIVIDUAL TOASTS
+   ================================================================ */
+
+#p47-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    max-width: 340px;
+    width: 100%;
+}
+
+.p47-toast {
+    position: relative;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 12px 40px 12px 16px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: all;
+}
+
+.p47-toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.p47-toast.hide {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+    transition: opacity 0.28s ease, transform 0.22s ease;
+    pointer-events: none;
+}
+
+.p47-toast-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.p47-toast-body {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.4;
+}
+
+.p47-toast-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 3px 5px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: color 0.15s, background 0.15s;
+}
+
+.p47-toast-close:hover {
+    color: var(--text-main);
+    background: var(--glass-hover);
+}
+
+/* ================================================================
+   2.  NOTIFICATION TOGGLE SWITCH (settings section)
+   ================================================================ */
+
+.p47-toggle {
+    width: 3rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    position: relative;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.p47-toggle.on {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.p47-toggle-dot {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--text-main);
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    pointer-events: none;
+}
+
+.p47-toggle.on .p47-toggle-dot {
+    transform: translateX(1.5rem);
+}
+
+/* ================================================================
+   3.  SETTINGS IDENTITY SECTION — PROFILE MODAL PARITY
+       Adds the same comfortable padding and visual separation
+       that the profile modal uses, so both look identical.
+   ================================================================ */
+
+/* Give the avatar + name row the same spacing as the profile modal header */
+.p43-settings-profile .flex.items-center.gap-4 {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 10px;
+}
+
+/* Background-color picker row — add top breathing room */
+.p43-settings-profile .flex.items-center.gap-2.flex-wrap {
+    padding: 2px 0 8px;
+}
+
+/* The collapsible profile sections inside settings get the same
+   horizontal padding as the profile modal's #p42-profile-sections */
+#p43-settings-profile-sections {
+    padding: 0 !important; /* reset p45 override */
+    margin-top: 4px;
+}
+
+/* Upload button inside settings — match profile modal footer button */
+.p45-upload-btn {
+    margin-top: 12px;
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    border-radius: 12px;
+}

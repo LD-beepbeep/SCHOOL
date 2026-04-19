@@ -409,6 +409,9 @@ window._p11openSearch = function() {
 window._p11closeSearch = function() {
     const overlay = document.getElementById('p11-search-overlay');
     overlay?.classList.remove('show');
+    /* Clear the search bar so it's fresh on next open */
+    const input = document.getElementById('p11-search-input');
+    if (input) input.value = '';
 };
 
 let _p11_selIdx = -1;
@@ -423,14 +426,22 @@ function _p11doSearch(q) {
 
     // Quick navigation shortcuts (no query needed)
     const tabs = [
-        { label:'Dashboard',  icon:'ph-squares-four',    color:'#3b82f6', action:()=>switchTab('dashboard') },
-        { label:'Tasks',      icon:'ph-check-circle',    color:'#22c55e', action:()=>switchTab('tasks') },
-        { label:'Notes',      icon:'ph-notebook',        color:'#f59e0b', action:()=>switchTab('notes') },
-        { label:'Formulas',   icon:'ph-math-operations', color:'#8b5cf6', action:()=>switchTab('formulas') },
-        { label:'Calendar',   icon:'ph-calendar-blank',  color:'#ec4899', action:()=>switchTab('calendar') },
-        { label:'Grades',     icon:'ph-chart-bar',       color:'#14b8a6', action:()=>switchTab('grades') },
-        { label:'Forum',      icon:'ph-chats-teardrop',  color:'#3b82f6', action:()=>switchTab('forum') },
-        { label:'Settings',   icon:'ph-gear',            color:'#6b7280', action:()=>switchTab('settings') },
+        { label:'Dashboard',   icon:'ph-squares-four',      color:'#3b82f6', action:()=>switchTab('dashboard') },
+        { label:'Tasks',       icon:'ph-check-circle',      color:'#22c55e', action:()=>switchTab('tasks') },
+        { label:'Calendar',    icon:'ph-calendar-blank',    color:'#ec4899', action:()=>switchTab('calendar') },
+        { label:'Notes',       icon:'ph-notebook',          color:'#f59e0b', action:()=>switchTab('notes') },
+        { label:'Whiteboard',  icon:'ph-pencil-simple',     color:'#8b5cf6', action:()=>switchTab('whiteboard') },
+        { label:'Cards',       icon:'ph-cards',             color:'#ec4899', action:()=>switchTab('cards') },
+        { label:'Grades',      icon:'ph-chart-bar',         color:'#14b8a6', action:()=>switchTab('grades') },
+        { label:'Calculator',  icon:'ph-calculator',        color:'#6b7280', action:()=>switchTab('calc') },
+        { label:'Focus Timer', icon:'ph-timer',             color:'#f97316', action:()=>switchTab('focus') },
+        { label:'Music',       icon:'ph-music-note',        color:'#8b5cf6', action:()=>switchTab('music') },
+        { label:'Formulas',    icon:'ph-math-operations',   color:'#8b5cf6', action:()=>switchTab('formulas') },
+        { label:'Forum',       icon:'ph-chats-teardrop',    color:'#3b82f6', action:()=>switchTab('forum') },
+        { label:'Routine',     icon:'ph-calendar-check',    color:'#22c55e', action:()=>switchTab('routine') },
+        { label:'Attendance',  icon:'ph-user-check',        color:'#14b8a6', action:()=>switchTab('attendance') },
+        { label:'Worksheet',   icon:'ph-stack',             color:'#f59e0b', action:()=>switchTab('worksheet') },
+        { label:'Settings',    icon:'ph-gear',              color:'#6b7280', action:()=>{ if(typeof openModal==='function') openModal('modal-settings'); } },
     ];
 
     const matchTabs = !query ? tabs : tabs.filter(t => t.label.toLowerCase().includes(query));
@@ -448,6 +459,9 @@ function _p11doSearch(q) {
         return;
     }
 
+    /* Store tab actions for onclick access */
+    window._p11_tabActions = matchTabs.map(t => t.action);
+
     function highlight(text, q) {
         if (!q) return _p11.esc(text);
         const idx = text.toLowerCase().indexOf(q.toLowerCase());
@@ -460,7 +474,7 @@ function _p11doSearch(q) {
     if (matchTabs.length) {
         html += `<div class="p11-result-group-lbl">${query ? 'Pages' : 'Quick Navigation'}</div>`;
         html += matchTabs.map((t,i) => `
-            <div class="p11-result-item" data-idx="${i}" onclick="switchTab('${t.label.toLowerCase()}');_p11closeSearch()">
+            <div class="p11-result-item" data-idx="${i}" onclick="if(window._p11_tabActions&&window._p11_tabActions[${i}])window._p11_tabActions[${i}]();_p11closeSearch()">
                 <div class="p11-result-icon" style="background:${t.color}22;color:${t.color}">
                     <i class="ph ${t.icon}"></i>
                 </div>

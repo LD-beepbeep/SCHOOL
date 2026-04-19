@@ -1,0 +1,269 @@
+/* ================================================================
+   StudentOS — patches22.css
+   1.  Task DnD          — visual states for bounding-rect drag
+   2.  Attendance        — smaller compact cells; past-date pointer
+   3.  Profile avatar    — larger preview in settings
+   4.  Worksheet         — dot-grid board, full-height, checklist block
+   5.  PDF export button — right-aligned in toolbar
+   6.  Formula modal     — hard-hide unit / category selects
+   ================================================================ */
+
+/* ================================================================
+   1.  TASK DnD — ensure drag visuals still work
+   ================================================================ */
+#full-task-list .task-row[data-dragstate="over"] {
+    background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+    outline: 2px dashed var(--accent) !important;
+    outline-offset: -2px !important;
+    border-radius: 12px !important;
+}
+
+/* ================================================================
+   2.  ATTENDANCE CALENDAR — compact cells
+       Override the p21 full-width aspect-ratio cells with a fixed
+       small size so the dots don't dominate the card.
+   ================================================================ */
+.p21-att-cal-grid {
+    gap: 2px !important;
+}
+.p21-att-day-col {
+    gap: 2px !important;
+}
+.p21-att-cal-cell {
+    width: clamp(12px, 1.6vw, 18px) !important;
+    height: clamp(12px, 1.6vw, 18px) !important;
+    aspect-ratio: unset !important;
+    border-radius: 4px !important;
+    font-size: .44rem !important;
+}
+/* Past cells are clickable */
+.p21-att-cal-cell.past-date {
+    cursor: pointer !important;
+}
+.p21-att-cal-cell.past-date:hover {
+    transform: scale(1.2) !important;
+    z-index: 2 !important;
+}
+/* Tiny date number inside cells */
+.p21-att-cal-cell .p22-day-num {
+    font-size: .45rem;
+    color: rgba(255,255,255,.6);
+    line-height: 1;
+    pointer-events: none;
+    display: none; /* shown only on hover via JS */
+}
+/* Tooltip-style date picker for past cells */
+.p22-att-day-popup {
+    position: absolute;
+    z-index: 200;
+    background: var(--glass-panel);
+    border: 1.5px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    padding: 10px 12px;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.p22-att-day-popup-date {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 2px;
+}
+.p22-att-day-popup-btn {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: .74rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all .12s;
+}
+.p22-att-day-popup-btn.attend:hover { background: rgba(34,197,94,.12); border-color: #22c55e; color: #22c55e; }
+.p22-att-day-popup-btn.miss:hover   { background: rgba(239,68,68,.10);  border-color: #ef4444; color: #ef4444; }
+.p22-att-day-popup-btn.remove:hover { background: rgba(239,68,68,.08);  border-color: #ef4444; color: #ef4444; }
+.p22-att-day-popup-btn.attend.active { background: rgba(34,197,94,.15); border-color: #22c55e; color: #22c55e; }
+.p22-att-day-popup-btn.miss.active   { background: rgba(239,68,68,.12); border-color: #ef4444; color: #ef4444; }
+.p22-att-day-popup-close {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: .7rem;
+}
+.p22-att-day-popup-close:hover { color: var(--text-main); }
+
+/* ================================================================
+   3.  PROFILE AVATAR — bigger preview in settings
+   ================================================================ */
+.p10-avatar-display {
+    width: 88px !important;
+    height: 88px !important;
+    border-radius: 22px !important;
+}
+/* Ensure any img inside fills the preview properly */
+.p10-avatar-display img,
+.p10-avatar-display > * {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    font-size: 2.4rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+/* Sidebar avatar still the old size */
+#avatar-preview.avatar-preview img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* ================================================================
+   4.  WORKSHEET — dot-grid board + full-height layout + checklist
+   ================================================================ */
+#view-worksheet.p19-ws-active {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Dot-grid background on the board */
+#p19-ws-board {
+    background-image:
+        radial-gradient(circle, color-mix(in srgb, var(--accent) 12%, transparent) 1px, transparent 1px) !important;
+    background-size: 24px 24px !important;
+    background-position: 4px 4px !important;
+    padding: 16px 8px 80px !important;
+    gap: 12px !important;
+}
+
+/* Wider max-width for the blocks — real whiteboard feel */
+#p19-ws-board .p19-ws-block {
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+/* Checklist block */
+.p19-ws-block.checklist-block {
+    padding: 14px 18px;
+}
+.p22-ws-checklist-title {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 8px;
+}
+.p22-ws-cl-items {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.p22-ws-cl-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    transition: background .12s;
+}
+.p22-ws-cl-row:focus-within { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.p22-ws-cl-check {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    border: 2px solid var(--glass-border);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .6rem; color: transparent;
+    transition: all .13s;
+}
+.p22-ws-cl-check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+.p22-ws-cl-check:hover:not(.checked) { border-color: var(--accent); }
+.p22-ws-cl-input {
+    flex: 1;
+    background: none; border: none; outline: none;
+    font-size: .86rem;
+    color: var(--text-main);
+    font-family: inherit;
+}
+.p22-ws-cl-input.checked { text-decoration: line-through; color: var(--text-muted); }
+.p22-ws-cl-del {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); opacity: 0; font-size: .65rem;
+    padding: 2px 4px;
+    transition: opacity .12s;
+}
+.p22-ws-cl-row:hover .p22-ws-cl-del { opacity: 1; }
+.p22-ws-cl-del:hover { color: #f87171; }
+.p22-ws-cl-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    border: 1px dashed var(--glass-border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: .78rem;
+    cursor: pointer;
+    width: 100%;
+    transition: all .13s;
+}
+.p22-ws-cl-add-btn:hover { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, transparent); }
+
+/* ================================================================
+   5.  PDF EXPORT BUTTON — right-aligned in toolbar
+   ================================================================ */
+#p21-ws-print-btn {
+    margin-left: auto !important;
+    background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+    border-color: color-mix(in srgb, var(--accent) 22%, transparent) !important;
+    color: var(--accent) !important;
+}
+#p21-ws-print-btn:hover {
+    background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+/* ================================================================
+   6.  FORMULA MODAL — hard-hide units + category + description
+   ================================================================ */
+#modal-formula .p16-fv-ci,
+#modal-formula .p16-fv-ui,
+#modal-formula select[id*="unit"],
+#modal-formula select[id*="cat"],
+#modal-formula [id*="formula-modal-unit"],
+#modal-formula [id*="formula-modal-cat"],
+#modal-formula .formula-cat-wrap,
+#modal-formula .formula-unit-wrap,
+#modal-formula label[for*="formula-modal-unit"],
+#modal-formula label[for*="formula-modal-cat"],
+#modal-formula [id*="formula-modal-desc"],
+#modal-formula .formula-desc-wrap,
+#modal-formula label[for*="formula-modal-desc"] {
+    display: none !important;
+}

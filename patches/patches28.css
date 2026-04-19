@@ -1,0 +1,585 @@
+/* ================================================================
+   StudentOS — patches28.css
+   1.  Attendance: hide patches27 additions (heat strip, streak badge,
+       today button) so the calendar reverts to its patches26 state.
+   2.  Worksheet: resize handles for every block.
+   3.  Worksheet: unified Formula browser modal.
+   4.  Worksheet: Checklist block.
+   5.  Worksheet: Code block.
+   6.  Worksheet: UX polish (empty state, picker additions).
+   ================================================================ */
+
+/* ================================================================
+   1.  ATTENDANCE — UNDO PATCHES27
+   ================================================================ */
+.p27-heat-strip,
+.p27-streak-badge,
+.p27-today-btn {
+    display: none !important;
+}
+
+/* ================================================================
+   2.  WORKSHEET RESIZE HANDLES
+   ================================================================ */
+.p19-ws-block {
+    position: relative;
+}
+
+.p28-resize-handle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    cursor: ns-resize;
+    border-radius: 0 0 12px 12px;
+    opacity: 0;
+    transition: opacity .15s;
+    background: linear-gradient(transparent, color-mix(in srgb, var(--accent) 22%, transparent));
+    z-index: 5;
+}
+.p19-ws-block:hover .p28-resize-handle {
+    opacity: 1;
+}
+.p28-resize-handle:hover,
+.p28-resize-handle.dragging {
+    opacity: 1;
+    background: linear-gradient(transparent, color-mix(in srgb, var(--accent) 40%, transparent));
+}
+/* Grip dots on the handle */
+.p28-resize-handle::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 3px;
+    border-radius: 99px;
+    background: var(--accent);
+    opacity: 0.5;
+}
+
+/* ================================================================
+   3.  FORMULA BROWSER MODAL
+   ================================================================ */
+#p28-formula-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s;
+}
+#p28-formula-modal.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.p28-modal-box {
+    display: flex;
+    flex-direction: column;
+    width: min(820px, 95vw);
+    max-height: min(680px, 90vh);
+    border-radius: 18px;
+    background: var(--glass-panel);
+    border: var(--glass-border);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 16px 64px rgba(0,0,0,.38);
+    overflow: hidden;
+}
+
+.p28-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+.p28-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.p28-modal-title i {
+    color: var(--accent);
+    font-size: 1rem;
+}
+.p28-modal-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: .9rem;
+    padding: 4px 6px;
+    border-radius: 7px;
+    transition: background .12s, color .12s;
+    line-height: 1;
+}
+.p28-modal-close-btn:hover {
+    background: var(--glass-hover);
+    color: var(--text-main);
+}
+
+.p28-modal-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.p28-modal-search-wrap {
+    flex: 1;
+    min-width: 160px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    transition: border-color .12s;
+}
+.p28-modal-search-wrap:focus-within {
+    border-color: var(--accent);
+}
+.p28-modal-search-wrap i {
+    color: var(--text-muted);
+    font-size: .78rem;
+    flex-shrink: 0;
+}
+.p28-modal-search-inp {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: .82rem;
+    font-family: inherit;
+}
+.p28-modal-search-inp::placeholder {
+    color: var(--text-muted);
+    opacity: .7;
+}
+
+.p28-modal-subject-sel {
+    padding: 7px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-main);
+    font-size: .8rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+.p28-modal-subject-sel:focus {
+    border-color: var(--accent);
+}
+
+/* Tabs: Built-in / My formulas */
+.p28-modal-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+.p28-modal-tab {
+    padding: 8px 14px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .12s, border-color .12s;
+    font-family: inherit;
+}
+.p28-modal-tab:hover {
+    color: var(--text-main);
+}
+.p28-modal-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+/* Formula grid */
+.p28-formula-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    align-content: start;
+}
+.p28-formula-grid::-webkit-scrollbar { width: 5px; }
+.p28-formula-grid::-webkit-scrollbar-track { background: transparent; }
+.p28-formula-grid::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 99px; }
+
+.p28-fml-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-panel);
+    cursor: pointer;
+    transition: border-color .12s, background .12s, transform .1s;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.p28-fml-card:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--glass-panel));
+    transform: translateY(-1px);
+}
+.p28-fml-card:active { transform: translateY(0); }
+
+.p28-fml-card-badges {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+.p28-fml-subj-badge {
+    font-size: .62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.p28-fml-mine-badge {
+    font-size: .62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: color-mix(in srgb, #22c55e 14%, transparent);
+    color: #22c55e;
+    border: 1px solid color-mix(in srgb, #22c55e 25%, transparent);
+}
+.p28-fml-card-title {
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+.p28-fml-card-expr {
+    font-size: .72rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.p28-fml-card-add-row {
+    margin-top: 4px;
+    display: flex;
+    justify-content: flex-end;
+}
+.p28-fml-card-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color .12s, color .12s, background .12s;
+}
+.p28-fml-card:hover .p28-fml-card-add-btn {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.p28-formula-grid-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: .82rem;
+    color: var(--text-muted);
+}
+
+/* "Formulas" button in picker */
+.p28-picker-formula-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--accent) 7%, var(--glass-hover));
+    color: var(--text-main);
+    font-size: .72rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color .12s, background .12s;
+    text-align: center;
+}
+.p28-picker-formula-btn:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+}
+.p28-picker-formula-btn i {
+    font-size: .9rem;
+}
+
+/* ================================================================
+   4.  CHECKLIST BLOCK
+   ================================================================ */
+.p28-checklist-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.p28-checklist-title-inp {
+    width: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: .88rem;
+    font-weight: 600;
+    padding: 4px 2px 6px;
+    margin-bottom: 4px;
+    transition: border-color .12s;
+}
+.p28-checklist-title-inp:focus { border-bottom-color: var(--accent); }
+.p28-checklist-title-inp::placeholder { color: var(--text-muted); opacity: .6; }
+
+.p28-checklist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.p28-checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+.p28-checklist-item-cb {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 2px solid var(--glass-border);
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: background .12s, border-color .12s;
+}
+.p28-checklist-item-cb:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.p28-checklist-item-cb:checked::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    font-size: .6rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+}
+.p28-checklist-item-text {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: .82rem;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color .12s;
+}
+.p28-checklist-item-text:focus { border-bottom-color: var(--glass-border); }
+.p28-checklist-item-text.done {
+    text-decoration: line-through;
+    opacity: .55;
+}
+.p28-checklist-item-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: .72rem;
+    padding: 3px 5px;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity .12s, color .12s, background .12s;
+    flex-shrink: 0;
+}
+.p28-checklist-item:hover .p28-checklist-item-del { opacity: 1; }
+.p28-checklist-item-del:hover {
+    color: #ef4444;
+    background: color-mix(in srgb, #ef4444 14%, transparent);
+}
+
+.p28-checklist-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 8px;
+    border: 1px dashed var(--glass-border);
+    background: none;
+    color: var(--text-muted);
+    font-size: .75rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color .12s, color .12s;
+    align-self: flex-start;
+    margin-top: 2px;
+}
+.p28-checklist-add-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.p28-checklist-stats {
+    font-size: .7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* ================================================================
+   5.  CODE BLOCK
+   ================================================================ */
+.p28-code-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+}
+
+.p28-code-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--glass-border) 40%, transparent);
+    border-radius: 8px 8px 0 0;
+}
+.p28-code-lang-sel {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-muted);
+    font-size: .72rem;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+}
+.p28-code-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .7rem;
+    font-family: inherit;
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color .12s, color .12s;
+}
+.p28-code-copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.p28-code-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 14px 16px;
+    background: color-mix(in srgb, var(--bg-color) 70%, transparent);
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    line-height: 1.6;
+    tab-size: 2;
+    border-radius: 0 0 8px 8px;
+    box-sizing: border-box;
+}
+.p28-code-textarea::placeholder { color: var(--text-muted); opacity: .5; }
+
+/* ================================================================
+   6.  UX POLISH
+   ================================================================ */
+/* Keyboard shortcut hint below the add button */
+#p28-ws-shortcut-hint {
+    text-align: center;
+    font-size: .68rem;
+    color: var(--text-muted);
+    opacity: .5;
+    margin-top: -4px;
+    pointer-events: none;
+    user-select: none;
+}
+/* Empty state */
+#p28-ws-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 48px 24px;
+    color: var(--text-muted);
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+}
+#p28-ws-empty-state i {
+    font-size: 2rem;
+    opacity: .3;
+}
+#p28-ws-empty-state p {
+    font-size: .82rem;
+    opacity: .55;
+    max-width: 260px;
+    line-height: 1.5;
+    margin: 0;
+}

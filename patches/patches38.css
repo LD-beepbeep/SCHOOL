@@ -1,0 +1,31 @@
+/* ================================================================
+   StudentOS — patches38.css
+   1.  Phosphor icon placeholder — prevent layout shift while the
+       deferred @phosphor-icons/web script is loading.
+   2.  Minor polish applied alongside patches38.js fixes.
+   ================================================================ */
+
+/* ================================================================
+   1.  PHOSPHOR ICON PLACEHOLDER
+       While the deferred Phosphor script loads, <i class="ph-*">
+       elements would render as empty inline boxes and cause layout
+       shift.  Reserve the typical icon size so surrounding content
+       does not jump.
+   ================================================================ */
+
+i[class*="ph-"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* Reserve approximate icon footprint; Phosphor overrides this
+       once it renders the SVG. */
+    min-width: 1em;
+    min-height: 1em;
+    vertical-align: middle;
+}
+
+/* Login-overlay student logo icon — keep the container sized
+   correctly even before Phosphor renders. */
+#login-overlay i[class*="ph-"] {
+    font-size: inherit;
+}

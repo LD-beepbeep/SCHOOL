@@ -1,0 +1,55 @@
+/* ================================================================
+   StudentOS — patches45.css
+   1.  Settings profile — upload button style + section spacing.
+   2.  Mindmap status bar — minor layout tweak for longer text.
+   ================================================================ */
+
+/* ================================================================
+   1.  SETTINGS PROFILE UPLOAD BUTTON
+   ================================================================ */
+
+.p45-upload-btn {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    font-size: .75rem;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: background .12s;
+}
+
+.p45-upload-btn:hover {
+    background: var(--glass-hover);
+}
+
+/* Ensure collapsible sections in settings have comfortable padding */
+#p43-settings-profile-sections {
+    padding: 2px 0 4px;
+}
+
+#p43-settings-profile-sections .p42-profile-section {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#p43-settings-profile-sections .p42-profile-section-header {
+    padding: 8px 10px;
+    border-radius: 10px;
+}
+
+#p43-settings-profile-sections .p42-profile-section-body {
+    padding: 6px 4px 4px;
+}
+
+/* ================================================================
+   2.  MINDMAP STATUS BAR
+   ================================================================ */
+
+#mm-status {
+    gap: 8px;
+}

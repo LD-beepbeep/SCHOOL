@@ -3,25 +3,43 @@
    Handles: offline caching, push notifications, background sync
    ================================================================ */
 
-const CACHE     = 'studentos-v3';
-const ICON      = '/icon.png';
+const CACHE     = 'studentos-v10';
+const ICON      = './icon.png';
+
+/* Trusted CDN origins whose CORS responses we cache */
+const TRUSTED_CDN = [
+  'cdnjs.cloudflare.com',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'ka-f.fontawesome.com',
+  'unpkg.com'
+];
 
 /* Files to pre-cache on install */
 const PRECACHE = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/mobile.css',
-  '/script.js',
-  '/icon.png'
+  './styles.css',
+  './mobile.css',
+  './features.css',
+  './forum.css',
+  './script.js',
+  './features.js',
+  './forum.js',
+  './patches/patches49.css',
+  './patches/patches49.js',
+  './icon.png'
 ];
 
 /* ── Install: pre-cache shell ── */
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => Promise.all([
+      /* Always fetch index.html fresh so stale HTTP caches don't hide new patches */
+      fetch(new Request('./index.html', { cache: 'no-cache' }))
+        .then(res => res.ok ? c.put(new URL('./index.html', self.location).href, res) : null),
+      fetch(new Request('./', { cache: 'no-cache' }))
+        .then(res => res.ok ? c.put(new URL('./', self.location).href, res) : null),
+      c.addAll(PRECACHE)
+    ])).then(() => self.skipWaiting())
   );
 });
 
@@ -41,17 +59,43 @@ self.addEventListener('fetch', e => {
 
   /* Skip non-GET and cross-origin Firebase/API requests */
   if (request.method !== 'GET') return;
-  if (url.hostname.includes('firebaseio.com'))    return;
-  if (url.hostname.includes('googleapis.com'))    return;
-  if (url.hostname.includes('gstatic.com'))       return;
-  if (url.hostname.includes('calendar.google.com')) return;
+  if (url.hostname === 'firebaseio.com' || url.hostname.endsWith('.firebaseio.com'))   return;
+  if (url.hostname === 'calendar.google.com') return;
+  /* Allow fonts through, skip other googleapis/gstatic */
+  if ((url.hostname.endsWith('.googleapis.com') || url.hostname === 'googleapis.com') &&
+      url.hostname !== 'fonts.googleapis.com')   return;
+  if ((url.hostname.endsWith('.gstatic.com') || url.hostname === 'gstatic.com') &&
+      url.hostname !== 'fonts.gstatic.com')      return;
+
+  /* Determine if this is a trusted CDN response (CORS) */
+  const isTrustedCDN = TRUSTED_CDN.some(h => url.hostname === h || url.hostname.endsWith('.' + h));
+
+  /* Network-first for HTML navigation so new patches are always picked up */
+  const isNavigation = request.mode === 'navigate';
+
+  if (isNavigation) {
+    e.respondWith(
+      fetch(request)
+        .then(res => {
+          if (res && res.status === 200 && res.type === 'basic') {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(request, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
 
   e.respondWith(
     caches.match(request).then(cached => {
       /* Return cached instantly, then refresh in background */
       const fetchPromise = fetch(request)
         .then(res => {
-          if (res && res.status === 200 && res.type === 'basic') {
+          /* Cache same-origin (basic) and trusted CDN (cors) responses */
+          if (res && res.status === 200 &&
+              (res.type === 'basic' || (res.type === 'cors' && isTrustedCDN))) {
             const clone = res.clone();
             caches.open(CACHE).then(c => c.put(request, clone));
           }

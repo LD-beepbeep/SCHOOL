@@ -1,0 +1,41 @@
+/* ================================================================
+   StudentOS — patches52.css
+   1.  Settings — hide the Profile tab nav button and its page.
+   2.  Profile modal — Language select row styles.
+   ================================================================ */
+
+/* ================================================================
+   1.  SETTINGS — HIDE PROFILE TAB
+       Belt-and-braces CSS so the tab stays invisible even if JS
+       hasn't run yet (or runs late).
+   ================================================================ */
+
+.p10-stab-nav-btn[data-page="profile"] {
+    display: none !important;
+}
+
+#p10-page-profile {
+    display: none !important;
+}
+
+/* ================================================================
+   2.  PROFILE MODAL — LANGUAGE SELECT
+   ================================================================ */
+
+.p52-lang-select {
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+    max-width: 140px;
+}
+
+.p52-lang-select:hover,
+.p52-lang-select:focus {
+    border-color: var(--accent);
+}

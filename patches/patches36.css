@@ -1,0 +1,91 @@
+/* ================================================================
+   StudentOS — patches36.css
+   1.  Whiteboard grid — dark lines on light/white canvases
+   2.  Sticky note color picker — solid background
+   3.  Task list style — body-class based (higher specificity)
+   4.  Image overlay — improved resize handles
+   ================================================================ */
+
+/* ================================================================
+   1.  GRID — ADAPTIVE LINE COLOR
+   ================================================================ */
+
+/* Default (dark canvas): light/transparent lines — already set in patches32.css */
+#wb-grid-overlay {
+    background-image:
+        linear-gradient(rgba(128,128,128,.20) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(128,128,128,.20) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+/* Light/white canvas: use dark lines so they remain visible */
+#wb-grid-overlay.wb-grid-light {
+    background-image:
+        linear-gradient(rgba(0,0,0,.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.18) 1px, transparent 1px);
+}
+
+/* ================================================================
+   2.  STICKY NOTE COLOR PICKER — SOLID BACKGROUND
+       Overrides patches23.css which used var(--glass-panel)
+       (effectively transparent in dark mode).
+   ================================================================ */
+
+#wb-sticky-color-picker {
+    background: var(--bg-color, #09090b) !important;
+    border: 1.5px solid var(--glass-border, rgba(255,255,255,.14)) !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,.55) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ================================================================
+   3.  TASK LIST STYLE — BODY-CLASS APPROACH
+       Provides higher specificity than Tailwind utility classes.
+       Classes toggled by patches36.js:
+         .p36-task-compact     — denser rows
+         .p36-task-comfortable — more spacious rows
+   ================================================================ */
+
+/* Compact: less vertical padding */
+body.p36-task-compact  .task-row,
+body.p36-task-compact  [id^="task-row-"] {
+    padding-top:    5px !important;
+    padding-bottom: 5px !important;
+}
+
+/* Compact: smaller font and reduced subtask indent */
+body.p36-task-compact .task-row .text-sm,
+body.p36-task-compact [id^="task-row-"] .text-sm {
+    font-size: .8rem !important;
+}
+
+/* Comfortable: more generous padding */
+body.p36-task-comfortable  .task-row,
+body.p36-task-comfortable  [id^="task-row-"] {
+    padding-top:    18px !important;
+    padding-bottom: 18px !important;
+}
+
+/* ================================================================
+   4.  IMAGE OVERLAY — CLEANER RESIZE HANDLES
+   ================================================================ */
+
+/* Larger hit-targets for handles (visual unchanged) */
+.p32-img-handle {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Ensure the image fills the overlay div exactly (what-you-see
+   is what gets stamped onto the canvas) */
+#p32-img-preview {
+    object-fit: fill !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
+}
+
+/* Keep the overlay above grid and sticky layers */
+#p32-img-overlay {
+    z-index: 15 !important;
+}

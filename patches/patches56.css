@@ -1,0 +1,67 @@
+/* ================================================================
+   StudentOS — patches56.css
+   1.  Profile modal — hide Text Size, Language, Reduce Motion,
+       Compact Mode, and Startup Tab rows (now live in Settings >
+       Appearance instead).
+   2.  Flashcard card list — star toggle button styles.
+   ================================================================ */
+
+/* ================================================================
+   1.  PROFILE MODAL — REMOVE DUPLICATE PREFERENCE ROWS
+       patches51 added Text Size, patches52 added Language,
+       patches55 added Reduce Motion / Compact Mode / Startup Tab.
+       All of these already exist in Settings > Appearance; remove
+       them from the profile modal to keep it clean.
+   ================================================================ */
+
+/* Language row (patches52) */
+#p52-lang-row {
+    display: none !important;
+}
+
+/* Reduce Motion + Compact Mode + Startup Tab rows (patches55) */
+#p55-extra-rows {
+    display: none !important;
+}
+
+/* Text Size (Font Scale) row (patches51)
+   Target via :has() — supported in all modern browsers. */
+#p51-profile-prefs .p51-pref-row:has(.p51-scale-group) {
+    display: none !important;
+}
+
+/* ================================================================
+   2.  FLASHCARD CARD LIST — STAR TOGGLE BUTTON
+   ================================================================ */
+
+.p56-star-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+    padding: 0;
+    margin-right: 2px;
+}
+
+.p56-star-btn:hover {
+    color: #eab308;
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.p56-star-btn.on {
+    color: #eab308;
+}
+
+.p56-star-btn.on:hover {
+    color: #ca8a04;
+    background: rgba(234, 179, 8, 0.15);
+}

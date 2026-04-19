@@ -1,0 +1,434 @@
+/* ================================================================
+   StudentOS — patches25.css
+   1.  Worksheet resize  — per-block vertical resize handle
+   2.  Custom formula    — inline formula entry in picker
+   3.  Attendance        — definitive card & layout overhaul
+   4.  PDF export        — improved print button style
+   ================================================================ */
+
+/* ================================================================
+   1.  WORKSHEET BLOCK — RESIZE HANDLE
+   ================================================================ */
+.p19-ws-block {
+    min-height: 52px;
+    /* allow overflow for absolute-positioned resize handle */
+}
+/* Thin draggable bar at the bottom of every worksheet block */
+.p25-block-resize {
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 8px;
+    cursor: ns-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 5;
+    border-radius: 0 0 12px 12px;
+}
+.p19-ws-block:hover .p25-block-resize { opacity: 1; }
+.p25-block-resize-grip {
+    width: 28px;
+    height: 3px;
+    border-radius: 99px;
+    background: var(--glass-border);
+    transition: background .12s;
+}
+.p25-block-resize:hover .p25-block-resize-grip,
+.p25-block-resize.active .p25-block-resize-grip {
+    background: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+/* Padding at the bottom to leave room for the resize handle */
+.p19-ws-block:not(.divider-block) { padding-bottom: 22px; }
+
+/* ================================================================
+   2.  CUSTOM FORMULA IN PICKER
+   ================================================================ */
+#p25-picker-custom-sec {
+    border-top: 1px solid var(--glass-border);
+    padding-top: 14px;
+    margin-top: 4px;
+}
+.p25-custom-formula-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+.p25-cf-input {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-main);
+    font-size: .78rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color .15s;
+    font-family: inherit;
+}
+.p25-cf-input:focus { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.p25-cf-input::placeholder { color: var(--text-muted); }
+.p25-cf-input.mono { font-family: 'JetBrains Mono', monospace; font-size: .75rem; }
+.p25-cf-full { grid-column: 1 / -1; }
+.p25-cf-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .12s;
+    font-family: inherit;
+}
+.p25-cf-add-btn:hover { opacity: .88; }
+
+/* ================================================================
+   3.  ATTENDANCE — DEFINITIVE LAYOUT
+   ================================================================ */
+
+/* Summary bar — lives ABOVE the scroll area */
+#p25-att-summary-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 18px;
+    margin-bottom: 14px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+.p25-att-sum-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.p25-att-sum-val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-main);
+    line-height: 1.1;
+}
+.p25-att-sum-lbl {
+    font-size: .58rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+.p25-att-sum-div {
+    width: 1px;
+    height: 26px;
+    background: var(--glass-border);
+    flex-shrink: 0;
+}
+
+/* Course cards grid */
+#p16-att-courses {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)) !important;
+    gap: 14px !important;
+    align-items: start !important;
+}
+#p16-att-courses > * { margin-top: 0 !important; }
+/* Empty state spans full width */
+#p16-att-courses > .p25-att-empty { grid-column: 1 / -1; }
+
+/* Card shell */
+.p25-att-card {
+    background: var(--glass-panel);
+    border: 1.5px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 16px 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color .15s, box-shadow .15s;
+    border-left: 3px solid var(--p25c, var(--accent));
+}
+.p25-att-card:hover {
+    border-color: color-mix(in srgb, var(--p25c, var(--accent)) 35%, var(--glass-border));
+    box-shadow: 0 3px 16px rgba(0,0,0,.12);
+}
+
+/* Card header */
+.p25-att-hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.p25-att-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.p25-att-name {
+    flex: 1;
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.p25-att-sched {
+    font-size: .63rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.p25-att-edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: .72rem;
+    padding: 4px 5px;
+    border-radius: 6px;
+    transition: all .12s;
+    flex-shrink: 0;
+}
+.p25-att-edit-btn:hover { background: var(--glass-hover); color: var(--text-main); }
+
+/* Stats row */
+.p25-att-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.p25-att-pct {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.p25-att-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.p25-att-bar-bg {
+    height: 5px;
+    border-radius: 99px;
+    background: var(--glass-hover);
+    overflow: hidden;
+}
+.p25-att-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .4s;
+}
+.p25-att-stat-txt {
+    font-size: .65rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.p25-att-goal-badge {
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: .62rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.p25-att-goal-badge.ok  { background: rgba(34,197,94,.12); color: #22c55e; border: 1px solid rgba(34,197,94,.22); }
+.p25-att-goal-badge.low { background: rgba(239,68,68,.1);  color: #ef4444; border: 1px solid rgba(239,68,68,.2); }
+
+/* 4-week calendar */
+.p25-att-cal {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.p25-att-cal-hdr-row {
+    display: flex;
+    gap: 3px;
+    padding-left: 22px; /* align with the cells below the day labels */
+}
+.p25-att-cal-dlbl {
+    flex: 1;
+    font-size: .52rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.p25-att-cal-weeks {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.p25-att-cal-week {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.p25-att-week-lbl {
+    font-size: .52rem;
+    color: var(--text-muted);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+}
+.p25-att-cell {
+    flex: 1;
+    aspect-ratio: 1;
+    border-radius: 4px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    cursor: pointer;
+    transition: all .12s;
+    position: relative;
+}
+.p25-att-cell[data-status="attended"] {
+    background: rgba(34,197,94,.65);
+    border-color: rgba(34,197,94,.8);
+}
+.p25-att-cell[data-status="missed"] {
+    background: rgba(239,68,68,.55);
+    border-color: rgba(239,68,68,.7);
+}
+.p25-att-cell.today {
+    box-shadow: 0 0 0 2px var(--accent);
+    z-index: 1;
+}
+.p25-att-cell.future {
+    opacity: .2;
+    cursor: default;
+    pointer-events: none;
+}
+.p25-att-cell:not(.future):hover {
+    transform: scale(1.15);
+    z-index: 2;
+    border-color: var(--accent);
+}
+
+/* Click-to-log date popup */
+.p25-att-day-popup {
+    position: fixed;
+    z-index: 9999;
+    background: var(--bg-color);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    min-width: 150px;
+    display: none;
+}
+.p25-att-day-popup.show { display: block; }
+.p25-att-popup-date {
+    font-size: .65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 8px;
+}
+.p25-att-popup-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.p25-att-popup-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .12s;
+    font-family: inherit;
+    text-align: left;
+}
+.p25-att-popup-btn.att  { color: #22c55e; border-color: rgba(34,197,94,.3); }
+.p25-att-popup-btn.att:hover  { background: rgba(34,197,94,.12); }
+.p25-att-popup-btn.miss { color: #ef4444; border-color: rgba(239,68,68,.3); }
+.p25-att-popup-btn.miss:hover { background: rgba(239,68,68,.1); }
+.p25-att-popup-btn.rem  { color: var(--text-muted); }
+.p25-att-popup-btn.rem:hover  { background: var(--glass-panel); color: var(--text-main); }
+
+/* Action buttons row */
+.p25-att-actions {
+    display: flex;
+    gap: 6px;
+}
+.p25-att-btn {
+    flex: 1;
+    padding: 7px 8px;
+    border-radius: 9px;
+    font-size: .74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1.5px solid transparent;
+    font-family: inherit;
+}
+.p25-att-btn.att  { background: rgba(34,197,94,.09); border-color: rgba(34,197,94,.22); color: #22c55e; }
+.p25-att-btn.att.active { background: #22c55e; color: #fff; border-color: #22c55e; }
+.p25-att-btn.att:hover:not(.active) { background: rgba(34,197,94,.18); }
+.p25-att-btn.miss { background: rgba(239,68,68,.09); border-color: rgba(239,68,68,.22); color: #ef4444; }
+.p25-att-btn.miss.active { background: #ef4444; color: #fff; border-color: #ef4444; }
+.p25-att-btn.miss:hover:not(.active) { background: rgba(239,68,68,.16); }
+
+/* ================================================================
+   4.  PDF EXPORT BUTTON IMPROVEMENT
+   ================================================================ */
+#p25-ws-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: .74rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    transition: all .14s;
+    white-space: nowrap;
+    margin-left: auto;
+    font-family: inherit;
+}
+#p25-ws-pdf-btn:hover {
+    background: var(--glass-hover);
+    color: #ef4444;
+    border-color: rgba(239,68,68,.35);
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 600px) {
+    #p16-att-courses { grid-template-columns: 1fr !important; }
+    .p25-custom-formula-grid { grid-template-columns: 1fr; }
+}

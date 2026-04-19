@@ -1,0 +1,282 @@
+/* ================================================================
+   StudentOS — patches35.css
+   1.  Worksheet sv-bar — collapse when no saved values exist
+   2.  Worksheet UI polish — tighter blocks, better hierarchy
+   3.  Formula block polish — cleaner header, improved layout
+   4.  Print @media — full worksheet print via window.print()
+   ================================================================ */
+
+/* ================================================================
+   1.  SV-BAR — HIDE WHEN EMPTY
+   ================================================================ */
+#p19-ws-sv-bar:empty,
+#p19-ws-sv-bar.p35-sv-empty {
+    display: none !important;
+}
+
+/* ================================================================
+   2.  WORKSHEET BOARD — UI POLISH
+   ================================================================ */
+
+/* Slightly more breathing room between blocks */
+#p19-ws-board {
+    gap: 8px;
+    padding: 2px 0 80px;
+}
+
+/* Block base: rounder corners, softer shadow, stronger accent on hover */
+.p19-ws-block {
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    transition: border-color .18s, box-shadow .18s;
+}
+.p19-ws-block:hover {
+    box-shadow: 0 2px 14px rgba(0,0,0,.10);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Heading block: bolder left accent */
+.p19-ws-block.heading-block {
+    border-left-width: 3px;
+    padding-left: 18px;
+}
+
+/* ================================================================
+   3.  TOOLBAR — REMOVE PDF BUTTONS
+   ================================================================ */
+#p21-ws-print-btn,
+#p25-ws-pdf-btn {
+    display: none !important;
+}
+
+/* ================================================================
+   4.  FORMULA BLOCK — CLEANER HEADER
+   ================================================================ */
+
+/* Header: title on its own line, expression below */
+.p19-ws-formula-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+/* Title: slightly larger */
+.p19-ws-formula-title {
+    font-size: .9rem;
+    letter-spacing: -.01em;
+}
+
+/* Expression pill: more compact */
+.p19-ws-formula-expr {
+    font-size: .76rem;
+    padding: 3px 9px;
+    border-radius: 7px;
+    max-width: 100%;
+}
+
+/* Solve-for chip row: slight breathing room */
+.p29-solve-for-row {
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+/* Variable grid: tighter gap */
+.p29-var-grid {
+    gap: 7px;
+}
+
+/* Variable input labels: bolder sym */
+.p29-var-sym {
+    font-size: .7rem;
+}
+
+/* Result panel: stronger background tint */
+.p29-result-panel {
+    border-radius: 11px;
+    padding: 11px 14px;
+    gap: 8px;
+}
+
+/* Result value: clean mono */
+.p29-result-val {
+    font-size: 1.3rem;
+}
+
+/* Edit-formula toggle: placed just under header */
+.p33-formula-edit-toggle {
+    margin-top: 2px;
+    margin-bottom: 0;
+    font-size: .7rem;
+}
+
+/* ================================================================
+   5.  ADD BLOCK BUTTON — CLEANER PILL
+   ================================================================ */
+#p19-ws-add-btn-fixed {
+    border-radius: 99px;
+    padding: 9px 20px;
+    font-size: .8rem;
+    box-shadow: 0 3px 18px rgba(59,130,246,.32);
+}
+
+/* ================================================================
+   6.  PRINT — FULL WORKSHEET
+       Overrides patches21 and patches30 print rules so that the
+       entire worksheet view prints cleanly via window.print().
+   ================================================================ */
+@media print {
+    /* Hide everything except the worksheet view */
+    body > * { display: none !important; }
+    #app      { display: block !important; }
+
+    /* Inside the app, hide non-worksheet panels */
+    #app > *:not([id="view-worksheet"]) { display: none !important; }
+
+    /* Override patches21.css visibility:hidden rule */
+    body *,
+    #view-worksheet *,
+    #p19-ws-board * { visibility: visible !important; }
+
+    /* Make the worksheet view fill the page */
+    #view-worksheet {
+        display: flex !important;
+        flex-direction: column !important;
+        position: fixed !important;
+        inset: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+        color: #111 !important;
+        padding: 24px 36px 24px !important;
+        box-shadow: none !important;
+        border: none !important;
+        z-index: 99999 !important;
+    }
+
+    /* Show sv-bar chips if present, hide otherwise */
+    #p19-ws-sv-bar.p35-sv-empty { display: none !important; }
+
+    /* Hide all interactive chrome */
+    #p19-ws-toolbar,
+    #p21-ws-print-btn,
+    #p25-ws-pdf-btn,
+    #p19-ws-add-btn-fixed,
+    #p19-ws-picker,
+    .p19-ws-block-actions,
+    .p28-resize-handle,
+    .p25-block-resize,
+    .p29-var-ref-btn,
+    .p33-formula-edit-toggle,
+    .p33-formula-edit-panel,
+    #p30-undo-bar,
+    #p28-ws-shortcut-hint,
+    #p28-ws-empty-state,
+    .p29-formula-btn-row,
+    .p29-saveas-row,
+    .p29-result-copy-btn,
+    .p24-draw-toolbar button {
+        display: none !important;
+    }
+
+    /* Board */
+    #p19-ws-board {
+        overflow: visible !important;
+        max-height: none !important;
+        flex: 1 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* All blocks — ensure they are visible and print cleanly */
+    .p19-ws-block {
+        border: 1px solid #d1d5db !important;
+        box-shadow: none !important;
+        animation: none !important;
+        break-inside: avoid;
+        background: #fff !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+    .p19-ws-block.heading-block { border-left: 3px solid #3b82f6 !important; }
+
+    /* Text inputs */
+    .p19-ws-heading-input,
+    .p19-ws-note-textarea {
+        color: #111 !important;
+        background: transparent !important;
+        padding-right: 0 !important;
+    }
+
+    /* Formula */
+    .p19-ws-formula-expr {
+        background: #eff6ff !important;
+        color: #1e40af !important;
+        border-color: #bfdbfe !important;
+    }
+    .p29-result-panel {
+        background: #f0fdf4 !important;
+        border-color: #86efac !important;
+    }
+    .p29-result-val { color: #166534 !important; }
+    .p29-var-inp-wrap { background: #f8fafc !important; border-color: #e2e8f0 !important; }
+    .p29-var-input { color: #111 !important; }
+    .p29-solve-for-chip.active { background: #eff6ff !important; color: #1e40af !important; border-color: #bfdbfe !important; }
+
+    /* Tables — ensure they print */
+    .p27-table-wrap,
+    .p27-table-wrap table {
+        color: #111 !important;
+        border-color: #d1d5db !important;
+    }
+    .p27-table-wrap th,
+    .p27-table-wrap td {
+        border: 1px solid #d1d5db !important;
+        background: #fff !important;
+        color: #111 !important;
+    }
+    .p27-table-wrap th { background: #f3f4f6 !important; }
+
+    /* Callout blocks */
+    .p27-callout-body {
+        background: #f0fdf4 !important;
+        border-left: 4px solid #22c55e !important;
+        color: #111 !important;
+    }
+
+    /* Flashcard blocks */
+    .p27-fc-card {
+        border: 1px solid #e5e7eb !important;
+        background: #fff !important;
+        color: #111 !important;
+    }
+
+    /* Calculator blocks */
+    .p27-calc-line {
+        color: #111 !important;
+    }
+
+    /* Timer blocks */
+    .p27-timer-block {
+        color: #111 !important;
+    }
+
+    /* Code blocks */
+    .p23-ws-code-body {
+        background: #f3f4f6 !important;
+        color: #111 !important;
+    }
+
+    /* Drawing blocks — canvas to visible */
+    .p24-draw-canvas {
+        border: 1px solid #e5e7eb !important;
+        display: block !important;
+    }
+
+    /* Checklist blocks */
+    .checklist-block .p22-checklist-item {
+        color: #111 !important;
+    }
+
+    /* Image blocks */
+    .p23-ws-img-display {
+        max-width: 100% !important;
+    }
+}

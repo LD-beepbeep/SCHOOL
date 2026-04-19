@@ -27,21 +27,21 @@
       "name": "Tasks",
       "short_name": "Tasks",
       "description": "Open your task list",
-      "url": "/?tab=tasks",
+      "url": "./?tab=tasks",
       "icons": [{ "src": "icon.png", "sizes": "96x96" }]
     },
     {
       "name": "Notes",
       "short_name": "Notes",
       "description": "Open your notes",
-      "url": "/?tab=notes",
+      "url": "./?tab=notes",
       "icons": [{ "src": "icon.png", "sizes": "96x96" }]
     },
     {
       "name": "Focus",
       "short_name": "Focus",
       "description": "Start a focus session",
-      "url": "/?tab=focus",
+      "url": "./?tab=focus",
       "icons": [{ "src": "icon.png", "sizes": "96x96" }]
     }
   ]

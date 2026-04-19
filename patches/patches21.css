@@ -1,0 +1,484 @@
+/* ================================================================
+   StudentOS — patches21.css
+   1.  Task DnD          — pointer-events for all types (mouse + touch)
+   2.  Ambient glow      — single soft radial glow via CSS variable
+   3.  Attendance        — calendar grid view
+   4.  Habit widget      — 4-week contribution grid
+   5.  Sidebar tab       — settings panel sidebar page
+   6.  Routine done      — always-visible done buttons
+   7.  Worksheet PDF     — print layout
+   8.  Formula modal     — hide name/description clutter
+   ================================================================ */
+
+/* ================================================================
+   1.  TASK DRAG-AND-DROP
+       Override the pointer-events restriction so mouse works too.
+   ================================================================ */
+#full-task-list .task-row { touch-action: none; user-select: none; }
+#full-task-list .task-row[data-dragstate="src"]  { opacity: .35; }
+#full-task-list .task-row[data-dragstate="over"] {
+    background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+    border-radius: 12px;
+    outline: 2px dashed var(--accent);
+    outline-offset: -2px;
+}
+.task-drag-handle {
+    cursor: grab !important;
+    touch-action: none;
+    color: var(--text-muted);
+    opacity: .5;
+    transition: opacity .15s;
+    padding: 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}
+.task-drag-handle:hover { opacity: 1 !important; color: var(--accent); }
+.task-drag-handle:active { cursor: grabbing !important; }
+
+/* ================================================================
+   2.  AMBIENT GLOW — single colour
+   ================================================================ */
+.ambient-light {
+    background: var(--custom-bg,
+        radial-gradient(ellipse at 50% -8%, rgba(59,130,246,.45) 0%, transparent 60%)
+    ) !important;
+    pointer-events: none;
+}
+[data-theme="light"] .ambient-light {
+    background: var(--custom-bg,
+        radial-gradient(ellipse at 50% -8%, rgba(59,130,246,.25) 0%, transparent 60%)
+    ) !important;
+}
+
+/* ================================================================
+   3.  ATTENDANCE CALENDAR VIEW
+   ================================================================ */
+.p21-att-course-card {
+    background: var(--glass-panel);
+    border: 1.5px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    transition: border-color .15s;
+}
+.p21-att-course-card:hover { border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+
+.p21-att-course-hdr {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.p21-att-cdot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.p21-att-cname {
+    flex: 1;
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.p21-att-sched {
+    font-size: .66rem;
+    color: var(--text-muted);
+}
+.p21-att-edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: .72rem;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: all .12s;
+}
+.p21-att-edit-btn:hover { background: var(--glass-hover); color: var(--text-main); }
+
+/* Stats row */
+.p21-att-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.p21-att-pct-big {
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.p21-att-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.p21-att-bar-bg {
+    height: 5px;
+    border-radius: 99px;
+    background: var(--glass-hover);
+    overflow: hidden;
+}
+.p21-att-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .4s;
+}
+.p21-att-stat-text {
+    font-size: .64rem;
+    color: var(--text-muted);
+}
+.p21-att-goal-badge {
+    font-size: .62rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.p21-att-goal-badge.ok  { background: rgba(34,197,94,.12); color: #22c55e; border: 1px solid rgba(34,197,94,.2); }
+.p21-att-goal-badge.low { background: rgba(239,68,68,.12); color: #ef4444; border: 1px solid rgba(239,68,68,.2); }
+
+/* Calendar grid */
+.p21-att-cal-wrap {
+    margin-bottom: 14px;
+}
+.p21-att-cal-hdr {
+    font-size: .6rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.p21-att-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+.p21-att-day-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+.p21-att-day-lbl {
+    font-size: .56rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: .04em;
+    margin-bottom: 2px;
+}
+.p21-att-cal-cell {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 5px;
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    cursor: default;
+    transition: transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .52rem;
+    position: relative;
+}
+.p21-att-cal-cell:hover { transform: scale(1.1); z-index: 1; }
+.p21-att-cal-cell.attended { background: rgba(34,197,94,.7); border-color: rgba(34,197,94,.85); }
+.p21-att-cal-cell.missed   { background: rgba(239,68,68,.6);  border-color: rgba(239,68,68,.75); }
+.p21-att-cal-cell.today    { box-shadow: 0 0 0 2px var(--accent); }
+.p21-att-cal-cell.future   { opacity: .25; }
+
+/* Action buttons */
+.p21-att-actions {
+    display: flex;
+    gap: 8px;
+}
+.p21-att-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 11px;
+    font-size: .74rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .14s;
+    border: 1.5px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.p21-att-btn.attend.active  { background: rgba(34,197,94,.15); border-color: #22c55e; color: #22c55e; }
+.p21-att-btn.miss.active    { background: rgba(239,68,68,.12); border-color: #ef4444; color: #ef4444; }
+.p21-att-btn.attend:hover:not(.active) { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,.08); }
+.p21-att-btn.miss:hover:not(.active)   { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,.07); }
+
+/* ================================================================
+   4.  HABIT WIDGET — 4-week contribution grid
+   ================================================================ */
+.p21-habit-wrap { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+
+.p21-habit-stats {
+    display: flex;
+    gap: 10px;
+}
+.p21-habit-stat {
+    flex: 1;
+    text-align: center;
+}
+.p21-habit-stat-val {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+}
+.p21-habit-stat-lbl {
+    font-size: .58rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* 4-week grid */
+.p21-habit-grid-wrap {
+    flex: 1;
+}
+.p21-habit-day-labels {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 3px;
+}
+.p21-habit-day-lbl {
+    font-size: .54rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-align: center;
+}
+.p21-habit-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 3px;
+}
+.p21-habit-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    transition: transform .1s;
+    cursor: default;
+}
+.p21-habit-cell:hover { transform: scale(1.15); z-index: 1; }
+.p21-habit-cell.done { background: var(--accent); border-color: var(--accent); opacity: .85; }
+.p21-habit-cell.today {
+    box-shadow: 0 0 0 2px var(--accent);
+    border-color: var(--accent);
+}
+.p21-habit-cell.done.today { opacity: 1; }
+.p21-habit-cell.future { opacity: .2; }
+
+.p21-habit-check-btn {
+    width: 100%;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1.5px solid var(--glass-border);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+    font-size: .74rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all .14s;
+}
+.p21-habit-check-btn:hover:not(.done) {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    border-color: var(--accent);
+}
+.p21-habit-check-btn.done {
+    background: rgba(34,197,94,.12);
+    border-color: rgba(34,197,94,.25);
+    color: #22c55e;
+    cursor: default;
+}
+
+/* ================================================================
+   5.  SIDEBAR SETTINGS PAGE (p10 settings panel)
+   ================================================================ */
+.p21-sidebar-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    transition: background .14s;
+}
+.p21-sidebar-nav-row:hover { background: var(--glass-hover); }
+.p21-sidebar-nav-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.p21-sidebar-nav-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .72rem;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+.p21-sidebar-nav-label { font-size: .84rem; color: var(--text-main); }
+
+/* ================================================================
+   6.  ROUTINE DONE BUTTONS — always visible
+   ================================================================ */
+.p20-tl-done-btn {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 50% !important;
+    border: 2px solid var(--glass-border) !important;
+    background: transparent !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: .6rem !important;
+    color: var(--text-muted) !important;
+    transition: all .13s !important;
+    flex-shrink: 0 !important;
+    opacity: 1 !important;
+}
+.p20-tl-done-btn::before {
+    content: '\f111'; /* fa-circle */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 400;
+    font-size: .55rem;
+    color: var(--text-muted);
+    opacity: .4;
+}
+.p20-tl-done-btn:has(i)::before { display: none; }
+.p20-tl-done-btn:hover {
+    border-color: #22c55e !important;
+    color: #22c55e !important;
+    background: rgba(34,197,94,.1) !important;
+}
+.p20-timeline-row.done .p20-tl-done-btn {
+    background: #22c55e !important;
+    border-color: #22c55e !important;
+    color: #fff !important;
+}
+.p20-timeline-row.done .p20-tl-done-btn::before { display: none; }
+
+/* ================================================================
+   7.  WORKSHEET PDF — print styles
+   ================================================================ */
+#p21-ws-print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: .74rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    transition: all .14s;
+    white-space: nowrap;
+}
+#p21-ws-print-btn:hover {
+    background: var(--glass-hover);
+    color: var(--text-main);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+@media print {
+    body > *:not(#app):not(#app > *):not(style) { display: none !important; }
+
+    /* Show only the worksheet view */
+    body * { visibility: hidden; }
+    #view-worksheet,
+    #view-worksheet *,
+    #p19-ws-board,
+    #p19-ws-board * { visibility: visible !important; }
+
+    #view-worksheet {
+        position: fixed !important;
+        inset: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+        background: #fff !important;
+        color: #111 !important;
+        padding: 24px 36px !important;
+    }
+
+    /* Hide toolbars and buttons during print */
+    #p19-ws-toolbar,
+    #p21-ws-print-btn,
+    .p19-ws-block-actions,
+    #p19-ws-add-btn-fixed,
+    #p19-ws-picker { display: none !important; visibility: hidden !important; }
+
+    #p19-ws-board {
+        overflow: visible !important;
+        max-height: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    .p19-ws-block { page-break-inside: avoid; }
+    .p19-ws-heading-input,
+    .p19-ws-note-textarea { color: #111 !important; background: transparent !important; }
+    .p19-ws-formula-expr  { background: #f3f4f6 !important; color: #1d4ed8 !important; border-color: #d1d5db !important; }
+    .p19-ws-result        { background: #f0fdf4 !important; border-color: #86efac !important; }
+    .p19-ws-result-val    { color: #166534 !important; }
+}
+
+/* ================================================================
+   8.  FORMULA MODAL — cleaner variable rows
+       Hide variable name (only keep symbol), hide description
+   ================================================================ */
+#modal-formula .p16-fv-ni {
+    display: none !important;
+}
+/* Adjust grid: just sym + delete button */
+#modal-formula #p16-fv-rows .p16-fv-row {
+    grid-template-columns: 60px 26px !important;
+    gap: 6px !important;
+}
+/* Also hide description textarea if present */
+#modal-formula [id*="formula-modal-desc"],
+#modal-formula .formula-desc-wrap,
+#modal-formula label[for*="formula-modal-desc"] {
+    display: none !important;
+}
+/* Hint under formula text about auto-detection */
+#p21-formula-vars-hint {
+    font-size: .66rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}

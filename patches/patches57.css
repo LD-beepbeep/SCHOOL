@@ -1,0 +1,25 @@
+/* ================================================================
+   StudentOS — patches57.css
+   Definitive Whiteboard Mind-Map Overhaul — supplementary styles.
+
+   The visual node styles (colours, fonts, borders) are produced
+   entirely by the SVG renderer in patches57.js and need no
+   additional CSS.  This file holds only the guard rule that ensures
+   no other patch can accidentally re-introduce a bright coloured
+   left-border on formula worksheet blocks (originally in
+   patches30.css, already overridden by patches54.css — duplicated
+   here for belt-and-braces certainty).
+   ================================================================ */
+
+/* ================================================================
+   FORMULA BLOCK — UNIFORM BORDER COLOUR (belt-and-braces)
+   patches30.css sets `border-left: 3px solid color-mix(…accent…)`
+   on formula blocks.  patches54.css already overrides this, but we
+   reinforce it here to ensure the formula block always looks the
+   same as every other .p19-ws-block.
+   ================================================================ */
+.p19-ws-block.formula-block {
+    border-left-width:  1.5px !important;
+    border-left-color:  var(--glass-border) !important;
+    border-left-style:  solid !important;
+}

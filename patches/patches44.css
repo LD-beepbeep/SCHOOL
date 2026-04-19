@@ -1,0 +1,9 @@
+/* ================================================================
+   patches44.css — supporting styles for patches44.js
+   ================================================================ */
+
+/* Muted colour for zero hard/starred counts in deck overview */
+.p44-muted {
+    color: var(--text-muted);
+    opacity: .6;
+}

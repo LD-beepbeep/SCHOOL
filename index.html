@@ -4,23 +4,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student OS</title>
+    <!-- Resource hints — resolve DNS + open connections early for all CDN origins -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://ka-f.fontawesome.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://ka-f.fontawesome.com">
+    <!-- Preload Font Awesome so brand icons are available immediately -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+    <!-- Preload main app script so it starts downloading as early as possible -->
+    <link rel="modulepreload" href="script.js?v=3">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <!-- Critical CSS — needed for initial paint (login overlay) -->
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="patches10.css">
-    <link rel="stylesheet" href="patches9.css">
     <link rel="stylesheet" href="mobile.css">
-    <link rel="stylesheet" href="patches11.css">
-    <link rel="stylesheet" href="patches12.css">
-    <link rel="stylesheet" href="patches13.css">
-    <link rel="stylesheet" href="patches14.css">
     <link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon.png"><meta name="theme-color" content="#0f1117">
     <link rel="icon" type="image/x-icon" href="icon.png">
-    <link rel="stylesheet" href="features.css">
-    <link rel="stylesheet" href="forum.css">
+    <!-- Deferred CSS — loaded async so they don't block first paint -->
+    <link rel="stylesheet" href="patches/patches9.css"   media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches10.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches11.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches12.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches13.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches14.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/features.css"   media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/forum.css"      media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches16.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches17.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches18.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches19.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches20.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches21.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches22.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches23.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches24.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches25.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches26.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches27.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches28.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches29.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches30.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches31.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches32.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches33.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches34.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches35.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches36.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches37.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches38.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches39.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches41.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches42.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches43.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches44.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches45.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches46.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches47.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches48.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches49.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches50.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches51.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches52.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches54.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches55.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches56.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches57.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches58.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches59.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches60.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches61.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches62.css"  media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="patches/patches63.css"  media="print" onload="this.media='all'">
+    <!-- No-JS fallback for deferred CSS -->
+    <noscript>
+        <link rel="stylesheet" href="patches/patches9.css">
+        <link rel="stylesheet" href="patches/patches10.css">
+        <link rel="stylesheet" href="patches/patches11.css">
+        <link rel="stylesheet" href="patches/patches12.css">
+        <link rel="stylesheet" href="patches/patches13.css">
+        <link rel="stylesheet" href="patches/patches14.css">
+        <link rel="stylesheet" href="patches/features.css">
+        <link rel="stylesheet" href="patches/forum.css">
+        <link rel="stylesheet" href="patches/patches16.css">
+        <link rel="stylesheet" href="patches/patches17.css">
+        <link rel="stylesheet" href="patches/patches18.css">
+        <link rel="stylesheet" href="patches/patches19.css">
+        <link rel="stylesheet" href="patches/patches20.css">
+        <link rel="stylesheet" href="patches/patches21.css">
+        <link rel="stylesheet" href="patches/patches22.css">
+        <link rel="stylesheet" href="patches/patches23.css">
+        <link rel="stylesheet" href="patches/patches24.css">
+        <link rel="stylesheet" href="patches/patches25.css">
+        <link rel="stylesheet" href="patches/patches26.css">
+        <link rel="stylesheet" href="patches/patches27.css">
+        <link rel="stylesheet" href="patches/patches28.css">
+        <link rel="stylesheet" href="patches/patches29.css">
+        <link rel="stylesheet" href="patches/patches30.css">
+        <link rel="stylesheet" href="patches/patches31.css">
+        <link rel="stylesheet" href="patches/patches32.css">
+        <link rel="stylesheet" href="patches/patches33.css">
+        <link rel="stylesheet" href="patches/patches34.css">
+        <link rel="stylesheet" href="patches/patches35.css">
+        <link rel="stylesheet" href="patches/patches36.css">
+        <link rel="stylesheet" href="patches/patches37.css">
+        <link rel="stylesheet" href="patches/patches38.css">
+        <link rel="stylesheet" href="patches/patches39.css">
+        <link rel="stylesheet" href="patches/patches41.css">
+        <link rel="stylesheet" href="patches/patches42.css">
+        <link rel="stylesheet" href="patches/patches43.css">
+        <link rel="stylesheet" href="patches/patches44.css">
+        <link rel="stylesheet" href="patches/patches45.css">
+        <link rel="stylesheet" href="patches/patches46.css">
+        <link rel="stylesheet" href="patches/patches47.css">
+        <link rel="stylesheet" href="patches/patches48.css">
+        <link rel="stylesheet" href="patches/patches49.css">
+        <link rel="stylesheet" href="patches/patches50.css">
+        <link rel="stylesheet" href="patches/patches51.css">
+        <link rel="stylesheet" href="patches/patches52.css">
+        <link rel="stylesheet" href="patches/patches54.css">
+        <link rel="stylesheet" href="patches/patches55.css">
+        <link rel="stylesheet" href="patches/patches56.css">
+        <link rel="stylesheet" href="patches/patches57.css">
+        <link rel="stylesheet" href="patches/patches58.css">
+        <link rel="stylesheet" href="patches/patches59.css">
+        <link rel="stylesheet" href="patches/patches60.css">
+        <link rel="stylesheet" href="patches/patches61.css">
+        <link rel="stylesheet" href="patches/patches62.css">
+        <link rel="stylesheet" href="patches/patches63.css">
+    </noscript>
 </head>
 <body class="flex h-screen w-screen">
 <!-- ===== LOGIN OVERLAY ===== -->
@@ -111,9 +233,9 @@
     </div>
 
     <!-- Offline -->
-    <button onclick="document.getElementById('login-overlay').classList.add('hidden'); initApp();"
-            class="text-xs hover:underline opacity-40 hover:opacity-70 transition-opacity"
-            style="color: var(--text-muted); background: none; border: none; cursor: pointer;">
+    <button class="text-xs hover:underline opacity-40 hover:opacity-70 transition-opacity"
+            style="color: var(--text-muted); background: none; border: none; cursor: pointer;"
+            onclick="document.getElementById('login-overlay').classList.add('hidden'); if(window.initApp)initApp(); /* offline mode */">
       Continue offline (data won't sync)
     </button>
 
@@ -629,7 +751,7 @@
         </div>
         <!-- Mind map status bar -->
         <div id="mm-status" class="text-xs text-[var(--text-muted)] mb-1 flex gap-4 items-center">
-            <span>🗺️ <strong>Mind Map Mode</strong> — Click empty area to add node · Click node to select · Drag to move · Del to remove</span>
+            <span><i class="fa-solid fa-diagram-project" style="margin-right:5px;"></i> <strong>Mind Map Mode</strong> — Click empty area to add node · Click to select · Drag to move · Double-click to edit</span>
             <button onclick="wbMindMapExport()" class="px-3 py-1 bg-[var(--accent)] text-white rounded-lg text-xs">Stamp to Canvas</button>
             <button onclick="wbToggleMindMap()" class="px-3 py-1 bg-[var(--glass-panel)] border border-[var(--glass-border)] rounded-lg text-xs">Exit Mind Map</button>
         </div>
@@ -1245,8 +1367,10 @@
         <div class="overflow-y-auto flex-1 px-8 py-5 space-y-0">
             <div class="settings-section">
                 <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Identity</div>
-                <div class="settings-row"><span class="text-sm">Student Name</span><input type="text" id="student-name-input" placeholder="Your name" class="bare-input text-sm text-right w-32" oninput="setStudentName(this.value)"></div>
-                <div class="settings-row"><span class="text-sm">Profile Picture</span><button onclick="closeModals();setTimeout(()=>openModal('modal-profile'),100)" class="text-xs text-[var(--accent)] hover:underline">Edit →</button></div>
+                <div class="p43-settings-profile">
+                    <input type="text" id="student-name-input" placeholder="Your name…" class="bare-input text-sm w-full mb-3" oninput="setStudentName(this.value)">
+                    <button id="p49-edit-profile-btn" type="button" class="p49-edit-profile-btn" onclick="if(typeof openModal==='function')openModal('modal-profile')"><i class="ph-bold ph-pencil-simple"></i> Edit Profile</button>
+                </div>
             </div>
             <div class="settings-section">
                 <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Appearance</div>
@@ -1269,6 +1393,8 @@
                 <div class="settings-row"><div><span class="text-sm block">Font Scale</span><span class="text-xs text-[var(--text-muted)]">App text size</span></div><div class="flex items-center gap-2"><button onclick="setFontScale(.85)" class="text-xs px-2 py-1 rounded-lg bg-[var(--glass-hover)] hover:bg-[var(--accent)] hover:text-white transition">S</button><button onclick="setFontScale(1)" class="text-xs px-2 py-1 rounded-lg bg-[var(--glass-hover)] hover:bg-[var(--accent)] hover:text-white transition">M</button><button onclick="setFontScale(1.12)" class="text-xs px-2 py-1 rounded-lg bg-[var(--glass-hover)] hover:bg-[var(--accent)] hover:text-white transition">L</button></div></div>
                 <div class="settings-row"><div><span class="text-sm block">Clock Color</span></div><input type="color" id="clock-color-picker" value="#ffffff" onchange="setClockColor(this.value)" style="width:32px;height:32px;border-radius:50%;padding:0;cursor:pointer;"></div>
                 <div class="settings-row"><span class="text-sm">Background Gradient</span><input type="color" onchange="setBg(this.value)" title="Pick bg color" style="width:32px;height:32px;border-radius:50%;padding:0;cursor:pointer;"></div>
+                <div class="settings-row"><div><span class="text-sm block">Whiteboard Background</span><span class="text-xs text-[var(--text-muted)]">Default colour for new boards</span></div><div class="flex items-center gap-1.5 flex-wrap" id="wb-bg-swatches"><button onclick="window._setWbDefaultBg('#1a1a1a')" title="Dark" style="width:22px;height:22px;border-radius:50%;background:#1a1a1a;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;"></button><button onclick="window._setWbDefaultBg('#0f172a')" title="Navy" style="width:22px;height:22px;border-radius:50%;background:#0f172a;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;"></button><button onclick="window._setWbDefaultBg('#ffffff')" title="White" style="width:22px;height:22px;border-radius:50%;background:#ffffff;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;"></button><button onclick="window._setWbDefaultBg('#fef9ef')" title="Notebook" style="width:22px;height:22px;border-radius:50%;background:#fef9ef;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;"></button><button onclick="window._setWbDefaultBg('#1e3a5f')" title="Ocean" style="width:22px;height:22px;border-radius:50%;background:#1e3a5f;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;"></button><button onclick="window._setWbDefaultBg('#14532d')" title="Forest" style="width:22px;height:22px;border-radius:50%;background:#14532d;border:2px solid rgba(255,255,255,.2);cursor:pointer;flex-shrink:0;"></button><input type="color" id="wb-default-bg-picker" onchange="window._setWbDefaultBg(this.value)" title="Custom colour" style="width:22px;height:22px;border-radius:50%;padding:0;border:2px solid rgba(255,255,255,.2);cursor:pointer;"></div></div>
+                <div class="settings-row"><span class="text-sm">Whiteboard Grid by Default</span><button id="wb-grid-default-toggle" onclick="window._toggleWbGridDefault()" class="w-12 h-6 rounded-full bg-[var(--glass-hover)] relative transition border border-[var(--glass-border)]"><div id="wb-grid-default-dot" class="w-4 h-4 bg-[var(--text-main)] rounded-full absolute top-1 left-1 transition-transform"></div></button></div>
             </div>
             <div class="settings-section">
                 <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mb-3">Focus Timer</div>
@@ -1703,6 +1829,18 @@
     <i class="fa-solid fa-comments mbd-tool-icon"></i>
     <span class="mbd-tool-name">Forum</span>
 </button>
+        <button class="mbd-tool" id="mob-btn-routine" style="--c:#8b5cf6" onclick="switchTab('routine');closeMobMenu()">
+            <i class="fa-solid fa-calendar-week mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Routine</span>
+        </button>
+        <button class="mbd-tool" id="mob-btn-attendance" style="--c:#22c55e" onclick="switchTab('attendance');closeMobMenu()">
+            <i class="fa-solid fa-user-check mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Attendance</span>
+        </button>
+        <button class="mbd-tool" id="mob-btn-worksheet" style="--c:#f59e0b" onclick="switchTab('worksheet');closeMobMenu()">
+            <i class="fa-solid fa-layer-group mbd-tool-icon"></i>
+            <span class="mbd-tool-name">Worksheet</span>
+        </button>
     </div>
 
 
@@ -1712,28 +1850,141 @@
 <div id="sos-toast"></div>
 
 <script type="module" src="script.js?v=3"></script>
-<script type="module" src="features.js"></script>
-<script type="module" src="forum.js"></script>
-<script type="module" src="patches.js"></script>
-<script type="module" src="forum_fix.js"></script>
-<script type="module" src="patches3.js"></script>
-<script type="module" src="patches4.js"></script>
-<script type="module" src="patches5.js"></script>
-<script type="module" src="patches6.js"></script>
-<script type="module" src="patches7.js"></script>
-<script type="module" src="patches8.js"></script>
-<script type="module" src="fix_banned.js"></script>
-<script type="module" src="fix_localstorage.js"></script>
-<script type="module" src="fix_subthreads.js"></script>
-<script type="module" src="patches9.js"></script>
-<script type="module" src="patches10.js"></script>
-<script type="module" src="patches11.js"></script>
-<script type="module" src="patches12.js"></script>
-<script type="module" src="patches13.js"></script>
-<script type="module" src="widgets_patch.js"></script>
-<script type="module" src="patches14.js"></script>
-<script type="module" src="patches15.js"></script>
+<script type="module" src="patches/features.js"></script>
+<script type="module" src="patches/forum.js"></script>
+<script type="module" src="patches/patches.js"></script>
+<script type="module" src="patches/forum_fix.js"></script>
+<script type="module" src="patches/patches3.js"></script>
+<script type="module" src="patches/patches4.js"></script>
+<script type="module" src="patches/patches5.js"></script>
+<script type="module" src="patches/patches6.js"></script>
+<script type="module" src="patches/patches7.js"></script>
+<script type="module" src="patches/patches8.js"></script>
+<script type="module" src="patches/fix_banned.js"></script>
+<script type="module" src="patches/fix_localstorage.js"></script>
+<script type="module" src="patches/fix_subthreads.js"></script>
+<script type="module" src="patches/patches9.js"></script>
+<script type="module" src="patches/patches10.js"></script>
+<script type="module" src="patches/patches11.js"></script>
+<script type="module" src="patches/patches12.js"></script>
+<script type="module" src="patches/patches13.js"></script>
+<script type="module" src="patches/widgets_patch.js"></script>
+<script type="module" src="patches/patches14.js"></script>
+<script type="module" src="patches/patches15.js"></script>
+<script type="module" src="patches/patches16.js"></script>
+<script type="module" src="patches/patches17.js"></script>
+<script type="module" src="patches/patches18.js"></script>
+<script type="module" src="patches/patches19.js"></script>
+<script type="module" src="patches/patches20.js"></script>
+<script type="module" src="patches/patches21.js"></script>
+<script type="module" src="patches/patches22.js"></script>
+<script type="module" src="patches/patches23.js"></script>
+<script type="module" src="patches/patches24.js"></script>
+<script type="module" src="patches/patches25.js"></script>
+<script type="module" src="patches/patches26.js"></script>
+<script type="module" src="patches/patches27.js"></script>
+<script type="module" src="patches/patches28.js"></script>
+<script type="module" src="patches/patches29.js"></script>
+<script type="module" src="patches/patches30.js"></script>
+<script type="module" src="patches/patches31.js"></script>
+<script type="module" src="patches/patches32.js"></script>
+<script type="module" src="patches/patches33.js"></script>
+<script type="module" src="patches/patches34.js"></script>
+<script type="module" src="patches/patches35.js"></script>
+<script type="module" src="patches/patches36.js"></script>
+<script type="module" src="patches/patches37.js"></script>
+<script type="module" src="patches/patches38.js"></script>
+<script type="module" src="patches/patches39.js"></script>
+<script type="module" src="patches/patches40.js"></script>
+<script type="module" src="patches/patches41.js"></script>
+<script type="module" src="patches/patches42.js"></script>
+<script type="module" src="patches/patches43.js"></script>
+<script type="module" src="patches/patches44.js"></script>
+<script type="module" src="patches/patches45.js"></script>
+<script type="module" src="patches/patches46.js"></script>
+<script type="module" src="patches/patches47.js"></script>
+<script type="module" src="patches/patches48.js"></script>
+<script type="module" src="patches/patches49.js"></script>
+<script type="module" src="patches/patches50.js"></script>
+<script type="module" src="patches/patches51.js"></script>
+<script type="module" src="patches/patches52.js"></script>
+<script type="module" src="patches/patches53.js"></script>
+<script type="module" src="patches/patches54.js"></script>
+<script type="module" src="patches/patches55.js"></script>
+<script type="module" src="patches/patches56.js"></script>
+<script type="module" src="patches/patches57.js"></script>
+<script type="module" src="patches/patches58.js"></script>
+<script type="module" src="patches/patches59.js"></script>
+<script type="module" src="patches/patches60.js"></script>
+<script type="module" src="patches/patches61.js"></script>
+<script type="module" src="patches/patches62.js"></script>
+<script type="module" src="patches/patches63.js"></script>
+<script type="module" src="patches/patches64.js"></script>
 <script> (function() {
+
+    /* ── Whiteboard default background & grid settings ── */
+    window._setWbDefaultBg = function(color) {
+        if (window.DB && typeof window.DB.set === 'function') window.DB.set('os_wb_default_bg', color);
+        else try { localStorage.setItem('os_wb_default_bg', JSON.stringify(color)); } catch(_) {}
+        var picker = document.getElementById('wb-default-bg-picker');
+        if (picker) picker.value = color;
+        /* Also sync older patches46 picker if present */
+        var p46 = document.getElementById('p46-wb-default-bg');
+        if (p46) p46.value = color;
+    };
+
+    window._toggleWbGridDefault = function() {
+        var current = false;
+        try {
+            if (window.DB && typeof window.DB.get === 'function') current = window.DB.get('os_wb_grid_default', false);
+            else current = JSON.parse(localStorage.getItem('os_wb_grid_default') || 'false');
+        } catch(_) {}
+        var next = !current;
+        if (window.DB && typeof window.DB.set === 'function') window.DB.set('os_wb_grid_default', next);
+        else try { localStorage.setItem('os_wb_grid_default', JSON.stringify(next)); } catch(_) {}
+        var toggle = document.getElementById('wb-grid-default-toggle');
+        var dot    = document.getElementById('wb-grid-default-dot');
+        if (toggle) toggle.style.background = next ? 'var(--accent)' : '';
+        if (dot)    dot.style.transform     = next ? 'translateX(24px)' : '';
+        /* Sync patches46/53 toggle if present */
+        var p46t = document.getElementById('p46-wb-grid-toggle');
+        if (p46t) p46t.classList.toggle('on', next);
+    };
+
+    /* Sync toggle visual state on settings open */
+    function _syncWbSettings() {
+        var gridOn = false;
+        var bgVal  = '#1a1a1a';
+        try {
+            if (window.DB && typeof window.DB.get === 'function') {
+                gridOn = window.DB.get('os_wb_grid_default', false);
+                bgVal  = window.DB.get('os_wb_default_bg',   '#1a1a1a');
+            } else {
+                gridOn = JSON.parse(localStorage.getItem('os_wb_grid_default') || 'false');
+                bgVal  = JSON.parse(localStorage.getItem('os_wb_default_bg')   || '"#1a1a1a"');
+            }
+        } catch(_) {}
+        var toggle = document.getElementById('wb-grid-default-toggle');
+        var dot    = document.getElementById('wb-grid-default-dot');
+        if (toggle) toggle.style.background = gridOn ? 'var(--accent)' : '';
+        if (dot)    dot.style.transform     = gridOn ? 'translateX(24px)' : '';
+        var picker = document.getElementById('wb-default-bg-picker');
+        if (picker) picker.value = bgVal;
+    }
+
+    /* Hook openModal to sync state when settings opens */
+    var _prevOpen = window.openModal;
+    window.openModal = function(id) {
+        if (_prevOpen) _prevOpen.apply(this, arguments);
+        if (id === 'modal-settings') setTimeout(_syncWbSettings, 50);
+    };
+
+    /* Also sync on DOMContentLoaded in case settings is shown on load */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(_syncWbSettings, 500); });
+    } else {
+        setTimeout(_syncWbSettings, 500);
+    }
 
     /* ── "More" button rotates when drawer is open ── */
     var _origToggle = window.toggleMobMenu;
@@ -1770,8 +2021,8 @@
 })();</script>
 <script>
 if ('serviceWorker' in navigator) {
-    fetch('/sw.js', { method: 'HEAD' }).then(function(r) {
-        if (r.ok) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(){});
+    fetch('./sw.js', { method: 'HEAD' }).then(function(r) {
+        if (r.ok) navigator.serviceWorker.register('./sw.js').catch(function(){});
     }).catch(function(){});
 }
 </script>

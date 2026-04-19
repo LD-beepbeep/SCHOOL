@@ -1,0 +1,48 @@
+/* ================================================================
+   StudentOS — patches49.css
+   1.  Edit Profile button in settings Identity section
+   2.  CSS fallback: hide p43 emoji/icon sections and stray
+       elements that would clutter the settings Identity section
+       (JS in patches49.js also hides these, this is a belt-and-
+       braces guarantee).
+   ================================================================ */
+
+/* ================================================================
+   1.  EDIT PROFILE BUTTON
+   ================================================================ */
+
+.p49-edit-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 6px 14px;
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.p49-edit-profile-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+}
+
+/* ================================================================
+   2.  CSS FALLBACK — HIDE CLUTTER IN SETTINGS IDENTITY SECTION
+   ================================================================ */
+
+/* Emoji/Icon sections injected by patches43 */
+#p43-settings-profile-sections {
+    display: none !important;
+}
+
+/* Original emoji grid inside settings */
+#settings-emoji-grid {
+    display: none !important;
+}

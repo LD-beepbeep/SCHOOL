@@ -1,0 +1,118 @@
+/* ================================================================
+   StudentOS — patches37.css
+   1.  Forum post-card — image thumbnail in excerpt
+   2.  Worksheet — word-count badge on note blocks
+   3.  Worksheet — shortcut hint banner
+   ================================================================ */
+
+/* ================================================================
+   1.  FORUM — image thumbnail in post-card excerpt
+   ================================================================ */
+
+/* When the excerpt contains a thumbnail, make it flex so the image
+   and the text sit side by side instead of stacking as clamped text */
+.fpc-excerpt--media {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 10px;
+    -webkit-line-clamp: unset !important;
+    overflow: visible !important;
+}
+
+/* Small thumbnail shown in the post-card overview */
+.fpc-thumb {
+    width: 60px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 7px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+/* Text next to the thumbnail — clamp to 2 lines */
+.fpc-excerpt--media span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: .82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* ================================================================
+   2.  WORKSHEET — word-count badge
+   ================================================================ */
+.p37-wc-badge {
+    display: none;
+    font-size: .65rem;
+    color: var(--text-muted);
+    opacity: .7;
+    text-align: right;
+    padding: 0 2px 4px;
+    user-select: none;
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ================================================================
+   3.  WORKSHEET — shortcut hint banner
+   ================================================================ */
+.p37-shortcut-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(59,130,246,.08);
+    border: 1px solid rgba(59,130,246,.18);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: .74rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.p37-shortcut-hint kbd {
+    display: inline-block;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: .7rem;
+    font-family: monospace;
+    color: var(--text-main);
+}
+
+.p37-shortcut-hint span { flex: 1; }
+
+.p37-hint-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: .75rem;
+    line-height: 1;
+    margin-left: auto;
+    transition: background .15s, color .15s;
+}
+.p37-hint-close:hover {
+    background: rgba(255,255,255,.08);
+    color: var(--text-main);
+}
+
+/* ================================================================
+   4.  WORKSHEET — misc polish (complement patches35)
+   ================================================================ */
+
+/* Ensure the note textarea has some bottom space for the word badge */
+.p19-ws-note-textarea {
+    padding-bottom: 4px;
+}
+
+/* Heading block: slightly larger font scale */
+.p19-ws-block.heading-block .p19-ws-heading-input {
+    letter-spacing: -.02em;
+}

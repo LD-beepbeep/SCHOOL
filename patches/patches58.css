@@ -1,0 +1,112 @@
+/* ================================================================
+   StudentOS — patches58.css
+   1.  Formula block — neutralise ALL accent-coloured internal
+       elements so the block looks identical to every other
+       .p19-ws-block (border-left already fixed by patches57.css;
+       this covers the expression chip and the result panel).
+   2.  Flashcard star button — style for the injected star toggle
+       in the study header and card-list rows.
+   3.  Whiteboard section — belt-and-braces hide of every whiteboard-
+       related settings node that may have survived earlier patches.
+   ================================================================ */
+
+/* ================================================================
+   1.  FORMULA BLOCK — UNIFORM INTERNAL COLOURS
+       patches19.css colours the expression chip and the result
+       panel with var(--accent), making formula blocks stand out.
+       Override all of them to use neutral glass colours.
+   ================================================================ */
+
+/* Expression chip (the monospace formula string) */
+.p19-ws-formula-expr {
+    color:        var(--text-muted)    !important;
+    background:   var(--glass-hover)   !important;
+    border-color: var(--glass-border)  !important;
+}
+
+/* Result panel container */
+.p19-ws-result {
+    background:   var(--glass-hover)   !important;
+    border-color: var(--glass-border)  !important;
+}
+
+/* Result value (the large computed number) */
+.p19-ws-result-val {
+    color: var(--text-main) !important;
+}
+
+/* Variable symbol labels */
+.p19-ws-var-sym {
+    color: var(--text-muted) !important;
+}
+
+/* Belt-and-braces border-left fix (also in patches57.css) */
+.p19-ws-block.formula-block {
+    border-left-width: 1.5px         !important;
+    border-left-color: var(--glass-border) !important;
+    border-left-style: solid         !important;
+}
+
+/* ================================================================
+   2.  FLASHCARD — STAR BUTTON (study header + card-list rows)
+   ================================================================ */
+
+/* Star button in the study-view top bar */
+#p58-study-star-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--glass-border);
+    background: var(--glass-panel);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+    transition: color .15s, border-color .15s, background .15s;
+    flex-shrink: 0;
+}
+#p58-study-star-btn:hover {
+    border-color: #fbbf24;
+    color: #fbbf24;
+}
+#p58-study-star-btn.starred {
+    color: #fbbf24;
+    border-color: #fbbf24;
+    background: rgba(251,191,36,.12);
+}
+
+/* Star toggle button inside each card-list row */
+.p58-card-star-btn {
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    font-size: .75rem;
+    line-height: 1;
+    transition: color .15s;
+}
+.p58-card-star-btn:hover,
+.p58-card-star-btn.starred {
+    color: #fbbf24;
+}
+
+/* ================================================================
+   3.  WHITEBOARD SETTINGS SECTION — BELT-AND-BRACES HIDE
+       Hides every known container for whiteboard settings,
+       whether placed by patches46, patches48, or patches53.
+   ================================================================ */
+
+#p48-whiteboard-section,
+#p53-wb-appearance-section {
+    display: none !important;
+}
+
+/* Hide the "Whiteboard Defaults" sub-label and its following rows
+   if patches48 failed to extract them from #p46-widgets-section. */
+#p46-widgets-section .p46-sub-label,
+#p46-widgets-section .p46-sub-label ~ * {
+    display: none !important;
+}

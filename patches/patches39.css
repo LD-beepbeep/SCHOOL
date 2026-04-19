@@ -1,0 +1,158 @@
+/* ================================================================
+   StudentOS — patches39.css
+   1.  Cursor guarantee — browser UA stylesheet sets cursor:default
+       on <button> elements; Tailwind's cursor-pointer utility only
+       applies once the CDN runtime generates it.  If Tailwind loads
+       slowly or encounters its own class-scan delay, every button
+       shows the arrow cursor and feels broken.  This rule is a
+       zero-dependency fallback that applies immediately.
+
+   2.  Disabled state — keep not-allowed where expected.
+
+   3.  Minor interaction polish that matches the existing design.
+   ================================================================ */
+
+/* ================================================================
+   1.  CURSOR GUARANTEE
+       Applies regardless of Tailwind CDN state.
+       Uses low specificity so Tailwind and inline styles still win.
+   ================================================================ */
+
+button,
+a,
+[role="button"],
+label[for],
+select,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+summary {
+    cursor: pointer;
+}
+
+/* Disabled / done state — keep not-allowed */
+button:disabled,
+button[disabled],
+[disabled],
+[aria-disabled="true"] {
+    cursor: not-allowed;
+}
+
+/* Inputs and textareas keep text cursor */
+input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+textarea {
+    cursor: text;
+}
+
+/* Range and color inputs keep pointer */
+input[type="range"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="color"] {
+    cursor: pointer;
+}
+
+/* ================================================================
+   2.  TAILWIND CDN FREEZE GUARD
+       If the Tailwind CDN script takes more than a few hundred ms
+       to inject its generated stylesheet, the page renders without
+       flex, hidden, and rounded utilities.  Provide the most
+       critical layout utilities so the page is usable immediately.
+
+       These are intentionally LOW specificity (no !important) so
+       Tailwind overrides them once it is ready.  They use the same
+       class names Tailwind would generate.
+   ================================================================ */
+
+/* Core layout helpers used throughout index.html */
+.hidden    { display: none !important; }
+.flex      { display: flex; }
+.flex-col  { flex-direction: column; }
+.flex-1    { flex: 1 1 0%; }
+.items-center  { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.gap-2     { gap: 0.5rem; }
+.gap-3     { gap: 0.75rem; }
+.gap-4     { gap: 1rem; }
+.gap-5     { gap: 1.25rem; }
+.w-full    { width: 100%; }
+.relative  { position: relative; }
+.absolute  { position: absolute; }
+.fixed     { position: fixed; }
+.inset-0   { inset: 0; }
+.z-50      { z-index: 50; }
+
+/* Rounded corners used on login card and buttons */
+.rounded-xl   { border-radius: 0.75rem; }
+.rounded-2xl  { border-radius: 1rem; }
+.rounded-3xl  { border-radius: 1.5rem; }
+
+/* Text utilities used on login overlay */
+.text-sm   { font-size: 0.875rem; line-height: 1.25rem; }
+.text-xs   { font-size: 0.75rem;  line-height: 1rem; }
+.font-medium  { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold    { font-weight: 700; }
+.text-white   { color: #fff; }
+.text-center  { text-align: center; }
+.uppercase    { text-transform: uppercase; }
+.tracking-wide { letter-spacing: 0.025em; }
+.tracking-widest { letter-spacing: 0.1em; }
+
+/* Overflow helpers */
+.overflow-hidden { overflow: hidden; }
+.overflow-y-auto { overflow-y: auto; }
+.overflow-x-hidden { overflow-x: hidden; }
+
+/* Grid */
+.grid { display: grid; }
+
+/* Transition */
+.transition    { transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4,0,0.2,1); transition-duration: 150ms; }
+.transition-all { transition: all 150ms cubic-bezier(0.4,0,0.2,1); }
+
+/* Opacity/hover — these need the Tailwind variant compiler;
+   provide the base class as a fallback only */
+.opacity-40 { opacity: 0.4; }
+.opacity-70 { opacity: 0.7; }
+.opacity-80 { opacity: 0.8; }
+
+/* ================================================================
+   3.  INTERACTION POLISH
+       Restore visual affordances that depend on cursor: pointer.
+   ================================================================ */
+
+/* Nav buttons already have cursor in styles.css — ensure
+   the new rule doesn't fight the existing one */
+.nav-btn          { cursor: pointer; }
+.profile-btn      { cursor: pointer; }
+.calc-key         { cursor: pointer; }
+.pomo-mode-btn    { cursor: pointer; }
+
+/* Ensure modal close buttons show pointer */
+[onclick] { cursor: pointer; }
+
+/* ================================================================
+   4.  PERFORMANCE — reduce layout reflow from frequently mutated
+       elements.  Mark these as independent compositing layers so
+       the browser doesn't repaint the whole page when they change.
+   ================================================================ */
+
+/* Toast — fades in/out frequently */
+#sos-toast {
+    will-change: transform, opacity;
+    contain: layout style;
+}
+
+/* Ambient background — static gradient, never needs repaint */
+.ambient-light {
+    will-change: auto;
+    contain: strict;
+}
+
+/* Sidebar — stable, never scrolls */
+nav.w-20 {
+    contain: layout style;
+}

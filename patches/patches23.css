@@ -1,0 +1,317 @@
+/* ================================================================
+   StudentOS — patches23.css
+   1.  Tab bleed fix      — ensure dynamic views hide properly
+   2.  Whiteboard         — sticky notes, pan cursor, kbd shortcuts UI
+   3.  Worksheet          — image block, code block, autosave chip
+   4.  Attendance         — UI tweaks, overflow scroll fix
+   5.  QoL               — focus-ring normalisation, toast update
+   ================================================================ */
+
+/* ================================================================
+   1.  TAB BLEED FIX
+       Dynamic views (worksheet / attendance / routine / settings)
+       injected by patches16 are not in the original `tabs` array,
+       so switching away never adds `hidden` back to them.
+       We ensure hidden views don't participate in layout.
+   ================================================================ */
+#view-worksheet.hidden,
+#view-attendance.hidden,
+#view-routine.hidden,
+#view-settings.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ================================================================
+   2.  WHITEBOARD — sticky notes + pan cursor + keyboard hint bar
+   ================================================================ */
+
+/* Sticky notes container sits on top of the canvas */
+#wb-sticky-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+}
+
+.wb-sticky {
+    position: absolute;
+    min-width: 140px;
+    max-width: 240px;
+    border-radius: 10px;
+    padding: 0;
+    box-shadow: 0 4px 18px rgba(0,0,0,.28);
+    pointer-events: all;
+    display: flex;
+    flex-direction: column;
+    font-size: .82rem;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    transition: box-shadow .15s;
+    cursor: move;
+}
+.wb-sticky:focus-within { box-shadow: 0 6px 28px rgba(0,0,0,.38); }
+.wb-sticky-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 5px 7px 3px;
+    border-radius: 10px 10px 0 0;
+    cursor: move;
+    gap: 5px;
+}
+.wb-sticky-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(0,0,0,.4);
+    font-size: .7rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color .12s, background .12s;
+    pointer-events: all;
+}
+.wb-sticky-delete:hover { color: #ef4444; background: rgba(239,68,68,.12); }
+.wb-sticky-body {
+    flex: 1;
+    min-height: 70px;
+    resize: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 6px 9px 8px;
+    font-size: .82rem;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    color: rgba(0,0,0,.75);
+    border-radius: 0 0 10px 10px;
+    cursor: text;
+}
+
+/* Sticky colors */
+.wb-sticky[data-color="yellow"]  { background: #fef08a; }
+.wb-sticky[data-color="yellow"]  .wb-sticky-header { background: #fde047; }
+.wb-sticky[data-color="pink"]    { background: #fbcfe8; }
+.wb-sticky[data-color="pink"]    .wb-sticky-header { background: #f9a8d4; }
+.wb-sticky[data-color="blue"]    { background: #bfdbfe; }
+.wb-sticky[data-color="blue"]    .wb-sticky-header { background: #93c5fd; }
+.wb-sticky[data-color="green"]   { background: #bbf7d0; }
+.wb-sticky[data-color="green"]   .wb-sticky-header { background: #86efac; }
+.wb-sticky[data-color="orange"]  { background: #fed7aa; }
+.wb-sticky[data-color="orange"]  .wb-sticky-header { background: #fdba74; }
+.wb-sticky[data-color="purple"]  { background: #e9d5ff; }
+.wb-sticky[data-color="purple"]  .wb-sticky-header { background: #d8b4fe; }
+
+/* Sticky note toolbar button */
+#wb-tool-sticky { }
+
+/* Keyboard shortcut hint bar */
+#wb-kbd-hint {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 5px 8px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    font-size: .65rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+#wb-kbd-hint.visible { display: flex; }
+.wb-kbd-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+.wb-kbd-key kbd {
+    display: inline-block;
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: .62rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-main);
+    box-shadow: 0 1px 0 var(--glass-border);
+    white-space: nowrap;
+}
+
+/* Pan cursor when Space is held */
+body.wb-pan-cursor #wb-canvas { cursor: grab !important; }
+body.wb-pan-cursor.wb-panning  #wb-canvas { cursor: grabbing !important; }
+
+/* Sticky note color picker in toolbar */
+#wb-sticky-color-picker {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--glass-panel);
+    border: 1.5px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 8px 10px;
+    gap: 7px;
+    z-index: 50;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25);
+    flex-wrap: wrap;
+    width: 120px;
+}
+#wb-sticky-color-picker.open { display: flex; }
+.wb-stk-color-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform .12s, border-color .12s;
+}
+.wb-stk-color-dot:hover { transform: scale(1.18); }
+.wb-stk-color-dot.active { border-color: var(--text-main); }
+
+/* Sticky button wrapper (relative so picker anchors to it) */
+#wb-sticky-btn-wrap {
+    position: relative;
+    display: inline-flex;
+}
+
+/* ================================================================
+   3.  WORKSHEET — image block + code block + autosave indicator
+   ================================================================ */
+
+/* Image block */
+.p19-ws-block.image-block {
+    padding: 0;
+    overflow: hidden;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+}
+.p23-ws-img-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 32px 20px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: background .13s;
+    border-radius: 14px;
+}
+.p23-ws-img-upload-area:hover { background: var(--glass-hover); }
+.p23-ws-img-upload-area i { font-size: 1.6rem; opacity: .5; }
+.p23-ws-img-upload-area span { font-size: .76rem; }
+.p23-ws-img-display {
+    width: 100%;
+    max-height: 420px;
+    object-fit: contain;
+    border-radius: 14px;
+    display: block;
+}
+.p23-ws-img-caption {
+    padding: 7px 14px 10px;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-muted);
+    font-size: .78rem;
+    font-style: italic;
+    width: 100%;
+    font-family: inherit;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* Code block */
+.p19-ws-block.code-block {
+    padding: 0;
+    overflow: hidden;
+    background: color-mix(in srgb, #0d1117 80%, var(--bg-color));
+    border: 1px solid color-mix(in srgb, #30363d 60%, transparent);
+    border-radius: 14px;
+}
+.p23-ws-code-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,.04);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.p23-ws-code-lang {
+    font-size: .68rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #7ee787;
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+}
+.p23-ws-code-body {
+    width: 100%;
+    min-height: 80px;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: vertical;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+    font-size: .8rem;
+    line-height: 1.65;
+    color: #e6edf3;
+    tab-size: 4;
+}
+
+/* Autosave indicator chip */
+#p23-ws-autosave {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .65rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    transition: color .3s;
+    flex-shrink: 0;
+}
+#p23-ws-autosave.saved { color: #22c55e; }
+#p23-ws-autosave.saving { color: var(--accent); }
+
+/* ================================================================
+   4.  ATTENDANCE — prevent overflow bleed into other tabs
+   ================================================================ */
+#view-attendance {
+    /* Ensure the attendance view clips its own content */
+    overflow: hidden;
+    max-height: 100%;
+}
+
+/* Scroll the courses grid inside its container, not the page */
+#p16-att-courses {
+    overflow-y: auto;
+}
+
+/* ================================================================
+   5.  QoL — misc improvements
+   ================================================================ */
+
+/* Smooth focus ring for all interactive elements */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Ensure task-drag-handle shows correct cursor */
+.task-drag-handle { cursor: grab; }
+.task-drag-handle:active { cursor: grabbing; }
+
+/* Dragging source row – subtle opacity */
+.task-row[data-dragstate="src"] { opacity: .55; }

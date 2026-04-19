@@ -1,0 +1,221 @@
+/* ================================================================
+   StudentOS — patches17.css
+   1.  Background gradient — even stronger
+   2.  Settings avatar — larger preview (72 px)
+   3.  Formula variable section — collapsible accordion
+   4.  Worksheet — step drag handles + improved layout
+   5.  Attendance — history calendar modal
+   6.  Routine — category badges, duration bar, today time-indicator
+   7.  Task drag handles — always-visible refinement
+   ================================================================ */
+
+/* === 1. Background Gradient — stronger ========================= */
+.ambient-light {
+    background: var(--custom-bg,
+        radial-gradient(ellipse at 25% 0%,   rgba(59,130,246,.40),  transparent 52%),
+        radial-gradient(ellipse at 90% 92%,  rgba(236,72,153,.30),  transparent 48%),
+        radial-gradient(ellipse at 62% 50%,  rgba(139,92,246,.18),  transparent 42%),
+        radial-gradient(ellipse at 5%  80%,  rgba(20,184,166,.12),  transparent 38%)
+    ) !important;
+}
+[data-theme="light"] .ambient-light {
+    background: var(--custom-bg,
+        radial-gradient(ellipse at 25% 0%,   rgba(59,130,246,.22),  transparent 52%),
+        radial-gradient(ellipse at 90% 92%,  rgba(236,72,153,.16),  transparent 48%),
+        radial-gradient(ellipse at 62% 50%,  rgba(139,92,246,.10),  transparent 42%),
+        radial-gradient(ellipse at 5%  80%,  rgba(20,184,166,.07),  transparent 38%)
+    ) !important;
+}
+
+/* === 2. Settings Avatar Preview — 72 px ======================= */
+#p16-settings-avatar {
+    width: 72px !important;
+    height: 72px !important;
+    border-radius: 18px !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    position: relative;
+    box-shadow: 0 4px 18px rgba(0,0,0,.22);
+    transition: box-shadow .2s;
+}
+#p16-settings-avatar:hover { box-shadow: 0 6px 24px rgba(0,0,0,.32); }
+#p16-settings-avatar img { width: 100%; height: 100%; object-fit: cover; }
+/* camera-icon overlay on hover */
+#p16-settings-avatar::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.0);
+    transition: background .2s;
+    border-radius: 18px;
+}
+
+/* === 3. Formula Variable Section — collapsible ================ */
+.p16-formula-vars {
+    margin-top: 10px;
+    padding-top: 0;
+    border-top: none;
+}
+.p17-fv-toggle {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; background: none; border: none;
+    cursor: pointer; padding: 7px 10px; border-radius: 10px;
+    color: var(--text-muted); font-size: .73rem; font-weight: 600;
+    transition: background .15s, color .15s;
+    user-select: none;
+}
+.p17-fv-toggle:hover { background: var(--glass-hover); color: var(--text-main); }
+.p17-fv-toggle .p17-chev {
+    margin-left: auto; font-size: .58rem;
+    transition: transform .2s;
+}
+.p17-fv-toggle.open .p17-chev { transform: rotate(180deg); }
+.p17-fv-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .28s ease, opacity .22s;
+    opacity: 0;
+    padding: 0 2px;
+}
+.p17-fv-body.open {
+    max-height: 600px;
+    opacity: 1;
+}
+
+/* === 4. Worksheet — drag handle =============================== */
+.p17-ws-handle {
+    color: var(--text-muted); cursor: grab; font-size: .8rem;
+    padding: 2px 4px; border-radius: 5px; flex-shrink: 0;
+    opacity: .45; transition: opacity .15s;
+}
+.p17-ws-handle:hover { opacity: 1; }
+.p16-ws-step:active .p17-ws-handle { cursor: grabbing; }
+.p16-ws-step[data-p17drag="over"] {
+    border-color: var(--accent) !important;
+    background: color-mix(in srgb, var(--accent) 7%, transparent) !important;
+}
+.p16-ws-step[data-p17drag="src"] { opacity: .4; }
+
+/* === 5. Attendance History Modal ============================== */
+#modal-attend-history {
+    width: 480px;
+}
+.p17-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 8px;
+}
+.p17-cal-hdr {
+    text-align: center; font-size: .62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    color: var(--text-muted); padding: 2px 0;
+}
+.p17-cal-day {
+    aspect-ratio: 1; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 1px;
+    border: 1.5px solid transparent;
+    background: var(--glass-panel);
+    transition: all .12s; font-size: .7rem;
+    color: var(--text-muted); font-weight: 600;
+    user-select: none;
+}
+.p17-cal-day:hover { border-color: var(--accent); background: var(--glass-hover); }
+.p17-cal-day.today { border-color: var(--accent); color: var(--accent); }
+.p17-cal-day.attended {
+    background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.35);
+    color: #22c55e;
+}
+.p17-cal-day.missed {
+    background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.28);
+    color: #ef4444;
+}
+.p17-cal-day.future { opacity: .3; cursor: default; pointer-events: none; }
+.p17-cal-day .p17-cd-num { font-size: .72rem; line-height: 1; }
+.p17-cal-day .p17-cd-icon { font-size: .55rem; line-height: 1; }
+.p17-cal-month-lbl {
+    font-size: .68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-muted); margin: 14px 0 4px;
+}
+.p17-hist-btn {
+    padding: 5px 10px; border-radius: 8px; font-size: .72rem; font-weight: 700;
+    cursor: pointer; border: 1.5px solid transparent; transition: all .13s;
+    display: flex; align-items: center; gap: 5px;
+}
+.p17-hist-btn:hover { border-color: var(--glass-border); }
+
+/* === 6. Routine enhancements ================================== */
+.p17-rb-cat {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: .58rem; font-weight: 700; padding: 2px 6px;
+    border-radius: 5px; text-transform: uppercase; letter-spacing: .04em;
+    background: rgba(255,255,255,.08); color: var(--text-muted);
+    margin-top: 3px;
+}
+.p17-rb-note {
+    font-size: .65rem; color: var(--text-muted); margin-top: 2px;
+    line-height: 1.35; word-break: break-word;
+    opacity: .85;
+}
+.p17-routine-now-line {
+    height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    margin: 3px 0; position: relative;
+}
+.p17-routine-now-line::before {
+    content: ''; position: absolute; left: 0; top: -3px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+}
+/* Duration bar under each routine block */
+.p17-rb-durbar {
+    height: 2px; border-radius: 2px; margin-top: 5px;
+    background: rgba(255,255,255,.12);
+    overflow: hidden;
+}
+.p17-rb-durbar-fill {
+    height: 100%; border-radius: 2px;
+    background: var(--bcolor, var(--accent));
+    opacity: .7;
+}
+/* Routine day-view (today strip at top) */
+.p17-today-strip {
+    background: var(--glass-panel); border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; flex-shrink: 0;
+}
+.p17-today-strip-hdr {
+    font-size: .68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--accent); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+}
+.p17-today-blocks {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+}
+.p17-today-block {
+    flex-shrink: 0; padding: 7px 11px; border-radius: 10px;
+    border-left: 3px solid var(--bcolor, var(--accent));
+    background: color-mix(in srgb, var(--bcolor, var(--accent)) 10%, transparent);
+    min-width: 110px;
+}
+.p17-today-block .p16-rb-time { font-size: .62rem; color: var(--text-muted); }
+.p17-today-block .p16-rb-label { font-size: .8rem; font-weight: 700; line-height: 1.2; }
+
+/* === 7. Task drag handle refinement =========================== */
+.task-drag-handle {
+    color: var(--text-muted);
+    opacity: .45 !important;
+    cursor: grab;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: .78rem;
+    flex-shrink: 0;
+    transition: opacity .15s;
+}
+.task-drag-handle:hover { opacity: 1 !important; }
+#full-task-list .task-row { touch-action: none; }
+
+/* Responsive */
+@media (max-width: 560px) {
+    #modal-attend-history { width: calc(100vw - 32px); }
+    .p17-cal-grid { gap: 3px; }
+}

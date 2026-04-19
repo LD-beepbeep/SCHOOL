@@ -1,0 +1,280 @@
+/* ================================================================
+   StudentOS — patches41.css
+   1.  Routine — recurring block badge + recurring options in modal
+   2.  Worksheet — multi-worksheet tabs, cloud badge, layout fixes
+   3.  Worksheet — duplicate button overlay fixes, block margins
+   4.  Mindmap — SVG overlay z-index & event fixes
+   5.  Profile — emoji avatar grid restored alongside FA grid
+   6.  QoL polish
+   ================================================================ */
+
+/* === 1. Routine recurring badge === */
+.p16-rb-recur {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: .52rem;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: .85;
+    margin-top: 2px;
+}
+.p16-rb-recur i { font-size: .5rem; }
+
+/* Recurring options in the routine modal */
+.p41-recur-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.p41-recur-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+.p41-recur-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+.p41-recur-opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-left: 26px;
+}
+.p41-recur-day-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--glass-panel);
+    border: 1.5px solid var(--glass-border);
+    color: var(--text-muted);
+    font-size: .65rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.p41-recur-day-btn:hover { border-color: var(--accent); color: var(--accent); }
+.p41-recur-day-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+.p41-recur-freq {
+    font-size: .72rem;
+    padding: 4px 8px;
+    border-radius: 7px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-main);
+    outline: none;
+    cursor: pointer;
+    margin-left: 26px;
+    width: auto;
+}
+
+/* === 2. Worksheet multi-tab bar === */
+.p41-ws-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+.p41-ws-tab {
+    padding: 5px 14px;
+    border-radius: 8px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    font-size: .72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.p41-ws-tab:hover { border-color: var(--accent); color: var(--text-main); }
+.p41-ws-tab.active {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+}
+.p41-ws-tab-add {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    font-size: .68rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+}
+.p41-ws-tab-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.p41-ws-cloud-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .62rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-left: auto;
+    opacity: .7;
+}
+.p41-ws-cloud-badge i { font-size: .58rem; }
+.p41-ws-cloud-badge.synced { color: #22c55e; }
+
+/* === 3. Worksheet duplicate button overlay fix === */
+/* Ensure action buttons don't overlap block content */
+.p19-ws-block-actions {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 5;
+}
+.p19-ws-block {
+    position: relative;
+    padding-right: 42px !important;
+}
+/* Formula blocks need extra breathing room for the action strip */
+.p19-ws-block .formula-block,
+.p19-ws-block .text-block,
+.p19-ws-block .note-block {
+    padding-right: 40px;
+}
+
+/* Block margin consistency */
+.p19-ws-block + .p19-ws-block {
+    margin-top: 8px;
+}
+
+/* p16 worksheet step blocks */
+.p16-ws-step {
+    position: relative;
+    padding-right: 16px;
+    margin-bottom: 8px;
+}
+.p16-ws-step-hdr {
+    gap: 8px;
+}
+.p16-ws-step-hdr button {
+    flex-shrink: 0;
+}
+.p16-ws-result-row {
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* === 4. Mindmap overlay fixes === */
+#wb-mindmap-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: all;
+}
+#wb-mindmap-svg:not([style*="display: block"]):not([style*="display:block"]) {
+    pointer-events: none;
+}
+/* Mindmap nodes need consistent sizing */
+#wb-mindmap-svg g rect {
+    transition: stroke .15s, fill .15s;
+}
+#wb-mindmap-svg g text {
+    pointer-events: none;
+    user-select: none;
+}
+/* Mindmap status bar (no emoji) */
+#mm-status {
+    display: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+}
+
+/* === 5. Profile emoji grid alongside FA grid === */
+.p41-avatar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.p41-avatar-section-label {
+    font-size: .65rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.p41-emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+}
+.p41-emoji-grid .emoji-opt {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    background: var(--glass-panel);
+    border: 1.5px solid transparent;
+    transition: all .15s;
+}
+.p41-emoji-grid .emoji-opt:hover {
+    transform: scale(1.12);
+    background: var(--glass-hover);
+    border-color: var(--accent);
+}
+
+/* === 6. QoL polish === */
+/* Tooltip consistency */
+[title] {
+    position: relative;
+}
+/* Smooth modal transitions */
+.modal-panel {
+    transition: opacity .15s, transform .15s;
+}
+/* Better focus visibility */
+.bare-input:focus,
+select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Responsive fixes */
+@media (max-width: 780px) {
+    .p41-ws-tabs-bar {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .p41-recur-opts {
+        padding-left: 0;
+    }
+}

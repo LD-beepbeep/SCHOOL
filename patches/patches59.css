@@ -1,0 +1,22 @@
+/* ================================================================
+   StudentOS — patches59.css
+   Belt-and-braces hide for any surviving whiteboard settings
+   sections, and removal of redundant p58 card star buttons.
+   ================================================================ */
+
+/* Hide any leftover whiteboard settings sections */
+#p48-whiteboard-section,
+#p53-wb-appearance-section {
+    display: none !important;
+}
+
+/* Hide whiteboard sub-label and its siblings inside the widgets section */
+#p46-widgets-section .p46-sub-label,
+#p46-widgets-section .p46-sub-label ~ * {
+    display: none !important;
+}
+
+/* Remove duplicate star buttons added by patches58 (patches56 handles this) */
+.p58-card-star-btn {
+    display: none !important;
+}

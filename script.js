@@ -432,6 +432,7 @@ function initApp() {
     quickNote           = DB.get('os_quick_note',    '');
     wbBoards            = DB.get('os_wb_boards',     []);
     wbActiveBoardId     = DB.get('os_wb_active',     null);
+    cardStats           = DB.get('os_card_stats',    {});
 
     // Apply accent / font / clock / bg that were previously self-invoking
     var accent = DB.get('os_accent', '#3b82f6');
@@ -657,8 +658,29 @@ function renderProfileDisplay() {
     } else {
         var em = profileData.emoji || '🎓';
         var bg = profileData.bg || '#3b82f6';
-        pd.innerHTML = '<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:14px;background:' + bg + ';font-size:1.3rem;">' + em + '</span>';
-        if (ap) { ap.innerHTML = em; ap.style.background = bg; ap.style.fontSize = '1.8rem'; }
+        if (em.indexOf('__fa:') === 0) {
+            var iconClass = em.slice(5).replace(/[^a-zA-Z0-9\- ]/g, '');
+            pd.innerHTML = '';
+            var span = document.createElement('span');
+            span.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:14px;background:' + bg + ';';
+            var icon = document.createElement('i');
+            icon.className = iconClass + ' text-xl text-white';
+            icon.setAttribute('aria-hidden', 'true');
+            span.appendChild(icon);
+            pd.appendChild(span);
+            if (ap) {
+                ap.innerHTML = '';
+                var icon2 = document.createElement('i');
+                icon2.className = iconClass + ' text-4xl text-white';
+                icon2.setAttribute('aria-hidden', 'true');
+                ap.appendChild(icon2);
+                ap.style.background = bg;
+                ap.style.fontSize = '';
+            }
+        } else {
+            pd.innerHTML = '<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:14px;background:' + bg + ';font-size:1.3rem;">' + em + '</span>';
+            if (ap) { ap.innerHTML = em; ap.style.background = bg; ap.style.fontSize = '1.8rem'; }
+        }
     }
 }
 function setProfileEmoji(em) {
@@ -790,6 +812,9 @@ function initPomoTimer() {
     if (pw) pw.value = pomodoroTimes.focus;
     if (ps) ps.value = pomodoroTimes.short;
     if (pl) pl.value = pomodoroTimes.long;
+    // Also sync the old settings-modal input
+    var cp = document.getElementById('custom-pomodoro');
+    if (cp) cp.value = pomodoroTimes.focus;
 
     // Check sessions today reset
     var today = new Date().toDateString();
@@ -865,9 +890,11 @@ function skipPomodoroSession() {
 
 function onPomodoroComplete() {
     playBeep();
+    var _sess = 4;
+    try { var _sv = localStorage.getItem('p9_pomo_sessions'); if (_sv) _sess = parseInt(JSON.parse(_sv)) || 4; } catch(_) {}
     // Count completed focus sessions
     if (pomodoroMode === 'focus') {
-        pomodoroSession = (pomodoroSession % 4) + 1;
+        pomodoroSession = (pomodoroSession % _sess) + 1;
         DB.set('os_pomo_session', pomodoroSession);
         var today = new Date().toDateString();
         if (pomodoroSessionsToday.date !== today) {
@@ -883,10 +910,9 @@ function onPomodoroComplete() {
     // Determine next mode
     var nextMode = 'focus';
     if (pomodoroMode === 'focus') {
-        nextMode = (pomodoroSession === 1) ? 'long' : 'short'; // after 4 sessions → long
-        // Actually: after completing session 4 (which just became 1 after mod), do long
-        // Simple logic: every 4 focus sessions, suggest long break
-        if (pomodoroSessionsToday.count > 0 && pomodoroSessionsToday.count % 4 === 0) {
+        nextMode = (pomodoroSession === 1) ? 'long' : 'short'; // after N sessions → long
+        // Simple logic: every N focus sessions, suggest long break
+        if (pomodoroSessionsToday.count > 0 && pomodoroSessionsToday.count % _sess === 0) {
             nextMode = 'long';
         } else {
             nextMode = 'short';
@@ -973,12 +999,14 @@ function renderSessionDots() {
     var c = document.getElementById('session-dots');
     if (!c) return;
     c.innerHTML = '';
-    for (var i = 1; i <= 4; i++) {
+    var _sess = 4;
+    try { var _sv = localStorage.getItem('p9_pomo_sessions'); if (_sv) _sess = parseInt(JSON.parse(_sv)) || 4; } catch(_) {}
+    for (var i = 1; i <= _sess; i++) {
         var dot = document.createElement('div');
         var today = new Date().toDateString();
         var todayCount = (pomodoroSessionsToday.date === today) ? pomodoroSessionsToday.count : 0;
         var filled = todayCount >= i;
-        var isCurrent = (pomodoroMode === 'focus') && ((todayCount % 4) + 1 === i) && !filled;
+        var isCurrent = (pomodoroMode === 'focus') && ((todayCount % _sess) + 1 === i) && !filled;
         dot.className = 'session-dot' + (filled ? ' filled' : '') + (isCurrent ? ' current' : '');
         c.appendChild(dot);
     }
@@ -989,8 +1017,10 @@ function updatePomoSessionInfo() {
     if (!el) return;
     var today = new Date().toDateString();
     var count = (pomodoroSessionsToday.date === today) ? pomodoroSessionsToday.count : 0;
-    var next = (count % 4) + 1;
-    el.innerText = 'Session ' + next + ' of 4';
+    var _sess = 4;
+    try { var _sv = localStorage.getItem('p9_pomo_sessions'); if (_sv) _sess = parseInt(JSON.parse(_sv)) || 4; } catch(_) {}
+    var next = (count % _sess) + 1;
+    el.innerText = 'Session ' + next + ' of ' + _sess;
 }
 
 function populateFocusTasks() {
@@ -1686,6 +1716,7 @@ function renderDecks() {
 function deckCard(d) {
     var count = (d.cards || []).length;
     var hardCount = (d.cards || []).filter(function(c) { return (cardStats[d.id + '_' + c.id] || 0) > 0; }).length;
+    var starredCount = (d.cards || []).filter(function(c) { return c.starred; }).length;
     return '<div class="min-card p-4 hover-effect cursor-pointer" onclick="openDeck(' + d.id + ')">'
         + '<div class="flex justify-between items-start mb-3">'
         + '<div class="text-2xl">' + (d.emoji || '📖') + '</div>'
@@ -1693,7 +1724,8 @@ function deckCard(d) {
         + '</div>'
         + '<h3 class="font-semibold text-sm mb-1 truncate">' + d.name + '</h3>'
         + '<div class="text-xs text-[var(--text-muted)]">' + count + ' cards'
-        + (hardCount > 0 ? ' · <span class="text-red-400">' + hardCount + ' hard</span>' : '') + '</div>'
+        + (hardCount > 0 ? ' · <span class="text-red-400">' + hardCount + ' hard</span>' : '')
+        + (starredCount > 0 ? ' · <span class="text-yellow-400"><i class="fa-solid fa-star" style="font-size:.55rem"></i> ' + starredCount + ' starred</span>' : '') + '</div>'
         + '<button onclick="event.stopPropagation();p4OpenImport(' + d.id + ',\'' + d.name.replace(/'/g,"\\'") + '\')" style="margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--text-muted);font-size:.68rem;font-weight:700;cursor:pointer;" onmouseenter="this.style.background=\'rgba(255,255,255,.1)\';this.style.color=\'var(--text-main)\'" onmouseleave="this.style.background=\'rgba(255,255,255,.05)\';this.style.color=\'var(--text-muted)\'"><i class="fa-solid fa-file-import"></i> Import</button>'
         + '</div>';
 }
@@ -1831,7 +1863,7 @@ function startStudy(mode) {
         if (writeMode) writeMode.classList.add('hidden');
         if (flipMode) flipMode.classList.remove('hidden');
     }
-    showStudyCard();
+    (window.showStudyCard || showStudyCard)();
 }
 function showStudyCard() {
     if (studyIdx >= studyQueue.length) { finishStudy(); return; }
@@ -1846,6 +1878,34 @@ function showStudyCard() {
     document.getElementById('card-back').innerText = a;
     document.getElementById('card-front-label').innerText = isReverse ? 'Answer' : 'Question';
     document.getElementById('card-back-label').innerText = isReverse ? 'Question' : 'Answer';
+
+    /* Show starred / hard / easy badges on the study card */
+    var badgeContainer = document.getElementById('study-card-badges');
+    if (!badgeContainer) {
+        var frontLabel = document.getElementById('card-front-label');
+        if (frontLabel) {
+            badgeContainer = document.createElement('div');
+            badgeContainer.id = 'study-card-badges';
+            badgeContainer.style.cssText = 'display:flex;gap:6px;justify-content:center;margin-bottom:6px;flex-wrap:wrap;';
+            frontLabel.parentElement.insertBefore(badgeContainer, frontLabel);
+        }
+    }
+    if (badgeContainer) {
+        badgeContainer.innerHTML = '';
+        var statKey = activeDeckId + '_' + card.id;
+        var hardCount = cardStats[statKey] || 0;
+        var cardEasySet = typeof _cardEasySet !== 'undefined' ? _cardEasySet : (typeof DB !== 'undefined' ? DB.get('os_card_easy', {}) : {});
+        var isEasy = cardEasySet[statKey] === true;
+        if (card.starred) {
+            badgeContainer.innerHTML += '<span class="card-diff-badge starred"><i class="fa-solid fa-star" style="font-size:.55rem"></i> Starred</span>';
+        }
+        if (hardCount >= 2) {
+            badgeContainer.innerHTML += '<span class="card-diff-badge hard"><i class="fa-solid fa-fire" style="font-size:.55rem"></i> Hard</span>';
+        } else if (isEasy) {
+            badgeContainer.innerHTML += '<span class="card-diff-badge easy"><i class="fa-solid fa-check" style="font-size:.55rem"></i> Easy</span>';
+        }
+    }
+
     var hintBtn = document.getElementById('hint-btn');
     var hintArea = document.getElementById('card-hint-area');
     if (hintBtn) hintBtn.classList.toggle('hidden', !card.tip);
@@ -1882,7 +1942,7 @@ function rateCard(rating) {
     studyIdx++;
     var fi = document.getElementById('flashcard-inner');
     if (fi) fi.classList.remove('rotate-y-180');
-    setTimeout(showStudyCard, 100);
+    setTimeout(function() { (window.showStudyCard || showStudyCard)(); }, 100);
 }
 function showHint() {
     var card = studyQueue[studyIdx];
@@ -1917,7 +1977,7 @@ function checkWriteAnswer() {
     updateStudyProgress();
     setTimeout(function() {
         studyIdx++;
-        showStudyCard();
+        (window.showStudyCard || showStudyCard)();
     }, 1200);
 }
 function updateStudyProgress() {
@@ -2340,7 +2400,9 @@ var weekStartDate = new Date();
 (function() {
     var d = new Date();
     var day = d.getDay();
-    var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    var wkStart = 'mon';
+    try { var _v = localStorage.getItem('p9_week_start'); if (_v) wkStart = JSON.parse(_v); } catch(_) {}
+    var diff = (wkStart === 'sun') ? d.getDate() - day : d.getDate() - day + (day === 0 ? -6 : 1);
     weekStartDate = new Date(d.setDate(diff));
 })();
 
@@ -2358,7 +2420,9 @@ function calGoToday() {
     var now = new Date();
     curM = now.getMonth(); curY = now.getFullYear();
     var day = now.getDay();
-    var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    var wkStart = 'mon';
+    try { var _v = localStorage.getItem('p9_week_start'); if (_v) wkStart = JSON.parse(_v); } catch(_) {}
+    var diff = (wkStart === 'sun') ? now.getDate() - day : now.getDate() - day + (day === 0 ? -6 : 1);
     weekStartDate = new Date(new Date().setDate(diff));
     renderCalendar();
 }
@@ -2682,7 +2746,15 @@ function noteTextColor(c) {
     document.execCommand('foreColor', false, c); saveNote();
 }
 function setNoteFont(font, cls, silent) {
-    document.getElementById('note-editor').style.fontFamily = font;
+    var editor = document.getElementById('note-editor');
+    var sel = window.getSelection();
+    /* If there is a text selection inside the editor, apply font to selection only */
+    if (!silent && sel && sel.rangeCount > 0 && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+        editor.focus();
+        document.execCommand('fontName', false, font.split(',')[0].trim().replace(/'/g, ''));
+    } else {
+        editor.style.fontFamily = font;
+    }
     noteFontActive = cls;
     document.querySelectorAll('.font-opt').forEach(function(b) { b.classList.remove('active-font'); });
     var btn = document.getElementById(cls);
@@ -3352,7 +3424,7 @@ function wbSwitchBoard(id) {
         wbPushHistory();
     }
     wbRenderTabs();
-    if (wbMindMapMode) wbMmRender();
+    if (wbMindMapMode) (window.wbMmRender || wbMmRender)();
 }
 function wbNewBoard() {
     wbSaveBoard();
@@ -3419,7 +3491,7 @@ function wbMmLoad() {
     var saved = DB.get('os_mm_' + wbActiveBoardId, { nodes: [], edges: [] });
     wbMindMapNodes = saved.nodes || [];
     wbMindMapEdges = saved.edges || [];
-    if (wbMindMapMode) wbMmRender();
+    if (wbMindMapMode) (window.wbMmRender || wbMmRender)();
 }
 
 function wbMmSave() {
@@ -3573,7 +3645,7 @@ function confirmMmNode() {
     wbMindMapSelected = newNode.id;
     wbMmSave();
     closeModals();
-    wbMmRender();
+    (window.wbMmRender || wbMmRender)();
 }
 
 function setMmNodeColor(c) {
@@ -3593,7 +3665,7 @@ function wbMmDeleteNode(id) {
         wbMindMapEdges = wbMindMapEdges.filter(function(e) { return e.from !== id && e.to !== id; });
         if (wbMindMapSelected === id) wbMindMapSelected = null;
         wbMmSave();
-        wbMmRender();
+        (window.wbMmRender || wbMmRender)();
     });
 }
 
@@ -4036,6 +4108,7 @@ window.syncSettingsName         = syncSettingsName;
 window.setProfileEmoji          = setProfileEmoji;
 window.setAvatarBg              = setAvatarBg;
 window.handleProfileImage       = handleProfileImage;
+window.renderProfileDisplay     = renderProfileDisplay;
 
 // Data
 window.exportAllData            = exportAllData;
@@ -4072,6 +4145,12 @@ window.checkWriteAnswer         = checkWriteAnswer;
 window.startMatchGame           = startMatchGame;
 window.matchClick               = matchClick;
 window.startWordSearch          = startWordSearch;
+window.showStudyCard            = showStudyCard;
+// Export flashcard internals so patches can access and hook shared state
+Object.defineProperty(window, 'decks',        { configurable: true, enumerable: true, get: function() { return decks; },        set: function(v) { decks = v; } });
+Object.defineProperty(window, 'activeDeckId', { configurable: true, enumerable: true, get: function() { return activeDeckId; }, set: function(v) { activeDeckId = v; } });
+Object.defineProperty(window, 'studyQueue',   { configurable: true, enumerable: true, get: function() { return studyQueue; },   set: function(v) { studyQueue = v; } });
+Object.defineProperty(window, 'studyIdx',     { configurable: true, enumerable: true, get: function() { return studyIdx; },     set: function(v) { studyIdx = v; } });
 
 // Grades
 window.renderGrades             = renderGrades;          // ✅ was renderSubjects
@@ -4149,6 +4228,14 @@ window.wbMmLoad                 = wbMmLoad;
 window.wbMindMapExport          = wbMindMapExport;
 window.confirmMmNode            = confirmMmNode;
 window.setMmNodeColor           = setMmNodeColor;
+// Export mindmap internals so patches can replace wbMmRender and access shared state
+window.wbMmRender               = wbMmRender;
+window.wbMmSave                 = wbMmSave;
+window.wbMmDeleteNode           = wbMmDeleteNode;
+window.wbMmAddNode              = wbMmAddNode;
+Object.defineProperty(window, 'wbMindMapNodes',    { configurable: true, enumerable: true, get: function() { return wbMindMapNodes; },    set: function(v) { wbMindMapNodes = v; } });
+Object.defineProperty(window, 'wbMindMapEdges',    { configurable: true, enumerable: true, get: function() { return wbMindMapEdges; },    set: function(v) { wbMindMapEdges = v; } });
+Object.defineProperty(window, 'wbMindMapSelected', { configurable: true, enumerable: true, get: function() { return wbMindMapSelected; }, set: function(v) { wbMindMapSelected = v; } });
 
 // Focus / Pomodoro
 window.toggleTimer              = toggleTimer;
@@ -4362,12 +4449,17 @@ var _cardEasySet = DB.get('os_card_easy', {});
             } else if (isEasy) {
                 diffBadge = '<span class="card-diff-badge easy"><i class="fa-solid fa-check" style="font-size:.55rem"></i> Easy</span>';
             }
+            var starBadge = '';
+            if (card.starred) {
+                starBadge = '<span class="card-diff-badge starred"><i class="fa-solid fa-star" style="font-size:.55rem"></i> Starred</span>';
+            }
             var div = document.createElement('div');
             div.className = 'flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-[var(--glass-hover)] group transition';
             div.innerHTML = '<div class="flex-1 min-w-0">'
                 + '<div class="flex items-center gap-2">'
                 + '<div class="text-sm font-medium truncate">' + card.q + '</div>'
                 + diffBadge
+                + starBadge
                 + '</div>'
                 + '<div class="text-xs text-[var(--text-muted)] truncate">' + card.a + '</div>'
                 + (card.tip ? '<div class="text-[10px] text-yellow-400/70 truncate"><i class="fa-solid fa-lightbulb" style="font-size:.6rem"></i> ' + card.tip + '</div>' : '')

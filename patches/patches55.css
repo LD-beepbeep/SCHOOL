@@ -1,0 +1,119 @@
+/* ================================================================
+   StudentOS — patches55.css
+   1.  Whiteboard settings section — hide from settings modal.
+   2.  Profile modal — ensure it scrolls on small / short devices.
+   3.  Customization — Reduce Motion & Compact Mode class effects.
+   ================================================================ */
+
+/* ================================================================
+   1.  WHITEBOARD SETTINGS SECTION — HIDDEN
+       The Whiteboard section was split out of "Widgets & Whiteboard"
+       by patches48.  Remove it from the settings UI entirely.
+   ================================================================ */
+
+#p48-whiteboard-section {
+    display: none !important;
+}
+
+/* Also hide any Whiteboard section injected into the Appearance
+   tabbed settings page by patches53. */
+#p53-wb-appearance-section {
+    display: none !important;
+}
+
+/* ================================================================
+   2.  PROFILE MODAL — SCROLLABLE ON SMALL DEVICES
+       The modal HTML carries Tailwind's overflow-hidden which clips
+       content.  Override it here so the modal can scroll when its
+       content exceeds the available viewport height.
+   ================================================================ */
+
+#modal-profile {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Ensure proper max-height on short/small screens so the modal
+   doesn't grow beyond the viewport. */
+@media (max-height: 750px) {
+    #modal-profile {
+        max-height: 90dvh !important;
+    }
+}
+
+@media (max-height: 600px) {
+    #modal-profile {
+        max-height: 95dvh !important;
+    }
+}
+
+/* ================================================================
+   3a. REDUCE MOTION
+       Applied when the user enables "Reduce Motion" in Quick
+       Preferences.  Collapses all CSS transitions and animations
+       to an imperceptible duration so the UI feels instantaneous
+       without breaking layout.
+   ================================================================ */
+
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+/* ================================================================
+   3b. COMPACT MODE
+       Applied when the user enables "Compact Mode" in Quick
+       Preferences.  Reduces padding on cards and settings rows
+       to fit more content on screen at once.
+   ================================================================ */
+
+html.compact-mode .min-card {
+    padding: 10px 12px !important;
+}
+
+html.compact-mode .settings-section {
+    padding: 10px 14px !important;
+}
+
+html.compact-mode .settings-row {
+    padding: 6px 0 !important;
+}
+
+html.compact-mode .task-row {
+    padding: 8px 10px !important;
+}
+
+html.compact-mode .p51-pref-row {
+    padding: 4px 0 !important;
+}
+
+/* ================================================================
+   3c. STARTUP TAB SELECT — profile modal row
+   ================================================================ */
+
+.p55-startup-select {
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+    max-width: 130px;
+}
+
+.p55-startup-select:hover,
+.p55-startup-select:focus {
+    border-color: var(--accent);
+}
+
+.p55-startup-select option {
+    background: var(--bg-color, #1a1a1a);
+    color: var(--text-main);
+}

@@ -1,0 +1,49 @@
+/* ================================================================
+   StudentOS — patches63.css
+   1.  Formula worksheet block — make the expression box and result
+       display use neutral (glass) colours instead of accent, so the
+       block looks the same as every other .p19-ws-block.
+   2.  Focus-mode nav hide — when body has .p63-focus-mode the
+       sidebar nav is dimmed to keep attention on the timer.
+   ================================================================ */
+
+/* ================================================================
+   1.  FORMULA BLOCK EXPRESSION BOX — NEUTRAL COLOURS
+       patches19.css gives .p19-ws-formula-expr an accent background,
+       border, and text colour.  Override all three to glass/muted.
+   ================================================================ */
+.p19-ws-formula-expr {
+    color:      var(--text-main) !important;
+    background: var(--glass-hover) !important;
+    border:     1px solid var(--glass-border) !important;
+}
+
+/* The solve button may stay accent (it is a call-to-action), but
+   the result display panel should also be neutral so the block
+   does not glow accent when a calculation has been run. */
+.p19-ws-result {
+    background: var(--glass-hover) !important;
+    border-color: var(--glass-border) !important;
+}
+
+/* Result value text: switch from accent to main text */
+.p19-ws-result-val {
+    color: var(--text-main) !important;
+}
+
+/* ================================================================
+   2.  FOCUS MODE — dim nav during Pomodoro focus session
+   ================================================================ */
+body.p63-focus-mode .nav-sidebar,
+body.p63-focus-mode nav,
+body.p63-focus-mode #sidebar,
+body.p63-focus-mode .sidebar {
+    opacity: 0.25;
+    transition: opacity 0.3s;
+}
+body.p63-focus-mode .nav-sidebar:hover,
+body.p63-focus-mode nav:hover,
+body.p63-focus-mode #sidebar:hover,
+body.p63-focus-mode .sidebar:hover {
+    opacity: 1;
+}

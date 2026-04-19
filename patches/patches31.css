@@ -1,0 +1,120 @@
+/* ================================================================
+   StudentOS — patches31.css
+   Worksheet block resize & overflow fixes
+
+   1.  Overflow fix — checklist & code inner containers use
+       overflow:hidden from patches28, which clips content when a
+       block is manually resized.  Reset to visible here so the
+       block border grows instead of hiding text.
+
+   2.  Block action-button clearance — formula blocks and other
+       blocks with long titles can have the drag / delete action
+       buttons overlap the first line of content.  Ensure every
+       block type reserves space for those absolute-positioned
+       buttons.
+
+   3.  Resize handle z-index — keep the handle above all block
+       content so it is always clickable.
+
+   4.  Block min-height floor — CSS-level minimum so the block
+       container always has enough room for padding + at least one
+       line of content even if JS hasn't run yet.
+   ================================================================ */
+
+/* ================================================================
+   1.  OVERFLOW FIX
+   ================================================================ */
+
+/*
+ * patches28 sets overflow:hidden on the inner content wrappers of
+ * checklist and code blocks.  That causes content to be invisible
+ * when the block's minHeight is less than the content.
+ * Switching to overflow:visible lets the block element itself
+ * expand to contain all content.
+ */
+.p28-checklist-block,
+.p28-code-block {
+    overflow: visible;
+}
+
+/*
+ * The code textarea should scroll its own content when needed
+ * rather than clipping it at the block boundary.
+ */
+.p28-code-textarea {
+    overflow-y: auto;
+    resize: none; /* already set in p28; keep it */
+}
+
+/* ================================================================
+   2.  ACTION-BUTTON CLEARANCE
+   ================================================================ */
+
+/*
+ * .p19-ws-block-actions sits at position:absolute top:10px right:12px.
+ * The three buttons are 26px wide each with 4px gap ≈ 86px total.
+ * Give the first child element of every block enough right padding
+ * so nothing slides under those buttons.
+ *
+ * For formula blocks the header already uses flex justify-content:
+ * space-between, but the title text can still run under the buttons
+ * when the block is narrow.  A right padding of 92px on the header
+ * creates a reliable safe zone.
+ */
+.p19-ws-block .p19-ws-formula-header {
+    padding-right: 92px;
+}
+
+/*
+ * Heading blocks already set padding-right on their input via JS
+ * (64px).  Increase it slightly so three-button action strip never
+ * overlaps the heading text.
+ */
+.p19-ws-heading-input {
+    padding-right: 92px !important;
+}
+
+/*
+ * Checklist title and code toolbar also need clearance.
+ */
+.p28-checklist-title-inp {
+    padding-right: 92px;
+}
+.p28-code-toolbar {
+    padding-right: 92px;
+}
+
+/* ================================================================
+   3.  RESIZE HANDLE Z-INDEX
+   ================================================================ */
+
+/*
+ * patches28 sets z-index:5 on the handle.  Increase it so it sits
+ * above formula result panels and code textareas, which can
+ * otherwise eat pointer events on the bottom edge.
+ */
+.p28-resize-handle {
+    z-index: 8;
+}
+
+/* ================================================================
+   4.  CSS-LEVEL BLOCK MINIMUM HEIGHT
+   ================================================================ */
+
+/*
+ * Provide sensible per-type minimum heights so blocks never collapse
+ * to an unreadable sliver even before JS runs.
+ *
+ * These values were chosen based on the smallest readable state for
+ * each block type at the default font size.
+ */
+.p19-ws-block.heading-block  { min-height: 52px;  }
+.p19-ws-block.note-block      { min-height: 80px;  }
+.p19-ws-block.divider-block   { min-height: 30px;  }
+.p19-ws-block.formula-block   { min-height: 120px; }
+
+/* Checklist: title + at least one item + add-button row */
+.p19-ws-block:has(.p28-checklist-block) { min-height: 100px; }
+
+/* Code: toolbar + textarea minimum */
+.p19-ws-block:has(.p28-code-block)      { min-height: 120px; }

@@ -1,0 +1,203 @@
+/* ================================================================
+   StudentOS — patches42.css
+   1.  Settings — Grade system configuration section
+   2.  Profile — Collapsible dropdown sections for emojis & icons,
+       improved spacing, margin fixes
+   3.  Worksheet — Unified block picker (ensure all types visible)
+   4.  Mindmap — ResizeObserver + edge rendering improvements
+   5.  QoL polish
+   ================================================================ */
+
+/* === 1. Settings — Grade Configuration Section === */
+.p42-grade-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.p42-grade-system-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: var(--glass-panel);
+    border: 1.5px solid var(--glass-border);
+    cursor: pointer;
+    transition: all .15s;
+}
+.p42-grade-system-option:hover {
+    border-color: var(--accent);
+    background: var(--glass-hover);
+}
+.p42-grade-system-option.active {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.p42-grade-system-option input[type="radio"] {
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.p42-grade-system-option .p42-gs-label {
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+.p42-grade-system-option .p42-gs-desc {
+    font-size: .68rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+.p42-grade-system-option .p42-gs-example {
+    font-size: .65rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* === 2. Profile — Collapsible Dropdown Sections === */
+.p42-profile-section {
+    border-radius: 10px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    overflow: hidden;
+    margin-bottom: 6px;
+    transition: all .2s;
+}
+.p42-profile-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+}
+.p42-profile-section-header:hover {
+    background: var(--glass-hover);
+}
+.p42-profile-section-header .p42-section-title {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.p42-profile-section-header .p42-chevron {
+    font-size: .65rem;
+    color: var(--text-muted);
+    transition: transform .2s;
+}
+.p42-profile-section-header .p42-chevron.open {
+    transform: rotate(180deg);
+}
+.p42-profile-section-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .25s ease, padding .2s ease;
+    padding: 0 12px;
+}
+.p42-profile-section-body.open {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px 12px 10px;
+}
+
+/* Improved emoji grid margins */
+.p42-emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+}
+.p42-emoji-grid .emoji-opt {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    background: none;
+    border: 1.5px solid transparent;
+    transition: all .15s;
+    padding: 0;
+}
+.p42-emoji-grid .emoji-opt:hover {
+    transform: scale(1.15);
+    background: var(--glass-hover);
+    border-color: var(--accent);
+}
+.p42-emoji-grid .emoji-opt.selected {
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    border-color: var(--accent);
+}
+
+/* Improved icon grid margins */
+.p42-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+}
+.p42-icon-grid .p42-icon-opt {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: .9rem;
+    color: var(--text-muted);
+    background: none;
+    border: 1.5px solid transparent;
+    transition: all .15s;
+    padding: 0;
+}
+.p42-icon-grid .p42-icon-opt:hover {
+    transform: scale(1.15);
+    background: var(--glass-hover);
+    border-color: var(--accent);
+    color: var(--text-main);
+}
+.p42-icon-grid .p42-icon-opt.selected {
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Profile modal spacing fix */
+#modal-profile .px-6.pt-4.pb-2 {
+    padding-top: 10px;
+    padding-bottom: 6px;
+}
+
+/* === 3. Mindmap — improved SVG rendering === */
+#wb-mindmap-svg g {
+    will-change: transform;
+}
+#wb-mindmap-svg line {
+    transition: x1 .05s, y1 .05s, x2 .05s, y2 .05s;
+}
+
+/* === 4. QoL === */
+/* Settings section spacing consistency */
+.settings-section + .settings-section {
+    padding-top: 16px;
+}
+
+/* Smooth toggle animation for settings */
+.settings-row {
+    transition: background .15s;
+    border-radius: 8px;
+    padding: 4px 0;
+}
+.settings-row:hover {
+    background: color-mix(in srgb, var(--glass-hover) 40%, transparent);
+}

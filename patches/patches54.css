@@ -1,0 +1,19 @@
+/* ================================================================
+   StudentOS — patches54.css
+   1.  Formula block — remove the separate accent left-border so
+       the block has the same border colour as every other
+       .p19-ws-block instead of standing out in a different hue.
+   2.  Flashcard card-list — Starred badge colour (reuses the
+       existing .card-diff-badge styles already in styles.css).
+   ================================================================ */
+
+/* ================================================================
+   1.  FORMULA BLOCK — UNIFORM BORDER COLOUR
+       patches30.css sets a special `border-left` on formula blocks.
+       Override it here so the left border matches the default
+       .p19-ws-block style (var(--glass-border), 1.5 px all-round).
+   ================================================================ */
+.p19-ws-block.formula-block {
+    border-left-width: 1.5px;
+    border-left-color: var(--glass-border);
+}

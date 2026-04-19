@@ -54,6 +54,43 @@ function esc(s) {
     return d.innerHTML;
 }
 
+/* Build a post-card excerpt: strips image/PDF markers from text
+   and shows a small thumbnail when the post contains an image. */
+function _excerptHtml(body) {
+    if (!body) return '<p class="fpc-excerpt"></p>';
+    var lines    = body.split('\n');
+    var firstImg = null;
+    var textParts = [];
+    var i = 0;
+    while (i < lines.length) {
+        var line = lines[i];
+        if (line.startsWith('[Image: ') && i + 1 < lines.length && lines[i + 1].startsWith('data:image')) {
+            if (!firstImg) firstImg = lines[i + 1];
+            i += 2;
+        } else if (line.startsWith('data:image')) {
+            if (!firstImg) firstImg = line;
+            i++;
+        } else if (line.startsWith('[PDF: ')) {
+            i++;
+        } else {
+            var t = line.trim();
+            if (t) textParts.push(t);
+            i++;
+        }
+    }
+    var text = textParts.join(' ');
+    var html = '';
+    if (firstImg) {
+        html += '<img src="' + firstImg + '" class="fpc-thumb" alt="">';
+    }
+    if (text) {
+        var short = text.length > 110 ? text.slice(0, 110) + '\u2026' : text;
+        html += '<span>' + esc(short) + '</span>';
+    }
+    if (!html) return '<p class="fpc-excerpt"></p>';
+    return '<p class="fpc-excerpt' + (firstImg ? ' fpc-excerpt--media' : '') + '">' + html + '</p>';
+}
+
 /* ── Subject definitions (English) ── */
 const SUBJECTS = [
     { id:'all',     label:'All',     icon:'fa-border-all',      color:'#6b7280' },
@@ -139,7 +176,7 @@ function _render() {
                     ${p.solved ? '<span class="fpc-solved-badge"><i class="fa-solid fa-circle-check"></i> Solved</span>' : ''}
                 </div>
                 <h3 class="fpc-title">${esc(p.title)}</h3>
-                <p class="fpc-excerpt">${esc((p.body || '').slice(0, 130))}${(p.body || '').length > 130 ? '…' : ''}</p>
+                ${_excerptHtml(p.body)}
                 <div class="fpc-footer">
                     <div class="forum-avatar" style="background:${sub.color}">
                         ${esc((p.displayName || '?').slice(0, 1).toUpperCase())}

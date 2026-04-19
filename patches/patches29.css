@@ -1,0 +1,540 @@
+/* ================================================================
+   StudentOS — patches29.css
+   1.  Formula modal  — inline "Create formula" panel (My formulas tab)
+   2.  Formula block  — improved variable rows, auto-compute indicator,
+                        cleaner result panel, error display
+   3.  Formula block  — "Solve for" chip strip below variable grid
+   4.  Formula block  — @ref autocomplete dropdown
+   ================================================================ */
+
+/* ================================================================
+   1.  FORMULA MODAL — CREATE FORMULA INLINE PANEL
+   ================================================================ */
+
+/* Toolbar row inside the My Formulas tab */
+#p29-mine-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px 0;
+    flex-shrink: 0;
+}
+
+#p29-create-formula-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+    font-size: .78rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .14s, border-color .14s;
+}
+#p29-create-formula-btn:hover {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    border-color: var(--accent);
+}
+#p29-create-formula-btn i {
+    font-size: .78rem;
+}
+
+/* Create-formula form panel */
+#p29-create-formula-form {
+    margin: 10px 20px 0;
+    padding: 16px 18px 18px;
+    border-radius: 14px;
+    border: 1.5px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 5%, var(--glass-panel));
+    flex-shrink: 0;
+}
+#p29-create-formula-form.hidden {
+    display: none;
+}
+
+.p29-cf-form-title {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.p29-cf-form-title i {
+    color: var(--accent);
+}
+
+.p29-cf-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.p29-cf-row:last-of-type {
+    margin-bottom: 0;
+}
+.p29-cf-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.p29-cf-label {
+    font-size: .67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+}
+.p29-cf-input,
+.p29-cf-textarea {
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--text-main);
+    font-size: .8rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .12s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.p29-cf-input:focus,
+.p29-cf-textarea:focus {
+    border-color: var(--accent);
+}
+.p29-cf-input::placeholder,
+.p29-cf-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: .6;
+}
+.p29-cf-textarea {
+    resize: none;
+    min-height: 52px;
+    font-size: .78rem;
+}
+.p29-cf-input.mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Detected variables preview */
+.p29-cf-vars-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+    min-height: 18px;
+}
+.p29-cf-var-chip {
+    font-size: .64rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    color: var(--accent);
+}
+.p29-cf-vars-label {
+    font-size: .64rem;
+    color: var(--text-muted);
+    align-self: center;
+}
+
+/* Form action row */
+.p29-cf-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+.p29-cf-save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 16px;
+    border-radius: 9px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity .12s;
+}
+.p29-cf-save-btn:hover { opacity: .88; }
+.p29-cf-cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    font-size: .78rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color .12s, border-color .12s;
+}
+.p29-cf-cancel-btn:hover { border-color: var(--accent); color: var(--accent); }
+.p29-cf-err {
+    font-size: .72rem;
+    color: #f87171;
+    min-height: 16px;
+}
+
+/* Edit-formula overlay inside the modal (reuses same form structure) */
+#p29-edit-formula-form {
+    margin: 10px 20px 0;
+    padding: 16px 18px 18px;
+    border-radius: 14px;
+    border: 1.5px solid color-mix(in srgb, #f59e0b 70%, transparent);
+    background: color-mix(in srgb, #f59e0b 5%, var(--glass-panel));
+    flex-shrink: 0;
+}
+#p29-edit-formula-form.hidden {
+    display: none;
+}
+
+/* ================================================================
+   2.  FORMULA BLOCK — IMPROVED VARIABLE ROWS
+   ================================================================ */
+
+/* Replace the current grid with a stacked-label style */
+.p29-vars-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* "Solve for:" label + chip strip */
+.p29-solve-for-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+.p29-solve-for-label {
+    font-size: .67rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.p29-solve-for-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 99px;
+    font-size: .7rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    border: 1.5px solid var(--glass-border);
+    background: var(--glass-hover);
+    color: var(--text-muted);
+    transition: all .12s;
+    white-space: nowrap;
+}
+.p29-solve-for-chip.active {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+}
+.p29-solve-for-chip:hover:not(.active) {
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    color: var(--text-main);
+}
+
+/* Two-column variable input grid */
+.p29-var-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 6px;
+}
+.p29-var-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.p29-var-sym-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2px;
+}
+.p29-var-sym {
+    font-size: .67rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    letter-spacing: .02em;
+}
+.p29-var-sym.solve-for-sym {
+    color: color-mix(in srgb, var(--accent) 70%, var(--text-muted));
+    font-style: italic;
+}
+.p29-var-name-hint {
+    font-size: .6rem;
+    color: var(--text-muted);
+    opacity: .7;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.p29-var-inp-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-radius: 9px;
+    border: 1.5px solid var(--glass-border);
+    background: var(--glass-hover);
+    overflow: hidden;
+    transition: border-color .12s;
+}
+.p29-var-inp-wrap:focus-within {
+    border-color: var(--accent);
+}
+.p29-var-inp-wrap.is-solve-for {
+    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.p29-var-input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    outline: none;
+    font-size: .82rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-main);
+    padding: 6px 8px;
+}
+.p29-var-input.solve-for-inp {
+    color: var(--accent);
+    font-weight: 700;
+}
+.p29-var-input::placeholder {
+    color: var(--text-muted);
+    opacity: .5;
+    font-size: .72rem;
+}
+
+/* ref-use button: small @ trigger on each variable input */
+.p29-var-ref-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-left: 1px solid var(--glass-border);
+    padding: 0 7px;
+    height: 100%;
+    font-size: .64rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color .12s, background .12s;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+}
+.p29-var-ref-btn:hover {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* ================================================================
+   3.  @REF AUTOCOMPLETE DROPDOWN
+   ================================================================ */
+.p29-ref-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    border-radius: 9px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.28);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow: hidden;
+    margin-top: 2px;
+}
+.p29-ref-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: background .1s;
+}
+.p29-ref-item:hover {
+    background: var(--glass-hover);
+}
+.p29-ref-item-name {
+    font-size: .74rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--accent);
+}
+.p29-ref-item-val {
+    font-size: .7rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+}
+.p29-ref-empty {
+    padding: 8px 12px;
+    font-size: .74rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ================================================================
+   4.  FORMULA BLOCK — IMPROVED RESULT PANEL
+   ================================================================ */
+
+/* Auto-compute badge: shown when all inputs are filled */
+.p29-autocompute-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: color-mix(in srgb, #22c55e 12%, transparent);
+    border: 1px solid color-mix(in srgb, #22c55e 25%, transparent);
+    color: #22c55e;
+    margin-left: auto;
+}
+
+/* Compute button row */
+.p29-formula-btn-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Error banner inside the block */
+.p29-formula-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 9px;
+    background: color-mix(in srgb, #ef4444 10%, transparent);
+    border: 1px solid color-mix(in srgb, #ef4444 25%, transparent);
+    font-size: .74rem;
+    color: #f87171;
+}
+.p29-formula-error i {
+    flex-shrink: 0;
+    font-size: .8rem;
+}
+
+/* Improved result panel */
+.p29-result-panel {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.p29-result-sym {
+    font-size: .75rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.p29-result-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    line-height: 1;
+    word-break: break-all;
+}
+.p29-result-copy-btn {
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid var(--glass-border);
+    border-radius: 7px;
+    padding: 4px 9px;
+    font-size: .7rem;
+    font-family: inherit;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: border-color .12s, color .12s;
+}
+.p29-result-copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Save-as row inside result panel */
+.p29-saveas-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-basis: 100%;
+    margin-top: 2px;
+}
+.p29-saveas-inp {
+    flex: 1;
+    max-width: 160px;
+    padding: 5px 9px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    font-size: .74rem;
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    outline: none;
+    transition: border-color .12s;
+}
+.p29-saveas-inp:focus { border-color: var(--accent); }
+.p29-saveas-inp::placeholder { color: var(--text-muted); opacity: .55; font-size: .68rem; }
+.p29-saveas-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+    font-size: .72rem;
+    font-family: inherit;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color .12s, color .12s;
+}
+.p29-saveas-btn:hover { border-color: var(--accent); color: var(--accent); }
+.p29-saveas-saved-name {
+    font-size: .68rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #22c55e;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}

@@ -216,6 +216,7 @@ input[type=color]::-webkit-color-swatch { border:none; border-radius:50%; }
 .card-diff-badge { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:99px; font-size:.6rem; font-weight:800; letter-spacing:.02em; }
 .card-diff-badge.hard { background:rgba(239,68,68,.15); color:#ef4444; }
 .card-diff-badge.easy { background:rgba(34,197,94,.15); color:#22c55e; }
+.card-diff-badge.starred { background:rgba(234,179,8,.15); color:#eab308; }
 
 /* ===== MATCH GAME ===== */
 .match-card { padding:10px 14px; border-radius:12px; cursor:pointer; border:2px solid var(--glass-border); background:var(--glass-panel); transition:all .2s; font-size:.85rem; text-align:center; }

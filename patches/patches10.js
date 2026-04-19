@@ -900,10 +900,19 @@ window._p10toggleAutoBreak = function(){
 };
 
 window._p10setPomoTime = function(type, val){
-    const times = _p10lsGet('os_pomo_times', {focus:25, short:5, long:15});
+    // Prefer runtime variable (already hydrated from DB) over localStorage
+    const times = (window.pomodoroTimes && (window.pomodoroTimes.focus || window.pomodoroTimes.short || window.pomodoroTimes.long))
+        ? Object.assign({}, window.pomodoroTimes)
+        : _p10dbGet('os_pomo_times', {focus:25, short:5, long:15});
     times[type] = parseInt(val) || times[type];
     _p10lsSet('os_pomo_times', times);
     _p10dbSet('os_pomo_times', times);
+    // Update the runtime variable so the timer uses the new value immediately
+    if (window.pomodoroTimes) window.pomodoroTimes[type] = times[type];
+    // Reset the timer display when changing focus duration and timer is stopped
+    if (type === 'focus' && typeof window.resetTimer === 'function' && !window.tRun) {
+        window.resetTimer();
+    }
 };
 
 window._p10setName = function(val){

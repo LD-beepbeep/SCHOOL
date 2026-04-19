@@ -1,0 +1,251 @@
+/* ================================================================
+   StudentOS — patches32.css
+   1.  Whiteboard grid CSS overlay
+   2.  Whiteboard: resizable image overlay
+   3.  Notes: color-dot picker popup
+   4.  Mind-map: context menu
+   5.  Whiteboard: fullscreen helper
+   ================================================================ */
+
+/* ================================================================
+   1.  GRID OVERLAY
+   ================================================================ */
+
+#wb-grid-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: none;
+    z-index: 1;
+    background-image:
+        linear-gradient(rgba(128,128,128,.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(128,128,128,.18) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+#wb-grid-overlay.active {
+    display: block;
+}
+
+/* ================================================================
+   2.  RESIZABLE IMAGE OVERLAY
+   ================================================================ */
+
+#p32-img-overlay {
+    position: absolute;
+    display: none;
+    z-index: 10;
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+    border: 2px dashed var(--accent, #6366f1);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#p32-img-overlay.active {
+    display: block;
+}
+
+#p32-img-preview {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: fill;
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.p32-img-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--accent, #6366f1);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    z-index: 11;
+    touch-action: none;
+}
+
+.p32-img-nw { top: -6px;    left: -6px;   cursor: nwse-resize; }
+.p32-img-ne { top: -6px;    right: -6px;  cursor: nesw-resize; }
+.p32-img-sw { bottom: -6px; left: -6px;   cursor: nesw-resize; }
+.p32-img-se { bottom: -6px; right: -6px;  cursor: nwse-resize; }
+
+.p32-img-toolbar {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    white-space: nowrap;
+    pointer-events: all;
+}
+
+.p32-img-place-btn,
+.p32-img-cancel-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+    font-size: .7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.p32-img-place-btn {
+    background: var(--accent, #6366f1);
+    color: #fff;
+}
+
+.p32-img-cancel-btn {
+    background: var(--glass-panel, rgba(255,255,255,.06));
+    color: var(--text-muted, #94a3b8);
+}
+
+.p32-img-place-btn:hover  { opacity: .85; }
+.p32-img-cancel-btn:hover { opacity: .85; }
+
+/* ================================================================
+   3.  NOTE COLOR-DOT PICKER POPUP
+   ================================================================ */
+
+#p32-note-color-picker {
+    position: fixed;
+    z-index: 9999;
+    display: none;
+    background: var(--bg-color, #09090b);
+    border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 152px;
+}
+
+#p32-note-color-picker.visible {
+    display: flex;
+}
+
+.p32-note-color-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform .12s, border-color .12s;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.p32-note-color-dot:hover {
+    transform: scale(1.25);
+    border-color: #fff;
+}
+
+/* The small dot shown inside each note sidebar item */
+.p32-note-dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 6px;
+    margin-right: 2px;
+    transition: transform .15s;
+    outline: none;
+}
+
+.p32-note-dot:hover {
+    transform: scale(1.5);
+}
+
+/* ================================================================
+   4.  MIND-MAP CONTEXT MENU
+   ================================================================ */
+
+.p32-mm-ctx {
+    position: fixed;
+    z-index: 9999;
+    display: none;
+    background: var(--bg-color, #09090b);
+    border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+    border-radius: 10px;
+    padding: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+    min-width: 160px;
+}
+
+.p32-mm-ctx.visible {
+    display: block;
+}
+
+.p32-mm-ctx-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-main, #f8fafc);
+    font-size: .8rem;
+    cursor: pointer;
+    border-radius: 7px;
+    text-align: left;
+    transition: background .12s;
+}
+
+.p32-mm-ctx-item:hover {
+    background: var(--glass-hover, rgba(255,255,255,.08));
+}
+
+.p32-mm-ctx-danger {
+    color: #f87171;
+}
+
+.p32-mm-ctx-danger:hover {
+    background: rgba(239,68,68,.12);
+}
+
+.p32-mm-ctx-divider {
+    height: 1px;
+    background: var(--glass-border, rgba(255,255,255,.08));
+    margin: 3px 0;
+}
+
+/* ================================================================
+   5.  WHITEBOARD FULLSCREEN
+   ================================================================ */
+
+#view-whiteboard:fullscreen,
+#view-whiteboard:-webkit-full-screen,
+#view-whiteboard:-moz-full-screen {
+    padding: 12px;
+    background: var(--bg-color, #09090b);
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* Make sure the canvas fills properly in fullscreen */
+#view-whiteboard:fullscreen #wb-container,
+#view-whiteboard:-webkit-full-screen #wb-container,
+#view-whiteboard:-moz-full-screen #wb-container {
+    flex: 1;
+    min-height: 0;
+}
+
+/* The mind-map edit modal header reflects "Edit" not "Add" */
+#modal-mm-edit h3 {
+    color: var(--text-main, #f8fafc);
+}

@@ -1,0 +1,249 @@
+/* ================================================================
+   StudentOS — patches30.css
+   1.  Undo bar notification (block deleted / undo)
+   2.  Formula modal tab badge (custom formula count)
+   3.  Worksheet title input (editable, above board)
+   4.  Block type left-border colour coding
+   5.  Duplicate button — subtle style in action strip
+   6.  Print styles (@media print)
+   7.  Minor layout polish — sticky toolbar, wider board
+   ================================================================ */
+
+/* ================================================================
+   1.  UNDO BAR
+   ================================================================ */
+#p30-undo-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9950;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 18px;
+    border-radius: 13px;
+    background: var(--glass-panel);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.30);
+    font-size: .82rem;
+    color: var(--text-main);
+    white-space: nowrap;
+    animation: p30-bar-in .22s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes p30-bar-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(14px) scale(.96); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1);   }
+}
+#p30-undo-bar.p30-undo-hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+    transition: opacity .28s, transform .28s;
+}
+
+#p30-undo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    font-size: .78rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .12s;
+}
+#p30-undo-btn:hover {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* ================================================================
+   2.  FORMULA MODAL — TAB BADGE
+   ================================================================ */
+.p30-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 5px;
+    margin-left: 6px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    font-size: .6rem;
+    font-weight: 800;
+    color: var(--accent);
+    vertical-align: middle;
+}
+.p28-modal-tab.active .p30-tab-badge {
+    background: var(--accent);
+    border-color: transparent;
+    color: #fff;
+}
+
+/* ================================================================
+   3.  WORKSHEET TITLE INPUT
+   ================================================================ */
+#p30-ws-title {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    border-bottom: 1.5px solid transparent;
+    outline: none;
+    font-size: 1.55rem;
+    font-weight: 300;
+    color: var(--text-main);
+    font-family: inherit;
+    padding: 2px 0 6px;
+    margin-bottom: 10px;
+    transition: border-color .15s;
+    flex-shrink: 0;
+}
+#p30-ws-title:hover {
+    border-bottom-color: var(--glass-border);
+}
+#p30-ws-title:focus {
+    border-bottom-color: var(--accent);
+}
+#p30-ws-title::placeholder {
+    color: var(--text-muted);
+    opacity: .35;
+    font-weight: 300;
+}
+
+/* ================================================================
+   4.  BLOCK TYPE — LEFT-BORDER COLOUR CODING
+       Each block type gets a subtle 3-px left accent so users
+       can scan block types at a glance without heavy chrome.
+   ================================================================ */
+
+/* Heading — accent colour (already has border-left from patches19) */
+.p19-ws-block.heading-block {
+    border-left-width: 4px;
+    border-left-color: var(--accent);
+}
+
+/* Text / note — muted teal */
+.p19-ws-block.note-block {
+    border-left: 3px solid rgba(20, 184, 166, .5);
+}
+
+/* Formula — accent (blue by default) */
+.p19-ws-block.formula-block {
+    border-left: 3px solid color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+/* Checklist — green */
+.p28-checklist-block.p19-ws-block,
+.p19-ws-block:has(.p28-checklist-block) {
+    border-left: 3px solid rgba(34, 197, 94, .55);
+}
+
+/* Code block — amber */
+.p28-code-block.p19-ws-block,
+.p19-ws-block:has(.p28-code-block) {
+    border-left: 3px solid rgba(245, 158, 11, .55);
+}
+
+/* Table block (patches27) — purple */
+.p27-table-block.p19-ws-block,
+.p19-ws-block:has(.p27-table-block) {
+    border-left: 3px solid rgba(139, 92, 246, .55);
+}
+
+/* Callout block (patches27) — inherit from callout variant */
+.p27-callout-block.p19-ws-block {
+    border-left-width: 3px;
+}
+
+/* ================================================================
+   5.  DUPLICATE BUTTON — ACTION STRIP
+       The duplicate button reuses .p19-ws-block-btn already defined
+       in patches19.css.  This only overrides the hover colour so it
+       is visually distinct from the drag-handle and delete button.
+   ================================================================ */
+.p19-ws-block-btn[title="Duplicate block"]:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* ================================================================
+   6.  TOOLBAR — PRINT BUTTON SPACING
+   ================================================================ */
+#p19-ws-toolbar .p19-ws-tb-btn[title="Print worksheet"] {
+    /* Same style as the existing toolbar buttons; no extra rules needed.
+       Gap is handled by flexbox.  This selector is here as a hook for
+       future customisation. */
+}
+
+/* ================================================================
+   7.  LAYOUT POLISH
+   ================================================================ */
+
+/* Give the board a small horizontal scroll boundary on narrow
+   screens so long formula expressions don't clip */
+#p19-ws-board {
+    overflow-x: hidden;
+}
+
+/* Formula block result value — slightly larger on wide screens */
+@media (min-width: 900px) {
+    .p29-result-val {
+        font-size: 1.55rem;
+    }
+}
+
+/* Block insertion animation */
+.p19-ws-block {
+    animation: p30-block-in .18s ease both;
+}
+@keyframes p30-block-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0);   }
+}
+/* Only animate newly-added blocks, not re-renders.
+   We can't reliably distinguish, so keep the duration very short to avoid
+   jarring full-board re-render flash. */
+
+/* ================================================================
+   8.  PRINT STYLES
+   ================================================================ */
+@media print {
+    /* Hide navigation, sidebar, modals, overlays */
+    #sidebar, #modal-overlay, #p30-undo-bar,
+    #p19-ws-toolbar, #p19-ws-sv-bar,
+    .p19-ws-block-actions, .p28-resize-handle,
+    #p19-ws-add-btn-fixed, #p28-ws-shortcut-hint,
+    #p28-ws-empty-state {
+        display: none !important;
+    }
+
+    /* Make the board fill the page */
+    #p19-ws-board {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    .p19-ws-block {
+        border: 1px solid #e2e8f0 !important;
+        border-left-width: 3px !important;
+        break-inside: avoid;
+        box-shadow: none !important;
+        animation: none !important;
+    }
+
+    /* Reset glass backgrounds to white for print */
+    .p19-ws-block,
+    .p29-result-panel,
+    .p28-code-textarea {
+        background: #fff !important;
+    }
+}

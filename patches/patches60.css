@@ -1,0 +1,127 @@
+/* ================================================================
+   StudentOS — patches60.css
+   1.  Formula block — strip ALL remaining accent colours from the
+       worksheet formula block so it looks identical to every other
+       block.  patches58.css covered the p19-ws-* elements; this
+       file covers the p29-* elements (patches29) and the remaining
+       p19-ws-* selectors not yet neutralised (solve-ring, focus
+       border, block outer background).
+   2.  Whiteboard settings — belt-and-braces CSS hide of every
+       possible whiteboard node inside #p46-widgets-section.
+   ================================================================ */
+
+/* ================================================================
+   1a. FORMULA BLOCK — p19-ws-* REMAINING ACCENT SELECTORS
+       (patches58.css missed: outer block tint, focus border,
+        solve-ring active state, solve-ring hover, solve-btn)
+   ================================================================ */
+
+/* Outer block: ensure no accent background leaks in */
+.p19-ws-block.formula-block {
+    background: var(--glass-panel) !important;
+}
+
+/* Variable row focus ring: neutral instead of accent */
+.p19-ws-var-row:focus-within {
+    border-color: var(--glass-border) !important;
+}
+
+/* "Solve for" ring — active state */
+.p19-ws-var-solve-ring.active {
+    background:   var(--glass-hover)  !important;
+    border-color: var(--glass-border) !important;
+    color:        var(--text-muted)   !important;
+}
+
+/* "Solve for" ring — hover state */
+.p19-ws-var-solve-ring:hover:not(.active) {
+    border-color: var(--glass-border) !important;
+}
+
+/* ================================================================
+   1b. FORMULA BLOCK — NEUTRAL COLOURS FOR ALL p29-* ELEMENTS
+   ================================================================ */
+
+/* Result panel: remove accent tint */
+.p29-result-panel {
+    background:   var(--glass-hover)   !important;
+    border-color: var(--glass-border)  !important;
+}
+
+/* Result value: use default text colour instead of accent */
+.p29-result-val {
+    color: var(--text-main) !important;
+}
+
+/* Variable symbol labels */
+.p29-var-sym,
+.p29-var-sym.solve-for-sym {
+    color: var(--text-muted) !important;
+}
+
+/* "Solve-for" input wrapper highlight */
+.p29-var-inp-wrap.is-solve-for {
+    border-color: var(--glass-border) !important;
+    background:   var(--glass-hover)  !important;
+}
+
+/* Solved-for variable value in the input */
+.p29-var-input.solve-for-inp {
+    color: var(--text-main) !important;
+}
+
+/* Active "Solve for" chip */
+.p29-solve-for-chip.active {
+    border-color: var(--glass-border)  !important;
+    background:   var(--glass-hover)   !important;
+    color:        var(--text-main)     !important;
+}
+.p29-solve-for-chip:hover:not(.active) {
+    border-color: var(--glass-border) !important;
+}
+
+/* Solve button: neutral instead of accent fill */
+.p19-ws-formula-solve-btn {
+    background: var(--glass-hover)  !important;
+    color:      var(--text-main)    !important;
+    border:     1px solid var(--glass-border) !important;
+}
+.p19-ws-formula-solve-btn:hover {
+    border-color: var(--glass-border) !important;
+    opacity: .88;
+}
+
+/* Light-mode overrides introduced by patches21 and patches35
+   also set bright blue / green; neutralise them here. */
+[data-theme="light"] .p29-result-panel {
+    background:   rgba(0,0,0,.03)    !important;
+    border-color: rgba(0,0,0,.07)    !important;
+}
+[data-theme="light"] .p29-result-val {
+    color: #16161a !important;
+}
+[data-theme="light"] .p19-ws-formula-expr {
+    background:   rgba(0,0,0,.03)    !important;
+    color:        #16161a            !important;
+    border-color: rgba(0,0,0,.07)    !important;
+}
+
+/* ================================================================
+   2.  WHITEBOARD SETTINGS SECTION — BELT-AND-BRACES CSS HIDE
+       Cover every known pattern by which whiteboard rows can end up
+       inside the widgets settings section (modal-settings or
+       modal-widgets).
+   ================================================================ */
+
+/* Known standalone whiteboard-section IDs */
+#p48-whiteboard-section,
+#p53-wb-appearance-section {
+    display: none !important;
+}
+
+/* Sub-label inside the widgets section and everything after it
+   (the whiteboard rows that patches46 appends) */
+#p46-widgets-section .p46-sub-label,
+#p46-widgets-section .p46-sub-label ~ * {
+    display: none !important;
+}

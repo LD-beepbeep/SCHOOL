@@ -1,0 +1,342 @@
+/* ================================================================
+   StudentOS — patches33.css
+   1.  Overlay fixes   — padding corrections so action buttons never
+                         overlap block content in any block type.
+   2.  Minimum heights — tighter CSS floor per block variant so
+                         no block collapses to an unreadable sliver.
+   3.  Formula block   — inline "Edit formula" panel styles.
+   4.  General polish  — focus rings, smoother hover states.
+   ================================================================ */
+
+/* ================================================================
+   1.  OVERLAY / PADDING FIXES
+   ================================================================ */
+
+/*
+ * Note (text) blocks: the textarea carries inline paddingRight:'64px'
+ * set by patches19. Increase it to the action-strip width so text
+ * never slides under the drag / duplicate / delete buttons.
+ */
+.p19-ws-note-textarea {
+    padding-right: 96px !important;
+    padding-top:   8px;
+}
+
+/*
+ * Callout blocks (patches27): the textarea has no padding-right at all.
+ * The callout header already spans the full width so only the
+ * textarea body needs protection.
+ */
+.p27-callout-textarea {
+    padding-right: 96px !important;
+}
+
+/*
+ * Table blocks (patches27): the toolbar row sits flush with the
+ * top-right corner where the action buttons live.
+ */
+.p27-table-toolbar {
+    padding-right: 96px;
+}
+
+/*
+ * Flashcard blocks (patches27): protect the card-area navigation row.
+ */
+.p27-fc-nav {
+    padding-right: 96px;
+}
+
+/*
+ * Timer & calc blocks (patches27): protect the first visible row.
+ */
+.p27-timer-display,
+.p27-calc-output {
+    padding-right: 96px;
+}
+
+/*
+ * Divider block: add a bit of right padding so the label / line
+ * doesn't visually merge with the action buttons.
+ */
+.p19-ws-block.divider-block {
+    padding-right: 100px;
+}
+
+/* ================================================================
+   2.  BLOCK MINIMUM HEIGHTS
+   ================================================================ */
+
+/*
+ * These values are CSS-level floors.  JS (patches31) applies a
+ * content-aware minimum when dragging, so the actual minimum during
+ * resize is always ≥ the block's scrollHeight.  The CSS values just
+ * ensure blocks are never invisible on first paint before JS runs.
+ *
+ * All values override (with higher specificity) the values set in
+ * patches31.css.
+ */
+.p19-ws-block.heading-block  { min-height: 54px;  }
+.p19-ws-block.note-block      { min-height: 90px;  }
+.p19-ws-block.divider-block   { min-height: 36px;  }
+.p19-ws-block.formula-block   { min-height: 140px; }
+
+/* Checklist: title + at least two item rows + add-button */
+.p19-ws-block:has(.p28-checklist-block),
+.p19-ws-block.p28-checklist-block { min-height: 120px; }
+
+/* Code: toolbar + three lines of code + resize handle */
+.p19-ws-block:has(.p28-code-block),
+.p19-ws-block.p28-code-block      { min-height: 140px; }
+
+/* Table: toolbar + header row + one data row */
+.p19-ws-block:has(.p27-table-block),
+.p19-ws-block.p27-table-block     { min-height: 130px; }
+
+/* Callout: header + at least two text lines */
+.p27-callout-block.p19-ws-block   { min-height: 110px; }
+
+/* Flashcard: card area + navigation row */
+.p19-ws-block:has(.p27-fc-block),
+.p19-ws-block.p27-fc-block        { min-height: 180px; }
+
+/* ================================================================
+   3.  FORMULA BLOCK — INLINE EDIT PANEL
+   ================================================================ */
+
+/*
+ * "Edit formula" toggle button — shown below the formula expression
+ * inside the formula header area.
+ */
+.p33-formula-edit-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+    background: transparent;
+    color: var(--text-muted, #94a3b8);
+    font-size: .68rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .14s, border-color .14s, color .14s;
+}
+.p33-formula-edit-toggle:hover {
+    border-color: var(--accent, #6366f1);
+    color: var(--accent, #6366f1);
+    background: color-mix(in srgb, var(--accent, #6366f1) 8%, transparent);
+}
+.p33-formula-edit-toggle.active {
+    border-color: color-mix(in srgb, var(--accent, #6366f1) 50%, transparent);
+    color: var(--text-muted, #94a3b8);
+}
+
+/*
+ * Inline edit panel — sits between the header and the variable grid.
+ */
+.p33-formula-edit-panel {
+    margin: 8px 0;
+    padding: 14px 16px 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--accent, #6366f1);
+    background: color-mix(in srgb, var(--accent, #6366f1) 5%, var(--glass-panel, rgba(255,255,255,.06)));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.p33-fep-title-row {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--text-main, #f8fafc);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.p33-fep-title-row i {
+    color: var(--accent, #6366f1);
+    font-size: .78rem;
+}
+
+.p33-fep-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.p33-fep-label {
+    font-size: .62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted, #94a3b8);
+}
+
+.p33-fep-input {
+    background: var(--glass-hover, rgba(255,255,255,.06));
+    border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--text-main, #f8fafc);
+    font-size: .8rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .12s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.p33-fep-input:focus {
+    border-color: var(--accent, #6366f1);
+}
+.p33-fep-input::placeholder {
+    color: var(--text-muted, #94a3b8);
+    opacity: .55;
+}
+.p33-fep-input.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+}
+
+/* Detected-variable chips row */
+.p33-fep-vars {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    min-height: 22px;
+}
+.p33-fep-vars-label {
+    font-size: .62rem;
+    color: var(--text-muted, #94a3b8);
+    font-style: italic;
+}
+.p33-fep-var-chip {
+    font-size: .64rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--accent, #6366f1) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, #6366f1) 28%, transparent);
+    color: var(--accent, #6366f1);
+}
+
+/* Action buttons row */
+.p33-fep-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.p33-fep-save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 16px;
+    border-radius: 9px;
+    border: none;
+    background: var(--accent, #6366f1);
+    color: #fff;
+    font-size: .76rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity .12s;
+}
+.p33-fep-save-btn:hover { opacity: .88; }
+
+.p33-fep-cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+    background: var(--glass-hover, rgba(255,255,255,.06));
+    color: var(--text-muted, #94a3b8);
+    font-size: .76rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color .12s, color .12s;
+}
+.p33-fep-cancel-btn:hover {
+    border-color: var(--accent, #6366f1);
+    color: var(--accent, #6366f1);
+}
+
+/* Error text */
+.p33-fep-err {
+    font-size: .7rem;
+    color: #f87171;
+    min-height: 14px;
+}
+
+/* ================================================================
+   4.  GENERAL POLISH
+   ================================================================ */
+
+/*
+ * Ensure all blocks use position:relative so the action-button strip
+ * and resize handle are always positioned relative to the block, not
+ * some ancestor.
+ */
+.p19-ws-block {
+    position: relative;
+}
+
+/*
+ * Give the resize handle a taller hit-area on touch/mobile devices
+ * where pointer precision is lower.
+ */
+@media (pointer: coarse) {
+    .p28-resize-handle {
+        height: 14px;
+    }
+}
+
+/*
+ * Variable input grid — ensure a sensible minimum column width even
+ * on very narrow blocks so inputs don't become illegibly thin.
+ */
+.p29-var-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+/*
+ * Formula block header — cap maximum width of the expression so it
+ * doesn't push off-screen in wide views; use word-break so long
+ * expressions wrap instead of overflow.
+ */
+.p19-ws-formula-expr {
+    word-break: break-all;
+    max-width: 100%;
+}
+
+/*
+ * Code textarea: show a subtle scrollbar so users know they can
+ * scroll a large code block even without the resize handle.
+ */
+.p28-code-textarea::-webkit-scrollbar        { width: 4px; }
+.p28-code-textarea::-webkit-scrollbar-track  { background: transparent; }
+.p28-code-textarea::-webkit-scrollbar-thumb  {
+    background: var(--glass-border, rgba(255,255,255,.12));
+    border-radius: 99px;
+}
+
+/*
+ * Checklist items — give each item a comfortable touch target.
+ */
+.p28-checklist-item {
+    min-height: 32px;
+}
+
+/*
+ * Divider block HR — ensure it is always visible even at minimum height.
+ */
+.p19-ws-block.divider-block hr {
+    margin: 12px 0;
+    border-color: var(--glass-border, rgba(255,255,255,.1));
+}
