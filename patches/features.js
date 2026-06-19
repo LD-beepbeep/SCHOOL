@@ -12,7 +12,7 @@ function _fSet(k,v)  { if(typeof DB!=='undefined')DB.set(k,v); else localStorage
 
 /* ── ① MUSIC ── */
 const PRESETS=[
-    {id:'lofi',      label:'Lo-Fi Study',    icon:'fa-headphones',color:'#8b5cf6',url:'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&controls=1'},
+    {id:'lofi',      label:'Lo-Fi Study',    icon:'fa-headphones',color:'#8b5cf6',url:'https://www.youtube.com/embed/rPjez8z61rI?autoplay=1&controls=1'},
     {id:'classical', label:'Classical Focus', icon:'fa-music',     color:'#3b82f6',url:'https://www.youtube.com/embed/y6TZHLAzg5o?autoplay=1&controls=1'},
     {id:'jazz',      label:'Jazz Cafe',       icon:'fa-guitar',    color:'#f59e0b',url:'https://www.youtube.com/embed/Dx5qFachd3A?autoplay=1&controls=1'},
     {id:'nature',    label:'Nature Sounds',   icon:'fa-leaf',      color:'#22c55e',url:'https://www.youtube.com/embed/eKFTSSKCzWA?autoplay=1&controls=1'},
