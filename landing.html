@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student OS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 0% 0%, rgba(243, 244, 246, 1) 0%, rgba(239, 246, 255, 1) 40%, rgba(245, 243, 255, 1) 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+        .bg-blob {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(238, 212, 255, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
+            top: -10%;
+            right: -5%;
+            z-index: -1;
+        }
+        .bg-blob-2 {
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(254, 243, 199, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
+            bottom: 10%;
+            left: -10%;
+            z-index: -1;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 50px -12px rgba(31, 38, 135, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px -15px rgba(31, 38, 135, 0.08);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col justify-between antialiased">
+
+    <div class="bg-blob"></div>
+    <div class="bg-blob-2"></div>
+
+    <nav class="glass-nav sticky top-0 z-50 w-full px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3 group cursor-pointer">
+                <span class="text-2xl transition-transform group-hover:scale-110">🎓</span>
+                <span class="font-bold text-xl tracking-tight text-gray-900">Student <span class="text-amber-500">OS</span></span>
+            </div>
+            <div class="flex items-center gap-8">
+                <a href="#overview" class="hidden md:inline-block text-sm font-medium text-gray-600 hover:text-gray-900 transition">Overview</a>
+                <a href="#features" class="hidden md:inline-block text-sm font-medium text-gray-600 hover:text-gray-900 transition">Features</a>
+                <a href="#status" class="hidden md:inline-block text-sm font-medium text-gray-600 hover:text-gray-900 transition">Other</a>
+                <a href="https://github.com/LD-beepbeep/SCHOOL" target="_blank" class="text-gray-500 hover:text-gray-900 transition text-xl">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://ld-beepbeep.github.io/SCHOOL" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-2xl font-semibold transition text-sm shadow-md shadow-amber-500/20 active:scale-95">
+                    Open Dashboard <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header id="overview" class="max-w-7xl mx-auto w-full px-6 pt-20 pb-16 text-center space-y-8">
+        <div class="inline-flex items-center gap-2 bg-amber-500/10 text-amber-600 px-4 py-2 rounded-full text-xs font-bold tracking-wider uppercase">
+            <span class="flex h-2 w-2 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            Free • No Ads • Minimalist and bloat free
+        </div>
+        
+        <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight text-gray-900 max-w-5xl mx-auto leading-[1.15]">
+            The clean, simple workspace <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600">built for your workflow.</span>
+        </h1>
+        
+        <p class="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto font-normal leading-relaxed">
+            No endless configurations, no confusing menus, and zero annoying ads. Just a beautiful, glassmorphism-inspired space right in your browser to manage your entire student life instantly.
+        </p>
+
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
+            <a href="https://ld-beepbeep.github.io/SCHOOL" target="_blank" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-8 py-4 rounded-2xl font-bold text-base transition shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30">
+                Launch Website
+            </a>
+            <a href="#features" class="w-full sm:w-auto bg-white/80 hover:bg-white border border-gray-200 text-gray-700 px-8 py-4 rounded-2xl font-bold text-base transition flex items-center justify-center gap-2">
+                Explore Features
+            </a>
+        </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto w-full px-6 py-4">
+        <div class="glass-card p-4 rounded-[2.5rem] shadow-2xl shadow-indigo-950/5 border border-white/50">
+            <img src="https://raw.githubusercontent.com/LD-beepbeep/SCHOOL/main/screenshots/school-screenshot1.png" alt="Student OS UI Interface" class="w-full rounded-[1.8rem] border border-white/40 shadow-inner object-cover">
+        </div>
+    </section>
+
+    <section id="features" class="max-w-7xl mx-auto w-full px-6 py-16 space-y-12">
+        <div class="text-center space-y-2">
+            <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Packed with features.</h2>
+            <p class="text-gray-500 max-w-lg mx-auto text-sm">Everything you need to study, organize, and focus in exactly one browser tab.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="glass-card p-6 rounded-3xl space-y-3">
+                <div class="h-10 w-10 bg-purple-500/10 text-purple-600 flex items-center justify-center text-lg rounded-xl"><i class="fas fa-tasks"></i></div>
+                <h3 class="text-base font-bold text-gray-900">Tasks & Notes</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Manage your daily to-dos and jot down rapid lecture notes inside a beautifully clean, distraction-free environment.</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-3">
+                <div class="h-10 w-10 bg-blue-500/10 text-blue-600 flex items-center justify-center text-lg rounded-xl"><i class="fas fa-brain"></i></div>
+                <h3 class="text-base font-bold text-gray-900">Flashcards</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Ace your upcoming exams with integrated study decks specifically built around scientific active recall principles.</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-3">
+                <div class="h-10 w-10 bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg rounded-xl"><i class="fas fa-paint-brush"></i></div>
+                <h3 class="text-base font-bold text-gray-900">Whiteboard</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">A built-in free-draw canvas perfect for mapping out quick sketches, mind-maps, or drafting complex study concepts.</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-3">
+                <div class="h-10 w-10 bg-amber-500/10 text-amber-600 flex items-center justify-center text-lg rounded-xl"><i class="fas fa-user-shield"></i></div>
+                <h3 class="text-base font-bold text-gray-900">Cloud Sync & Flexible Login</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Never lose your work. Seamlessly sync data across devices via Google Auth, GitHub login, standard email, or explore right away with a flexible Guest Mode.</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-3">
+                <div class="h-10 w-10 bg-indigo-500/10 text-indigo-600 flex items-center justify-center text-lg rounded-xl"><i class="fas fa-music"></i></div>
+                <h3 class="text-base font-bold text-gray-900">Integrated Focus Soundscapes</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Tune out distractions natively with curated background audio choices: ambient lo-fi beats, classical focus tracks, or warm jazz café vibes built right into the platform.</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-3 border-dashed border-amber-500/40 bg-amber-500/[0.01]">
+                <div class="h-10 w-10 bg-amber-500/10 text-amber-600 flex items-center justify-center text-lg rounded-xl"><i class="fas fa-plus-circle"></i></div>
+                <h3 class="text-base font-bold text-gray-900">And Much More...</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">From lightweight vanilla engine performance, ad-free privacy, to an open source roadmap designed to continuously optimize your daily academic workflow.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="status" class="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-6 space-y-6">
+            <div class="glass-card p-6 rounded-3xl space-y-4">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-heartbeat text-xs"></i> Platform Availability
+                </h2>
+                <p class="text-xs text-gray-500">Real-time connection status to our active versions:</p>
+                
+                <div class="space-y-3">
+                    <div class="bg-white/40 border border-gray-100 p-4 rounded-2xl flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm text-gray-900">Student OS (Main Environment)</span>
+                            <a href="https://ld-beepbeep.github.io/SCHOOL" target="_blank" class="text-xs text-amber-500 hover:underline">Launch app →</a>
+                        </div>
+                        <span id="status-main" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                            <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span> Checking...
+                        </span>
+                    </div>
+
+                    <div class="bg-white/40 border border-gray-100 p-4 rounded-2xl flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm text-gray-900">Beta Version (Early Access)</span>
+                            <a href="https://ld-beepbeep.github.io/SCHOOL-BETA/" target="_blank" class="text-xs text-amber-500 hover:underline">Try new features →</a>
+                        </div>
+                        <span id="status-beta" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                            <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span> Checking...
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-4">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-code-merge text-xs"></i> Open Source Repositories
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <a href="https://github.com/LD-beepbeep/SCHOOL" target="_blank" class="p-3.5 rounded-xl bg-white/40 hover:bg-white/80 border border-gray-100/30 transition flex items-center justify-between group">
+                        <span class="text-xs font-medium text-gray-800"><i class="fab fa-github mr-1.5"></i> Production Source</span>
+                        <i class="fas fa-arrow-up-right-from-square text-gray-400 group-hover:text-amber-500 transition text-[10px]"></i>
+                    </a>
+                    <a href="https://github.com/LD-beepbeep/SCHOOL-BETA" target="_blank" class="p-3.5 rounded-xl bg-white/40 hover:bg-white/80 border border-gray-100/30 transition flex items-center justify-between group">
+                        <span class="text-xs font-medium text-gray-800"><i class="fas fa-flask mr-1.5"></i> Beta Source</span>
+                        <i class="fas fa-arrow-up-right-from-square text-gray-400 group-hover:text-amber-500 transition text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-6">
+            <div class="glass-card p-6 rounded-3xl space-y-6">
+                <div>
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                        <span><i class="fas fa-comments text-xs mr-1"></i> Suggestion Box</span>
+                        <span class="text-[10px] bg-amber-500/10 text-amber-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wide">Direct Line</span>
+                    </h2>
+                    <h3 class="text-xl font-bold text-gray-900 mt-2">Have a Tip, Trick, or Idea?</h3>
+                    <p class="text-xs text-gray-400 mt-1">Want to request a feature or suggest an overall improvement? Drop us a note anytime.</p>
+                </div>
+                
+                <form id="feedbackForm" class="space-y-3">
+                    <div>
+                        <input type="text" id="feedbackSubject" placeholder="How can we help? (Optional)" class="w-full bg-white/80 border border-gray-200/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 transition placeholder-gray-400 shadow-inner">
+                    </div>
+                    <div>
+                        <textarea id="feedbackMessage" rows="4" required placeholder="Share your suggestions, tips, or feedback..." class="w-full bg-white/80 border border-gray-200/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 transition placeholder-gray-400 resize-none shadow-inner"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-md shadow-amber-500/10 cursor-pointer hover:-translate-y-0.5 active:translate-y-0">
+                        <i class="fas fa-paper-plane text-xs"></i> Send Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="max-w-7xl mx-auto w-full px-6 py-12 text-center text-xs text-gray-400 border-t border-gray-200/20 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>Student OS is an open-source project managed under the <strong>AGPL-3.0 License</strong>.</div>
+        <div class="flex gap-6 font-medium">
+            <a href="https://github.com/LD-beepbeep/SCHOOL/blob/main/docs/SECURITY.md" target="_blank" class="hover:text-gray-900 transition">Security</a>
+            <a href="https://github.com/LD-beepbeep/SCHOOL/blob/main/docs/CONTRIBUTING.md" target="_blank" class="hover:text-gray-900 transition">Contributing</a>
+        </div>
+    </footer>
+
+    <script>
+        // Form transmission payload routing
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const subject = document.getElementById('feedbackSubject').value || 'Student OS User Suggestion';
+            const message = document.getElementById('feedbackMessage').value;
+            const targetDest = 'Lars.dehairs@gmail.com';
+            
+            window.location.href = `mailto:${targetDest}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+        });
+
+        // Network monitoring logic
+        async function runNetworkTelemetry(endpoint, targetElementId) {
+            const node = document.getElementById(targetElementId);
+            try {
+                await fetch(endpoint, { mode: 'no-cors', cache: 'no-store' });
+                node.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span> Active';
+                node.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200/30";
+            } catch (networkFault) {
+                node.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-red-500"></span> Offline';
+                node.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200/30";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            runNetworkTelemetry('https://ld-beepbeep.github.io/SCHOOL/', 'status-main');
+            runNetworkTelemetry('https://ld-beepbeep.github.io/SCHOOL-BETA/', 'status-beta');
+        });
+    </script>
+</body>
+</html>
