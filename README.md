@@ -42,6 +42,7 @@ Want to see more, help out, or understand how this project is run? Check out the
 * 📝 **[Licence](./LICENSE):** Take a look at the open-source licence!
 * 📚 **[Citation](CITATION.cff):** Easily citate this repository.
 * 🛠 **[Beta Repository](https://github.com/LD-beepbeep/SCHOOL-BETA):** Check out the newest version of Student OS!
+* ✨ **[Landing Page](https://ld-beepbeep.github.io/SCHOOL/landing):** The landing page to convince your friends they are missing out ;)
 
 ---
 
